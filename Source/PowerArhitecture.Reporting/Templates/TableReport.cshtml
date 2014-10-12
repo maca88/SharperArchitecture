@@ -1,0 +1,23 @@
+﻿@inherits RazorEngine.Templating.TemplateBase<Templates.TableReportViewModel>
+<table>
+    <thead>
+        <tr>
+        @foreach (var header in Model.Headers)
+        {
+            <th>@header</th>
+        }
+        </tr>
+    </thead>
+    
+    <tbody>
+    @foreach (var item in Model.Items)
+    {
+        <tr>
+        @foreach (var prop in Model.Properties)
+        {
+            <td>@prop.GetValue(item)</td>
+        }
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,7 @@
+﻿<#@ include file="Utils.ttinclude"#>
+<# 
+	// create an instance of the AutomationHelper class so 
+	// that it is accessible from everywhere within the template
+	//this.VisualStudioHelper = new AutomationHelper(this.Host);
+	VSHelper = new VisualStudioHelper(this);
+#>

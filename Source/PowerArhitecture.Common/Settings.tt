@@ -1,0 +1,5 @@
+﻿<#@ template language="C#" debug="true" hostSpecific="true"#>
+<#@ include file="Settings.ttinclude"#>
+<#
+Run("Common", "PowerArhitecture.Common", "Settings", "PowerArhitecture.Common");
+#>

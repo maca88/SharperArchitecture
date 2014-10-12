@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <ConnectionString></ConnectionString>
+  <PermissionTableName></PermissionTableName>
+  
+  <XmlPermissionFileName></XmlPermissionFileName>
+  <CSharp>
+    <Generate>True</Generate>
+    <Namespace></Namespace>
+    <RelativePath></RelativePath>
+  </CSharp>
+  
+  <TypeScript>
+    <Generate>True</Generate>
+    <Namespace></Namespace>
+    <RelativePath></RelativePath>
+  </TypeScript>
+</Settings>

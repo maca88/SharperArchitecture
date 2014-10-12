@@ -1,0 +1,1232 @@
+﻿<#@ include file="Imports.ttinclude"#>
+<#+
+
+public VisualStudioHelper VSHelper;
+
+public class VisualStudioHelper : AutomationHelper
+{
+	private PluralizationService PluralizationService;
+	private GeneratedTextTransformation Gtt;
+
+	public VisualStudioHelper(GeneratedTextTransformation gtt) : base(gtt.Host)
+	{
+		Gtt = gtt;
+		PluralizationService = PluralizationService.CreateService(CultureInfo.CreateSpecificCulture("en"));
+	}
+
+	public void Warning(string message)
+    {
+		Gtt.Warning(message);
+    }
+
+	public Dictionary<string, List<CodeClass2>> GetAllTypes(IEnumerable<ProjectItem> projectItems)
+	{
+		var result = new Dictionary<string, List<CodeClass2>>();
+		foreach(ProjectItem item in projectItems)
+		{
+			ProcessTypes(item, (cls, pItem) => 
+				{
+					if(!result.ContainsKey(cls.FullName))
+						result.Add(cls.FullName, new List<CodeClass2>());
+					result[cls.FullName].Add(cls);
+				});
+		}
+		return result;
+	} 
+
+	/// <summary>
+    /// Provides access to the hosts solution startup project.
+    /// </summary>
+    public Project StartUpProject 
+    {
+        get
+        {
+            Warning(DTE.Solution.SolutionBuild.StartupProjects.ToString());
+            var startupProjectName = ((Array)DTE.Solution.SolutionBuild.StartupProjects).GetValue(0).ToString();
+            
+            var projects = GetAllProjects();
+ 
+            foreach (var project in projects)
+            {
+                // returns object typeof(Project), not just project name
+                if (project.UniqueName == startupProjectName)
+                return project;
+            }
+            return null;
+        }
+    }
+
+	/// <summary>
+    /// Provides access to the application/web configuration file.
+    /// </summary>
+    /// <remarks>
+    /// http://msdn.microsoft.com/en-us/library/system.configuration.configuration.aspx
+    /// </remarks>
+    public System.Configuration.Configuration Configuration(Project project)
+    {
+        string configurationFilename = null;
+        foreach (ProjectItem item in project.ProjectItems)
+        {
+            if (!Regex.IsMatch(item.Name, "(app|web).config", RegexOptions.IgnoreCase)) 
+                continue;
+            configurationFilename = item.FileNames[0];
+            break;
+        }
+ 
+        if(!string.IsNullOrEmpty(configurationFilename))
+        {
+            var configFile = new ExeConfigurationFileMap {ExeConfigFilename = configurationFilename};
+            return System.Configuration.ConfigurationManager.OpenMappedExeConfiguration(configFile, ConfigurationUserLevel.None);
+        }
+    	return null;
+    }
+
+	public Project GetProjectContainingT4File()
+	{
+		// Fail if we couldn't get the DTE. This can happen when trying to run in TextTransform.exe
+		if (DTE == null)
+		{
+			throw new Exception("T4 can only execute through the Visual Studio host");
+		}
+		// Find the .tt file's ProjectItem
+		ProjectItem projectItem = DTE.Solution.FindProjectItem(Host.TemplateFile);
+
+		// If the .tt file is not opened, open it
+		if (projectItem.Document == null)
+			projectItem.Open(Constants.vsViewKindCode);
+
+		return projectItem.ContainingProject;
+	}
+
+	public string Pluralize(string name)
+	{
+		return PluralizationService.Pluralize(name);
+	}
+
+	public string Singularize(string name)
+	{
+		return PluralizationService.Singularize(name);
+	}
+
+	public string GetValidNHibernteEnumerableInterface(CodeProperty2 prop, string listImplType, bool strict)
+	{
+		var typeName = GetPropertyType(prop);
+	    //if (typeName.Contains("IEnumerable"))
+	     //   typeName = typeName.Replace("IEnumerable", listImplType);
+
+	    if (typeName.Contains("IEnumerable"))
+	        return typeName;
+
+	    if (typeName.Contains("HashSet") || typeName.Contains("ISet"))
+	        return Regex.Replace(typeName, @"(?:HashSet|PersistentGenericSet)", strict ? "IEnumerable" : "ISet");
+	    if (typeName.Contains("List") || typeName.Contains("IList"))
+	        return Regex.Replace(typeName, @"(?:IList|List)", strict ? "IEnumerable" : "IList");
+		if(typeName.Contains("Collection") || typeName.Contains("ICollection")) 
+			return Regex.Replace(typeName, @"(?:ICollection|Collection)", strict ? "IEnumerable" : "ICollection");
+
+		throw new Exception(string.Format("Type {0} is not enumerable", typeName));
+	}
+
+	public string GetEnumerableImplType(CodeProperty2 prop)
+	{
+	    var type = prop.Type;
+		var typeName = type.CodeType.Name;
+		if(new []{"List", "HashSet", "Collection"}.Contains(typeName)) return typeName;
+		var baseTypes = GetBaseTypes(type).Select(o => o.Name).ToList();
+		if(typeName == "ISet" || baseTypes.Contains("ISet") || GetAttribute(prop.Attributes, "FluentNHibernate.T4.Attributes.AsSetAttribute") != null) 
+            return "HashSet";
+		if(typeName == "IList" || baseTypes.Contains("IList")) return "List";
+        if(typeName == "ICollection" || baseTypes.Contains("ICollection")) return "List";
+	    if (typeName == "IEnumerable") return null;
+		throw new Exception(string.Format("Type {0} is not enumerable", type.CodeType.Name));
+	}
+
+	public string GetClassName(string fullname)
+	{
+		return fullname.Split('.').Last();
+	}
+
+	public string GetClassNamespace(string fullname)
+	{
+		var arr = fullname.Split('.');
+		return string.Join(".", arr.Take(arr.Length-1));
+	}
+
+	public string GetFieldName(string name)
+	{
+		return string.Format("_{0}", FirstCharToLower(name));
+	}
+
+	public string FirstCharToLower(string str)
+	{
+		return Char.ToLowerInvariant(str[0]) + str.Substring(1);
+	}
+
+	public bool IsSimpleOrNullableType(CodeTypeRef codeTypeRef)
+    {
+		var type = Type.GetType(codeTypeRef.AsFullName);
+		if(type == null) return false; //External type
+        return
+            type.IsPrimitive ||
+            type == typeof (Decimal) ||
+            type == typeof (String) ||
+            type == typeof (DateTime) ||
+            type == typeof (TimeSpan) ||
+            type == typeof (DateTimeOffset) ||
+            IsNullable(type);
+    }
+
+    public bool IsNullable(CodeTypeRef codeTypeRef)
+    {
+		var type = Type.GetType(codeTypeRef.AsFullName);
+        return Nullable.GetUnderlyingType(type) != null;
+    }
+
+	public string FirstCharToUpper(string input)
+	{
+		if (String.IsNullOrEmpty(input))
+			throw new ArgumentException("ARGH!");
+		return input.First().ToString().ToUpper() + String.Join("", input.Skip(1));
+	}
+
+	public bool IsEnumerable(CodeTypeRef type) //not working for dict
+	{
+		if(type.TypeKind == vsCMTypeRef.vsCMTypeRefOther)
+		{
+			throw new Exception(string.Format("Can not evaluate type {0}", type.AsFullName));
+			//return false;
+		}
+		var baseTypes = GetBaseTypes(type).Select(o => o.Name).ToList();
+		baseTypes.Add(type.CodeType.Name);
+		return 
+			baseTypes.Contains("IEnumerable") || 
+			baseTypes.Contains("HashSet") ||
+			baseTypes.Contains("Collection") ||
+			baseTypes.Contains("List"); 
+	}
+
+    public string Trim(string str, string prefix, string postfix)
+    {
+        return TrimEnd(TrimStart(str, prefix), postfix);
+    }
+
+    public string TrimEnd(string str, string trim)
+    {
+        if (string.IsNullOrEmpty(str)) return str;
+        return (str.EndsWith(trim))
+            ? str.Substring(0, str.Length - trim.Length)
+            : str;
+    }
+
+    public string TrimStart(string str, string trim)
+    {
+        if (string.IsNullOrEmpty(str)) return str;
+        return (str.StartsWith(trim))
+            ? str.Substring(trim.Length, str.Length - trim.Length)
+            : str;
+    }
+
+	public List<CodeElement> GetBaseTypes(CodeTypeRef type)
+	{
+		var result = new List<CodeElement>();
+		if(type.TypeKind == vsCMTypeRef.vsCMTypeRefOther)
+		{
+			//Warning(string.Format("Can not get base types for type {0}", type.AsFullName));
+			return result;
+		}
+        
+		for(var i=1; i <= (type.CodeType.Bases.Count); i++)
+		{
+			result.Add(type.CodeType.Bases.Item(i));
+		}
+		return result;
+	}
+
+	public List<string> GetBaseTypeNames(CodeClass2 cls)
+	{
+		var result = new List<string>();
+		for(var i=1; i <= (cls.Bases.Count); i++)
+		{
+			result.Add(cls.Bases.Item(i).Name);
+		}
+		return result;
+	}
+
+	public bool IsController(CodeClass2 type)
+	{
+		// Ignore any class which name doesn't end with "Controller"
+		if (!type.FullName.EndsWith("Controller")) return false;
+
+		for (; type.FullName != "System.Web.Mvc.Controller"; type = (CodeClass2)type.Bases.Item(1))
+		{
+			if (type.Bases.Count == 0)
+				return false;
+		}
+		return true;
+	}
+
+	public bool IsGeneric(CodeTypeRef type)
+	{
+		return GetGenericAgruments(type).Any();
+	}
+
+	public List<string> GetGenericAgruments(CodeTypeRef type)
+	{
+		var result = new List<string>();
+		if(type.TypeKind == vsCMTypeRef.vsCMTypeRefOther)
+		{
+			//Warning(string.Format("Can not get generic arguments for type {0}", type.AsFullName));
+			return result;
+		}
+		return GetGenericAgruments(type.CodeType.FullName);
+		
+	}
+
+	public List<string> GetGenericAgruments(string fullName)
+	{
+		var result = new List<string>();
+		var genArgs = fullName.Split('<', '>');
+		if(genArgs.Length <= 1) return result;
+		foreach(var arg in genArgs[1].Split(','))
+		{
+			result.Add(arg);
+		}
+		return result;
+    }
+
+	public bool IsProtectedInternal(vsCMAccess access)
+	{
+		return access == vsCMAccess.vsCMAccessProjectOrProtected && 
+			(access != vsCMAccess.vsCMAccessProtected && access != vsCMAccess.vsCMAccessProject);
+	}
+
+	public bool IsNHibernateProperty(CodeProperty2 prop)
+    {
+		return (IsProtectedInternal(prop.Access) || prop.Access == vsCMAccess.vsCMAccessPublic) && prop.Setter != null;
+    }
+
+	public void SetAsProtectedInternal(CodeProperty2 prop)
+	{
+		prop.Access = vsCMAccess.vsCMAccessProjectOrProtected;
+	}
+
+	public void SetAsPublic(CodeProperty2 prop)
+	{
+		prop.Access = vsCMAccess.vsCMAccessPublic;
+	}
+
+	public void SetAsPartial(CodeClass2 type)
+	{
+		if (type.ClassKind != vsCMClassKind.vsCMClassKindPartialClass)
+		{
+			try
+			{
+				type.ClassKind = vsCMClassKind.vsCMClassKindPartialClass;
+			}
+			catch
+			{
+				//Warning("SetAsPartial");
+				return;
+			}
+			//Warning(String.Format("{0} changed the class {1} to be partial", T4FileName, type.Name));
+		}
+	}
+
+	public void SetSetter(CodeProperty2 prop, string text)
+	{
+		SetCodeFunctionText(prop.Setter, text);
+	}
+
+	public void SetGetter(CodeProperty2 prop, string text)
+	{
+		SetCodeFunctionText(prop.Getter, text);
+	}
+
+	public void SetAsVirtual(CodeProperty2 prop)
+	{
+	    if (prop.OverrideKind == vsCMOverrideKind.vsCMOverrideKindVirtual || prop.Access == vsCMAccess.vsCMAccessPrivate) return;
+	    var getterText = GetCodeFunctionText(prop.Getter);
+	    var setterText = prop.Setter != null ? GetCodeFunctionText(prop.Setter) : null;
+	    prop.OverrideKind = vsCMOverrideKind.vsCMOverrideKindVirtual; //bug with auto-properties
+	    SetCodeFunctionText(prop.Getter, getterText);
+	    if(setterText == null) return;
+	    SetCodeFunctionText(prop.Setter, setterText);
+	}
+
+	public string GetPropertyType(CodeProperty2 prop)
+	{
+		var codeStart = prop.StartPoint.CreateEditPoint();
+		var codeFinish = prop.EndPoint;
+		var functionText = codeStart.GetText(codeFinish);
+		var match = Regex.Match(functionText, string.Format(@"([public\s|private\s|protected\s|internal\s|virtual\s|static\s]+)(.+?(?= {0}))", prop.Name));
+		if (!match.Success || match.Groups.Count < 3) 
+			throw new Exception("Failed to get property type for property " + prop.Name);
+		return match.Groups[2].Value;
+	}
+
+	public void SetPropertyType(CodeProperty2 prop, string type)
+	{
+		var codeStart = prop.StartPoint.CreateEditPoint();
+		var codeFinish = prop.EndPoint;
+		var functionText = codeStart.GetText(codeFinish);
+		var currentType = GetPropertyType(prop);
+		codeStart.ReplaceText(codeFinish.CreateEditPoint(), functionText.Replace(currentType, type), (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+	}
+
+	public void SetPropertyBody(CodeProperty2 prop, string body)
+	{
+		var codeStart = prop.StartPoint.CreateEditPoint();
+		var codeFinish = prop.EndPoint;
+		var functionText = codeStart.GetText(codeFinish);
+		functionText = functionText.Substring(0, functionText.IndexOf('{')-1) + body;
+		var currentType = GetPropertyType(prop);
+		codeStart.ReplaceText(codeFinish.CreateEditPoint(), functionText, (int)vsEPReplaceTextOptions.vsEPReplaceTextAutoformat);
+	}
+
+	public string GetCodeFunctionText(CodeFunction codeFunction)
+	{
+		var codeStart = codeFunction.StartPoint;
+		var codeFinish = codeFunction.EndPoint;
+		return codeStart.CreateEditPoint().GetText(codeFinish);
+	}
+
+	public void SetCodeFunctionText(CodeFunction codeFunction, string text)
+	{
+		var codeStart = codeFunction.StartPoint;
+		var codeFinish = codeFunction.EndPoint;
+		var editPoint = codeStart.CreateEditPoint();
+		editPoint.Delete(codeFinish);
+		editPoint.Insert(text);
+	}
+
+
+	public bool ContainBaseType(CodeClass2 type, string baseType)
+	{
+		for (; type.FullName != baseType; type = (CodeClass2)type.Bases.Item(1))
+		{
+			if (type.Bases.Count == 0)
+				return false;
+		}
+		return true;
+	}
+
+	// Check if the class has any explicit constructor
+	public bool HasExplicitConstructor(CodeClass2 codeClass)
+	{
+		return codeClass.Members.OfType<CodeFunction2>().Any(
+			f => !f.IsShared && f.FunctionKind == vsCMFunction.vsCMFunctionConstructor);
+	}
+
+	// Check if the class has a default (i.e. no params) constructor
+	public bool HasExplicitDefaultConstructor(CodeClass2 codeClass)
+	{
+		return codeClass.Members.OfType<CodeFunction2>().Any(
+			f => !f.IsShared && f.FunctionKind == vsCMFunction.vsCMFunctionConstructor && f.Parameters.Count == 0);
+	}
+
+    public IEnumerable<CodeProperty2> GetProperties(IEnumerable<CodeClass2> codeClasses)
+    {
+        var props = new List<CodeProperty2>();
+        foreach (var codeClass in codeClasses)
+        {
+            props.AddRange(GetProperties(codeClass));
+        }
+        return props;
+    }
+
+    public IEnumerable<CodeProperty2> GetProperties(CodeClass2 codeClass)
+	{
+		// Only look at regular method (e.g. ignore things like contructors)
+		return codeClass.Members.OfType<CodeProperty2>();
+	}
+
+	public IEnumerable<CodeFunction2> GetMethods(CodeClass2 codeClass)
+	{
+		// Only look at regular method (e.g. ignore things like contructors)
+		return codeClass.Members.OfType<CodeFunction2>()
+			.Where(f => f.FunctionKind == vsCMFunction.vsCMFunctionFunction);
+	}
+
+	public IEnumerable<CodeFunction2> GetActionResultMethods(CodeClass2 codeClass)
+	{
+		var methods = new List<CodeFunction2>();
+		foreach (CodeFunction2 method in GetMethods(codeClass))
+        {
+            // Ignore non-public methods
+            if (method.Access != vsCMAccess.vsCMAccessPublic)
+                continue;
+
+            // Ignore methods that are marked as not being actions
+            if (GetAttribute(method.Attributes, "System.Web.Mvc.NonActionAttribute") != null)
+                continue;
+
+            // Ignore methods that are marked as Obsolete
+            if (GetAttribute(method.Attributes, "System.ObsoleteAttribute") != null)
+                continue;
+
+            // Ignore generic methods
+            if (method.IsGeneric)
+                continue;
+
+			// This takes care of avoiding generic types which cause method.Type.CodeType to blow up
+            if (method.Type.TypeKind != vsCMTypeRef.vsCMTypeRefCodeType || !(method.Type.CodeType is CodeClass2))
+                continue;
+
+			// We only support action methods that return an ActionResult and Task<ActionResult> derived types
+            if (!method.Type.CodeType.get_IsDerivedFrom("System.Web.Mvc.ActionResult") && method.Type.CodeType.FullName !="System.Threading.Tasks.Task<System.Web.Mvc.ActionResult>")
+            {
+                Warning(String.Format("doesn't support {1}.{2} because it doesn't return a supported {3} type", codeClass.Name, method.Name, method.Type.CodeType.FullName));
+                continue;
+            }
+			methods.Add(method);
+        }
+		return methods;
+	}
+
+	public CodeFunction2 GetMethod(CodeClass2 codeClass, string name)
+	{
+		return GetMethods(codeClass).FirstOrDefault(f => f.Name == name);
+	}
+
+    public string GetAttributeArgumentValue(CodeAttribute2 attribute, string argumentName)
+    {
+        if (attribute == null) return null;
+        var patternFormat = @"{0}[^=]*=[\s]*([^$]+)";
+        var match = Regex.Match(attribute.Value, String.Format(patternFormat, argumentName), RegexOptions.IgnoreCase);
+        if (!match.Success) return null;
+        return match.Groups[1].Value.TrimEnd();
+    }
+
+    public CodeAttribute2 GetAttribute(CodeElements attributes, string attributeType)
+	{
+		for (int i = 1; i <= attributes.Count; i++)
+		{
+			try
+			{
+				var attrib = (CodeAttribute2)attributes.Item(i);
+				if (attributeType.Split(',').Contains(attrib.FullName, StringComparer.OrdinalIgnoreCase))
+				{
+					return attrib;
+				}
+			}
+			catch
+			{
+				// FullName can throw in some cases, so just ignore those attributes
+				continue;
+			}
+		}
+		return null;
+	}
+
+	public string MakeClassName(string ns, string classname)
+	{
+		return String.IsNullOrEmpty(ns) ? classname :
+			String.IsNullOrEmpty(classname) ? ns : ns + "." + classname;
+	}
+
+	public string GetVirtualPath(ProjectItem item)
+	{
+		string fileFullPath = item.get_FileNames(0);
+		var appRoot = Path.GetDirectoryName(item.ContainingProject.FullName) + "\\";
+
+		if (!fileFullPath.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
+			throw new Exception(string.Format("File {0} is not under app root {1}. Please report issue.", fileFullPath, appRoot));
+
+		// Make a virtual path from the physical path
+		return "~/" + fileFullPath.Substring(appRoot.Length).Replace('\\', '/');
+	}
+
+	public void ProcessTypes(ProjectItem file, Action<CodeClass2, ProjectItem> typeAction)
+	{
+		if(file.FileCodeModel != null)
+		{
+			// Process all the elements that are namespaces
+			foreach (var ns in file.FileCodeModel.CodeElements.OfType<CodeNamespace>())
+			{
+				foreach (var type in ns.Members.OfType<CodeClass2>())
+				{
+					typeAction(type, file);
+				}
+			}
+		}
+	}
+
+	public void ProcessFiles(IEnumerable<ProjectItem> folders, Action<ProjectItem, string> processAction)
+	{
+		foreach (ProjectItem item in folders)
+		{
+			if (IsFolder(item)) continue;
+			processAction(item, item.Name);
+		}
+	}
+
+	public void ProcessFiles(ProjectItem folder, Action<ProjectItem, string> processAction)
+	{
+		foreach (ProjectItem item in folder.ProjectItems)
+		{
+			if (IsFolder(item))
+			{
+				ProcessFiles(item, processAction);
+			}
+			else
+				processAction(item, item.Name);
+		}
+	}
+
+	public bool IsFolder(ProjectItem item)
+	{
+		return (item.Kind == Constants.vsProjectItemKindPhysicalFolder);
+	}
+
+	public bool IsNullable<T>(T obj)
+	{
+		if (obj == null) return true; // obvious
+		return IsNullable(typeof(T));
+	}
+
+	public static bool IsNullable(Type type)
+	{
+		if (!type.IsValueType) return true; // ref-type
+		if (Nullable.GetUnderlyingType(type) != null) return true; // Nullable<T>
+		return false; // value-type
+    }
+
+}
+#>
+
+
+<#+
+public class ClassTree
+{
+    public ClassTree(string fullName)
+    {
+        FullName = fullName;
+        DepthLevel = !string.IsNullOrEmpty(FullName) ? FullName.Split('.').Count() : 0;
+        SubClassTrees = new Dictionary<string, ClassTree>();
+        AllSubClassTrees = new List<ClassTree>();
+        Classes = new Dictionary<long, string>();
+		Data = new Dictionary<long, Dictionary<string, string>>();
+    }
+
+    public string Name
+    {
+        get
+        {
+            return FullName == null ? null : FullName.Split('.').ToList().Last();
+        }
+    }
+
+    public string Prefix
+    {
+        get
+        {
+            if (FullName == null) return null;
+            var nsSlpit = FullName.Split('.').ToList();
+            return String.Join(".", nsSlpit.Take(nsSlpit.Count - 1));
+        }
+    }
+
+	public ClassTree Parent { get; private set; }
+
+	public Dictionary<long, Dictionary<string, string>> Data { get; set; }
+
+    public string FullName { get; set; }
+
+    public int DepthLevel { get; private set; }
+
+    public Dictionary<string, ClassTree> SubClassTrees { get; set; }
+
+    public List<ClassTree> AllSubClassTrees { get; set; }
+
+    public Dictionary<long, string> Classes { get; private set; }
+
+    public string GetUniqueName()
+    {
+        return GetUniqueName(Name);
+    }
+
+    private string GetUniqueName(string name)
+    {
+        if (Parent == null) return Name;
+        return Parent.GetUniqueName() + name;
+    }
+
+    public void AddClass(long id, string name, string nsName, Dictionary<string, string> data = null)
+    {
+        var ns = AddSubClass(nsName);               
+        ns.Classes[id] = name;
+		ns.Data[id] = data;
+    }
+
+    public ClassTree AddSubClass(string fullName)
+    {
+        ClassTree result = null;
+        ClassTree child;
+        if (String.IsNullOrEmpty(fullName)) return this;
+        var nsSplit = fullName.Split('.').ToList();
+        if (DepthLevel >= nsSplit.Count()) return null;
+        var childName = nsSplit[DepthLevel];
+        if (!SubClassTrees.ContainsKey(childName))
+        {
+            child = new ClassTree(String.Join(".", nsSplit.Take(DepthLevel + 1)));
+            SubClassTrees.Add(childName, child);
+            child.Parent = this;
+            AllSubClassTrees.Add(child);
+        }
+        else
+            child = SubClassTrees[childName];
+
+        if ((DepthLevel + 1) < nsSplit.Count())
+        {
+            result = SubClassTrees[childName].AddSubClass(fullName);
+            if (result != null)
+                AllSubClassTrees.Add(result);
+        }
+        return (DepthLevel + 1) == nsSplit.Count() ? child : result;
+    }
+}
+#>
+
+
+<#+
+
+public class DatabaseUnitOfWork : IDisposable
+{
+	private string _connectionString;
+	private SqlConnection _sqlConnection;
+	private SqlTransaction _transaction;
+
+	public DatabaseUnitOfWork(string connectionString)
+    {
+		_connectionString = connectionString;
+		_sqlConnection = new SqlConnection(connectionString);
+		_sqlConnection.Open();
+		_transaction = _sqlConnection.BeginTransaction();
+    }
+
+	public void OpenConnection()
+    {
+		_sqlConnection.Open();
+		_transaction = _sqlConnection.BeginTransaction("UnitOfWork");
+    }
+
+	public void CloseConnection()
+    {
+		if(_sqlConnection.State != ConnectionState.Open) throw new Exception("conn not open!");
+		_transaction.Commit();
+		_sqlConnection.Close();
+    }
+
+	public SqlDataReader ExecuteReader(string queryString)
+	{
+		using(var command = new SqlCommand(queryString, _sqlConnection, _transaction))
+        {
+			var result = command.ExecuteReader();
+			return result;
+        }
+	}
+
+	public int ExecuteNonQuery(string queryString)
+    {
+		using(var command = new SqlCommand(queryString, _sqlConnection, _transaction))
+        {
+			return command.ExecuteNonQuery();
+		}
+	}
+
+	public int ExecuteNonQuery(string queryString, params SqlParameter[] parameters)
+    {
+		using(var command = new SqlCommand(queryString, _sqlConnection, _transaction))
+        {
+			if(parameters != null)
+				SetAsInputParameters(command, parameters);
+			return command.ExecuteNonQuery();
+		}
+    }
+
+	public TReturn ExecuteScalar<TReturn>(string queryString)
+	{
+		return ExecuteScalar<TReturn>(queryString, null);
+	}
+
+	public TReturn ExecuteScalar<TReturn>(string queryString, params SqlParameter[] parameters)
+	{
+		var returnType = typeof(TReturn);
+		var convertTo = VisualStudioHelper.IsNullable(returnType)
+			? Nullable.GetUnderlyingType(returnType)
+			: returnType;
+		using(var command = new SqlCommand(queryString, _sqlConnection, _transaction))
+        {
+			if(parameters != null)
+				SetAsInputParameters(command, parameters);
+			var result = command.ExecuteScalar();
+			return result == null || result is DBNull
+				? default(TReturn)
+				: (TReturn) Convert.ChangeType(command.ExecuteScalar(), convertTo);
+		}
+    }
+
+	private void SetAsInputParameters(SqlCommand command, SqlParameter[] parameters)
+    {
+		foreach(var parameter in parameters)
+        {
+			parameter.IsNullable = true;
+			parameter.Direction = ParameterDirection.Input;
+			if(parameter.Value == null)
+				parameter.Value = DBNull.Value;
+			command.Parameters.Add(parameter);
+        }
+    }
+
+	public void Dispose()
+    {
+		CloseConnection();
+		_sqlConnection.Dispose();
+    }
+}
+
+#>
+
+
+<#+
+/*
+    Manager.tt from Damien Guard: http://damieng.com/blog/2009/11/06/multiple-outputs-from-t4-made-easy-revisited
+*/
+
+
+// Manager class records the various blocks so it can split them up
+class Manager {
+    private class Block {
+        public String Name;
+        public int Start, Length;
+    }
+
+    private Block currentBlock;
+    private List<Block> files = new List<Block>();
+    private Block footer = new Block();
+    private Block header = new Block();
+    private ITextTemplatingEngineHost host;
+    private StringBuilder template;
+    protected List<String> generatedFileNames = new List<String>();
+
+    public static Manager Create(ITextTemplatingEngineHost host, StringBuilder template) {
+        return (host is IServiceProvider) ? new VSManager(host, template) : new Manager(host, template);
+    }
+
+    public void KeepGeneratedFile(String name) {
+        name = Path.Combine(Path.GetDirectoryName(host.TemplateFile), name);
+        generatedFileNames.Add(name);
+    }
+    
+    public void StartNewFile(String name) {
+        if (name == null)
+            throw new ArgumentNullException("name");
+        CurrentBlock = new Block { Name = name };
+    }
+
+    public void StartFooter() {
+        CurrentBlock = footer;
+    }
+
+    public void StartHeader() {
+        CurrentBlock = header;
+    }
+
+    public void EndBlock() {
+        if (CurrentBlock == null)
+            return;
+        CurrentBlock.Length = template.Length - CurrentBlock.Start;
+        if (CurrentBlock != header && CurrentBlock != footer)
+            files.Add(CurrentBlock);
+        currentBlock = null;
+    }
+
+    public virtual void Process(bool split) {
+        if (split) {
+            EndBlock();
+            var headerText = template.ToString(header.Start, header.Length);
+            var footerText = template.ToString(footer.Start, footer.Length);
+            var outputPath = Path.GetDirectoryName(host.TemplateFile);
+            files.Reverse();
+            foreach (var block in files) {
+                String fileName = Path.Combine(outputPath, block.Name);
+				if(File.Exists(fileName))
+					File.SetLastWriteTime(fileName, DateTime.Now);
+                String content = headerText + template.ToString(block.Start, block.Length) + footerText;
+                generatedFileNames.Add(fileName);
+                CreateFile(fileName, content);
+                template.Remove(block.Start, block.Length);
+            }
+        }
+    }
+
+    public string GetAllContent()
+    {
+        var headerText = template.ToString(header.Start, header.Length);
+        var footerText = template.ToString(footer.Start, footer.Length);
+        var bodyText = string.Join(Environment.NewLine, files.Select(b=> template.ToString(b.Start, b.Length)));
+        return headerText + bodyText + footerText;
+    }
+
+    protected virtual void CreateFile(String fileName, String content) {
+        if (IsFileContentDifferent(fileName, content))
+            File.WriteAllText(fileName, content);
+    }
+
+    public virtual String GetCustomToolNamespace(String fileName) {
+        return null;
+    }
+
+    public virtual String DefaultProjectNamespace {
+        get { return null; }
+    }
+
+    protected bool IsFileContentDifferent(String fileName, String newContent) {
+        return !(File.Exists(fileName) && File.ReadAllText(fileName) == newContent);
+    }
+
+    private Manager(ITextTemplatingEngineHost host, StringBuilder template) {
+        this.host = host;
+        this.template = template;
+    }
+
+    private Block CurrentBlock {
+        get { return currentBlock; }
+        set {
+            if (CurrentBlock != null)
+                EndBlock();
+            if (value != null)
+                value.Start = template.Length;
+            currentBlock = value;
+        }
+    }
+
+    private class VSManager : Manager {
+        private EnvDTE.ProjectItem templateProjectItem;
+        private EnvDTE.DTE dte;
+        private Action<String> checkOutAction;
+        private Action<IEnumerable<String>> projectSyncAction;
+
+        public override String DefaultProjectNamespace {
+            get {
+                return templateProjectItem.ContainingProject.Properties.Item("DefaultNamespace").Value.ToString();
+            }
+        }
+
+        public override String GetCustomToolNamespace(string fileName) {
+            return dte.Solution.FindProjectItem(fileName).Properties.Item("CustomToolNamespace").Value.ToString();
+        }
+
+        public override void Process(bool split) {
+            if (templateProjectItem.ProjectItems == null)
+                return;
+            base.Process(split);
+            projectSyncAction.EndInvoke(projectSyncAction.BeginInvoke(generatedFileNames, null, null));
+        }
+
+        protected override void CreateFile(String fileName, String content) {
+            if (IsFileContentDifferent(fileName, content)) {
+                CheckoutFileIfRequired(fileName);
+                File.WriteAllText(fileName, content);
+            }
+        }
+
+        internal VSManager(ITextTemplatingEngineHost host, StringBuilder template)
+            : base(host, template) {
+            var hostServiceProvider = (IServiceProvider)host;
+            if (hostServiceProvider == null)
+                throw new ArgumentNullException("Could not obtain IServiceProvider");
+            dte = (EnvDTE.DTE)hostServiceProvider.GetService(typeof(EnvDTE.DTE));
+            if (dte == null)
+                throw new ArgumentNullException("Could not obtain DTE from host");
+            templateProjectItem = dte.Solution.FindProjectItem(host.TemplateFile);
+            checkOutAction = (String fileName) => dte.SourceControl.CheckOutItem(fileName);
+            projectSyncAction = (IEnumerable<String> keepFileNames) => ProjectSync(templateProjectItem, keepFileNames);
+        }
+
+        private static void ProjectSync(EnvDTE.ProjectItem templateProjectItem, IEnumerable<String> keepFileNames) {
+            var keepFileNameSet = new HashSet<String>(keepFileNames);
+            var projectFiles = new Dictionary<String, EnvDTE.ProjectItem>();
+            var originalFilePrefix = Path.GetFileNameWithoutExtension(templateProjectItem.get_FileNames(0)) + ".";
+            foreach (EnvDTE.ProjectItem projectItem in templateProjectItem.ProjectItems)
+                projectFiles.Add(projectItem.get_FileNames(0), projectItem);
+
+            // Remove unused items from the project
+            foreach (var pair in projectFiles)
+                if (!keepFileNames.Contains(pair.Key) && !(Path.GetFileNameWithoutExtension(pair.Key) + ".").StartsWith(originalFilePrefix))
+                    pair.Value.Delete();
+
+            // Add missing files to the project
+            foreach (String fileName in keepFileNameSet)
+                if (!projectFiles.ContainsKey(fileName))
+                    templateProjectItem.ProjectItems.AddFromFile(fileName);
+        }
+
+        private void CheckoutFileIfRequired(String fileName) {
+            var sc = dte.SourceControl;
+            if (sc != null && sc.IsItemUnderSCC(fileName) && !sc.IsItemCheckedOut(fileName))
+                checkOutAction.EndInvoke(checkOutAction.BeginInvoke(fileName, null, null));
+        }
+    }
+}
+
+/*
+    End of Manager.tt
+*/
+#>
+
+
+<#+
+/// <summary>
+/// Object that provides functionality for automating Visual Studio.
+/// </summary>
+//public AutomationHelper VisualStudioHelper;
+
+/// <summary>
+/// This class provides functionality for automating Visual Studio.
+/// </summary>
+public class AutomationHelper 
+{
+	/// <summary>
+	/// Creates a new instance of this class
+	/// </summary>
+	public AutomationHelper(object host)
+	{
+		// store a reference to the template host
+		// we will need this frequently
+		this.Host = host as ITextTemplatingEngineHost;
+	}
+	
+	private EnvDTE.DTE _DTE = null;
+	/// <summary>
+	/// Returns a reference to the primary management object of Visual Studio
+	/// <summary>
+	public EnvDTE.DTE DTE
+	{
+		get
+		{
+			if (_DTE == null)
+            {
+				var hostServiceProvider = this.Host as IServiceProvider;
+				if (hostServiceProvider != null)
+					_DTE = hostServiceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            }
+			return _DTE;
+		}
+	}
+	
+	/// <summary>
+	/// Stores a reference to the Host of the t4 template
+	/// </summary>
+	public ITextTemplatingEngineHost Host { get; private set; }
+
+
+	#region Solution and Projects
+	/// <summary>
+	/// Gets the full path of the solution file
+	/// </summary>
+	public string SolutionFile
+    {
+		get
+        {
+			return this.DTE.Solution.FileName;
+        }
+    }
+	/// <summary>
+	/// Gets the file name of the currently opened solution.
+	/// </summary>
+	public string SolutionFileName
+    {
+		get
+        {
+			return System.IO.Path.GetFileName(this.DTE.Solution.FileName);
+        }
+    }
+	/// <summary>
+	/// Gets the name of the currently opened solution
+	/// </summary>
+	public string SolutionName
+    {
+		get
+        {
+			return this.DTE.Solution.Properties.Item("Name").Value.ToString();
+        }
+    }
+
+	/// <summary>
+	/// Gets a list of all Projects within the solution
+	/// </summary>
+	public IEnumerable<EnvDTE.Project> GetAllProjects()
+    {
+		var ret = new List<EnvDTE.Project>();
+
+		// take all projects that are at top level of the solution
+		// and recursively search Project folders
+		var topLevelProjects = this.DTE.Solution.Projects;
+
+		foreach(EnvDTE.Project project in topLevelProjects)
+        {
+			if (project.Kind == vsProjectType.SolutionFolder)
+				ret.AddRange(GetProjectsFromItemsCollection(project.ProjectItems));
+			else
+				ret.Add(project);
+        }
+
+		return ret;
+    }
+	/// <summary>
+	/// Gets the project object within the current solution by a given project name.
+	/// </summary>
+	public EnvDTE.Project GetProject(string projectName)
+    {
+		return this.GetAllProjects()
+				   .Where(p => p.Name == projectName)
+				   .First();
+    }
+	/// <summary>
+	/// Gets the project containing the .tt-File
+	/// </summary>
+	public EnvDTE.Project CurrentProject
+    {
+		get
+        {
+			return this.FindProjectItem(this.Host.TemplateFile).ContainingProject;
+        }
+    }
+	#endregion
+
+	#region Project Items
+	public EnvDTE.ProjectItem FindProjectItem(string fileName)
+    {
+		return this.DTE.Solution.FindProjectItem(fileName);
+    }
+	/// <summary>
+	/// Gets all project items from the current solution
+	/// </summary>
+	public IEnumerable<EnvDTE.ProjectItem>GetAllSolutionItems()
+    {
+		var ret = new List<EnvDTE.ProjectItem>();
+
+		// iterate all projects and add their items
+		foreach(EnvDTE.Project project in this.GetAllProjects())
+			ret.AddRange(GetAllProjectItems(project));
+
+		return ret;
+    }
+	/// <summary>
+	/// Gets all project items from the current project
+	/// </summary>
+	public IEnumerable<EnvDTE.ProjectItem>GetAllProjectItems()
+    {
+		// get the project of the template file and reeturn all its items
+		var project = this.CurrentProject;
+		return GetAllProjectItems(project);
+    }
+	/// <summary>
+	/// Gets all Project items from a given project. 
+	/// </summary>
+	public IEnumerable<EnvDTE.ProjectItem>GetAllProjectItems(EnvDTE.Project project)
+    {
+		return this.GetProjectItemsRecursively(project.ProjectItems);
+    }
+	#endregion
+
+	#region Code Model
+	/// <summary>
+    /// Searches a given collection of CodeElements recursively for objects of the given elementType.
+    /// </summary>
+    /// <param name="elements">Collection of CodeElements to recursively search for matching objects in.</param>
+    /// <param name="elementType">Objects of this CodeModelElement-Type will be returned.</param>
+    /// <param name="includeExternalTypes">If set to true objects that are not part of this solution are retrieved, too. E.g. the INotifyPropertyChanged interface from the System.ComponentModel namespace.</param>
+    /// <returns>A list of CodeElement objects matching the desired elementType.</returns>
+    public List<EnvDTE.CodeElement> GetAllCodeElementsOfType(EnvDTE.CodeElements elements, EnvDTE.vsCMElement elementType, bool includeExternalTypes)
+    {
+        var ret = new List<EnvDTE.CodeElement>();
+
+        foreach (EnvDTE.CodeElement elem in elements)
+        {
+            // iterate all namespaces (even if they are external)
+            // > they might contain project code
+            if (elem.Kind == EnvDTE.vsCMElement.vsCMElementNamespace)
+            {
+                ret.AddRange(GetAllCodeElementsOfType(((EnvDTE.CodeNamespace)elem).Members, elementType, includeExternalTypes));
+            }
+            // if its not a namespace but external
+            // > ignore it
+            else if (elem.InfoLocation == EnvDTE.vsCMInfoLocation.vsCMInfoLocationExternal
+                    && !includeExternalTypes)
+                continue;
+            // if its from the project
+            // > check its members
+            else if (elem.IsCodeType)
+            {
+                ret.AddRange(GetAllCodeElementsOfType(((EnvDTE.CodeType)elem).Members, elementType, includeExternalTypes));
+            }
+
+            // if this item is of the desired type
+            // > store it
+            if (elem.Kind == elementType)
+                ret.Add(elem);
+        }
+
+        return ret;
+    }
+	#endregion
+
+
+	#region Auxiliary stuff
+	private List<EnvDTE.Project> GetProjectsFromItemsCollection(EnvDTE.ProjectItems items)
+    {
+		var ret = new List<EnvDTE.Project>();
+
+		foreach(EnvDTE.ProjectItem item in items)
+        {
+			if (item.SubProject == null)
+				continue;
+			else if (item.SubProject.Kind == vsProjectType.SolutionFolder)
+				ret.AddRange(GetProjectsFromItemsCollection(item.SubProject.ProjectItems));
+			else if (item.SubProject.Kind == vsProjectType.VisualBasic
+				  || item.SubProject.Kind == vsProjectType.VisualCPlusPlus
+				  || item.SubProject.Kind == vsProjectType.VisualCSharp
+				  || item.SubProject.Kind == vsProjectType.VisualJSharp
+				  || item.SubProject.Kind == vsProjectType.WebProject)
+				ret.Add(item.SubProject);
+        }
+
+		return ret;
+    }
+	private List<EnvDTE.ProjectItem> GetProjectItemsRecursively(EnvDTE.ProjectItems items)
+    {
+		var ret = new List<EnvDTE.ProjectItem>();
+        if (items == null) return ret;
+		
+		foreach(EnvDTE.ProjectItem item in items)
+        {
+			ret.Add(item);
+			ret.AddRange(GetProjectItemsRecursively(item.ProjectItems));
+        }
+
+		return ret;
+    }
+	#endregion
+
+	/// <summary>
+	/// Gets the T4 template as vs projectitem.
+	/// </summary>
+	public EnvDTE.ProjectItem GetTemplateAsProjectItem()
+	{
+		return DTE.Solution.FindProjectItem(this.Host.TemplateFile);
+	}
+		
+}
+
+public class vsProjectType
+{
+	public const string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+	public const string VisualBasic = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}";
+	public const string VisualCSharp = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
+	public const string VisualCPlusPlus = "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}";
+	public const string VisualJSharp = "{E6FDF86B-F3D1-11D4-8576-0002A516ECE8}";
+	public const string WebProject = "{E24C65DC-7377-472b-9ABA-BC803B73C61A}";
+}
+#>

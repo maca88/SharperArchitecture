@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <BaseEntity>PowerArhitecture.Domain.IEntity</BaseEntity>
+  <IdentifierPropertyType>long</IdentifierPropertyType>
+  <Strict>False</Strict>
+  <SyntheticProperties>True</SyntheticProperties>
+  <DefaultCollectionMapType>Set</DefaultCollectionMapType>
+  <KeyColumn>
+    <Prefix></Prefix>
+    <Postfix>Id</Postfix>
+  </KeyColumn>
+</Settings>

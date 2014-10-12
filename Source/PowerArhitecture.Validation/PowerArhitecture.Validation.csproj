@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9370C544-6A85-41DC-B461-2BD12C43ECFE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PowerArhitecture.Validation</RootNamespace>
+    <AssemblyName>PowerArhitecture.Validation</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Castle.Core.3.3.1\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentValidation">
+      <HintPath>..\packages\FluentValidation.5.4.0.0\lib\Net40\FluentValidation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Extensions.Factory, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Ninject.Extensions.Factory.3.2.1.0\lib\net45-full\Ninject.Extensions.Factory.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\ComparisonAttribute.cs" />
+    <Compile Include="Attributes\CreditCardAttribute.cs" />
+    <Compile Include="Attributes\EmailAttribute.cs" />
+    <Compile Include="Attributes\EqualAttribute.cs" />
+    <Compile Include="Attributes\LessThanAttribute.cs" />
+    <Compile Include="Attributes\GreaterThanAttribute.cs" />
+    <Compile Include="Attributes\LessThanOrEqualAttribute.cs" />
+    <Compile Include="Attributes\GreaterThanOrEqualAttribute.cs" />
+    <Compile Include="Attributes\ExactLengthAttribute.cs" />
+    <Compile Include="Attributes\ExclusiveBetweenAttribute.cs" />
+    <Compile Include="Attributes\IgnoreValidationAttributesAttribute.cs" />
+    <Compile Include="Attributes\InclusiveBetweenAttribute.cs" />
+    <Compile Include="Attributes\LengthAttribute.cs" />
+    <Compile Include="Attributes\NotEmptyAttribute.cs" />
+    <Compile Include="Attributes\NotEqualAttribute.cs" />
+    <Compile Include="Attributes\NotNullAttribute.cs" />
+    <Compile Include="Attributes\RegularExpressionAttribute.cs" />
+    <Compile Include="Attributes\ValidationAttribute.cs" />
+    <Compile Include="PARulesetValidatorSelector.cs" />
+    <Compile Include="PAValidator.cs" />
+    <Compile Include="PAValidatorEngine.cs" />
+    <Compile Include="CompositeValidatorRule.cs" />
+    <Compile Include="Extensions\IPropertyValidatorExtensions.cs" />
+    <Compile Include="Extensions\PropertyRuleExtensions.cs" />
+    <Compile Include="Extensions\IRuleBuilderExtensions.cs" />
+    <Compile Include="Extensions\IRuleBuilderOptionsExtensions.cs" />
+    <Compile Include="Extensions\IValidatorExtensions.cs" />
+    <Compile Include="Factories\NinjectValidatorFactory.cs" />
+    <Compile Include="NinjectRegistration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Specifications\IValidatorEngine.cs" />
+    <Compile Include="Specifications\IValidatorFactoryExtended.cs" />
+    <Compile Include="UniqueListValidator.cs" />
+    <Compile Include="ValidationRuleSet.cs" />
+    <Compile Include="FluentValidators.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">
+      <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
+      <Name>PowerArhitecture.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
