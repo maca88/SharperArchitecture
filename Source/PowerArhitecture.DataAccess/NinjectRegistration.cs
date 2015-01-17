@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using PowerArhitecture.Common.Extensions;
+using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Factories;
 using PowerArhitecture.DataAccess.Managers;
@@ -74,9 +76,15 @@ namespace PowerArhitecture.DataAccess
                 .From(AppDomain.CurrentDomain.GetAssemblies()
                     .Where(a => a.GetTypes().Any(t => typeof (IRepository).IsAssignableFrom(t))))
                 .IncludingNonePublicTypes()
-                .SelectAllClasses()
-                .InheritedFrom<IRepository>()
-                .WhichAreNotGeneric()
+                .Select(t =>
+                {
+                    if (!t.IsClass || t.IsAbstract || t.IsGenericType || !typeof (IRepository).IsAssignableFrom(t))
+                        return false;
+                    var repoAttr = t.GetCustomAttribute<RepositoryAttribute>();
+                    if (repoAttr != null && !repoAttr.AutoBind) return false;
+
+                    return true;
+                })
                 .BindAllInterfaces());
 
             /* Will be bind by convention of listeners
@@ -86,12 +94,17 @@ namespace PowerArhitecture.DataAccess
             */
 
             //Events
-
             Bind<ISaveOrUpdateEventListener>().To<NhSaveOrUpdateEventListener>().InSingletonScope();
             Bind<ISaveOrUpdateEventListener>().To<NhUpdateEventListener>().InSingletonScope();
             Bind<ISaveOrUpdateEventListener>().To<NhSaveEventListener>().InSingletonScope();
             Bind<IPreCollectionUpdateEventListener, IPreInsertEventListener, IPreUpdateEventListener, IPreDeleteEventListener>()
                 .To<ValidatePreInsertUpdateDeleteEventListener>()
+                .InSingletonScope();
+            Bind<IPreUpdateEventListener, IPreInsertEventListener>()
+                .To<NhPreInsertUpdateEventListener>()
+                .InSingletonScope();
+            Bind<IPreUpdateEventListener, IPreInsertEventListener>()
+                .To<RootAggregatePreUpdateInsertEventListener>()
                 .InSingletonScope();
         }
     }

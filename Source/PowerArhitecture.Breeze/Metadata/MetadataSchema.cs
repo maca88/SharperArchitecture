@@ -67,5 +67,29 @@ namespace PowerArhitecture.Breeze.Metadata
         }
 
         #endregion
+
+        #region FkMap
+
+        private FkMap _fkMap;
+
+        public FkMap FkMap
+        {
+            get
+            {
+                if (_fkMap != null)
+                    return _fkMap;
+                if (!OriginalDictionary.ContainsKey("fkMap"))
+                    OriginalDictionary["fkMap"] = new Dictionary<string, string>();
+                _fkMap = new FkMap(OriginalDictionary["fkMap"] as Dictionary<string, string>);
+                return _fkMap;
+            }
+            set
+            {
+                _fkMap = value;
+                OriginalDictionary["fkMap"] = value.OriginalDictionary;
+            }
+        }
+
+        #endregion
     }
 }

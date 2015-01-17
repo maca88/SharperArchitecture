@@ -117,7 +117,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\RepositoryAttribute.cs" />
     <Compile Include="Conventions\ForeignKeyNameConvenction.cs" />
+    <Compile Include="Conventions\FormulaAttributeConvention.cs" />
     <Compile Include="Conventions\IndexedAttributeConvention.cs" />
     <Compile Include="Conventions\LengthAttributeConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlDataTypesConvention.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="Conventions\NotNullConvention.cs" />
     <Compile Include="Conventions\PropertyConvention.cs" />
     <Compile Include="Conventions\ReadOnlyAttributeConvention.cs" />
+    <Compile Include="Conventions\TableAttributeConvention.cs" />
     <Compile Include="Conventions\UniqueAttributeConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlUniqueMultipleNullsConvention.cs" />
     <Compile Include="Database.cs" />
@@ -145,6 +148,8 @@
     <Compile Include="Events\EntityPreDeletingEvent.cs" />
     <Compile Include="Events\EntityPreInsertingEvent.cs" />
     <Compile Include="Events\EntityPreUpdatingEvent.cs" />
+    <Compile Include="Events\EnverConfigurationEvent.cs" />
+    <Compile Include="Events\HibernateMappingsBuiltEvent.cs" />
     <Compile Include="Events\SessionDisposingEvent.cs" />
     <Compile Include="EventListeners\SessionEventListener.cs" />
     <Compile Include="Events\TransactionBeganEvent.cs" />
@@ -157,6 +162,7 @@
     <Compile Include="Events\TransactionCommittingEvent.cs" />
     <Compile Include="Extensions\AutoMappingAlterationCollectionExtensions.cs" />
     <Compile Include="Extensions\AutoPersistenceModelModelExtensions.cs" />
+    <Compile Include="Extensions\ConfigurationExtensions.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Extensions\LockModeExtensions.cs" />
     <Compile Include="Extensions\NhConfigurationExtensions.cs" />
@@ -168,10 +174,14 @@
     <Compile Include="NHEventListeners\NhSaveEventListener.cs" />
     <Compile Include="NHEventListeners\NhSaveOrUpdateEventListener.cs" />
     <Compile Include="NHEventListeners\NhUpdateEventListener.cs" />
+    <Compile Include="NHEventListeners\RootAggregatePreUpdateInsertEventListener.cs" />
     <Compile Include="NHEventListeners\ValidatePreInsertUpdateDeleteEventListener.cs" />
     <Compile Include="ResolutionScopes.cs" />
     <Compile Include="SessionProperties.cs" />
+    <Compile Include="Specifications\IAggregateChild.cs" />
+    <Compile Include="Specifications\IAggregateRoot.cs" />
     <Compile Include="Specifications\IUnitOfWorkResolution.cs" />
+    <Compile Include="Wrappers\CustomAutoPersistenceModel.cs" />
     <Compile Include="Wrappers\TransactionWrapper.cs" />
     <Compile Include="Specifications\ISessionManager.cs" />
     <Compile Include="Wrappers\SessionFactoryWrapper.cs" />

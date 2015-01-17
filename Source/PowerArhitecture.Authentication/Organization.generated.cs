@@ -5,6 +5,7 @@ using System.CodeDom.Compiler;
 using System.Linq.Expressions;
 using System.Reflection;
 using FluentNHibernate.Automapping;
+using PowerArhitecture.Authentication.Specifications;
 
 namespace PowerArhitecture.Authentication.Entities
 {
@@ -18,12 +19,12 @@ namespace PowerArhitecture.Authentication.Entities
 
         public virtual void AddOrganizationRole(OrganizationRole organizationRole)
         {
-            this.AddOneToMany(o => o.OrganizationRoles, organizationRole, o => o.Organization, o=> o.RemoveOrganizationRole);
+            this.AddOneToMany<IOrganization, OrganizationRole>(o => o.OrganizationRoles, organizationRole, o => o.Organization, o => o.RemoveOrganizationRole);
         }
 
         public virtual void RemoveOrganizationRole(OrganizationRole organizationRole)
         {
-            this.RemoveOneToMany(o => o.OrganizationRoles, organizationRole, o => o.Organization);
+            this.RemoveOneToMany<IOrganization, OrganizationRole>(o => o.OrganizationRoles, organizationRole, o => o.Organization);
         }
 
 		#endregion

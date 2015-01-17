@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using FluentNHibernate.Utils;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.DataCaching;
 using PowerArhitecture.DataCaching.Specifications;
@@ -15,6 +18,7 @@ using Microsoft.AspNet.Identity;
 using NHibernate;
 using NHibernate.Linq;
 using Ninject.Extensions.Logging;
+using PowerArhitecture.Domain;
 using IUser = PowerArhitecture.Common.Specifications.IUser;
 
 namespace PowerArhitecture.Authentication
@@ -23,12 +27,23 @@ namespace PowerArhitecture.Authentication
     {
         private const string UserKey = "User_{0}";
         private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+        private readonly Type _userType = typeof(User);
+        private static MethodInfo _queryMethod;
+        private IAuthenticationSettings _settings;
+
+        static AuthenticationCache()
+        {
+            _queryMethod = ReflectionHelper.GetMethodDefinition((UnitOfWork p) => p.Query<VersionedEntity>());
+        }
 
         public AuthenticationCache(IEventAggregator eventAggregator, ILogger logger, IDataCache dataCache, IUnitOfWorkFactory unitOfWorkFactory,
-            ISessionEventListener sessionEventListener, IDataCachingSettings settings)
+            ISessionEventListener sessionEventListener, IDataCachingSettings settings, IAuthenticationSettings authSettings)
             : base(eventAggregator, logger, dataCache, sessionEventListener, settings)
         {
+            if(!string.IsNullOrEmpty(authSettings.UserClass))
+                _userType = Type.GetType(authSettings.UserClass, true);
             _unitOfWorkFactory = unitOfWorkFactory;
+            _settings = authSettings;
         }
 
         public override void Initialize()
@@ -50,8 +65,9 @@ namespace PowerArhitecture.Authentication
 
         protected override void EntityUpdated(object entity, NHibernate.ISession session)
         {
-            var user = entity as User;
-            FillCache(o => o.Id == user.Id);
+            var user = entity as IUser;
+            if (user == null) return;
+            FillCache(query => query.Where("Id = @0", user.Id));
         }
 
         #endregion
@@ -65,7 +81,7 @@ namespace PowerArhitecture.Authentication
 
         protected override void EntityDeleted(object entity, ISession session)
         {
-            var user = (User)entity;
+            var user = (IUser)entity;
             var userKey = GetUserKey(user.UserName);
             DataCache.Delete(userKey);
         }
@@ -81,8 +97,9 @@ namespace PowerArhitecture.Authentication
 
         protected override void EntityInserted(object entity, ISession session)
         {
-            var user = entity as User;
-            FillCache(o => o.Id == user.Id);
+            var user = entity as IUser;
+            if (user == null) return;
+            FillCache(query => query.Where("Id = @0", user.Id));
         }
 
         #endregion
@@ -102,23 +119,30 @@ namespace PowerArhitecture.Authentication
             DataCache.Delete(GetUserKey(user.UserName));
         }
 
-        private void FillCache(Expression<Func<User, bool>> condition = null)
+        private void FillCache(Func<IQueryable, IQueryable> queryFn = null)
         {
-            using (var unitOfWork = _unitOfWorkFactory.GetNew())
+            using (var unitOfWork = (UnitOfWork)_unitOfWorkFactory.GetNew())
             {
-                var query = unitOfWork.Query<User>()
-                                        //.Lock(LockMode.Write)
-                                        .Include(o => o.Claims)
-                                        .Include(o => o.Logins)
-                                        .Include(o => o.Settings)
-                                        .Include(o => o.Organization.OrganizationRoles.First().Role.RolePermissions.First().Permission)
-                                        .Include(o => o.Organization.OrganizationRoles.First().Role.PermissionPatterns)
-                                        .Include(o => o.UserRoles.First().Role.RolePermissions.First().Permission)
-                                        .Include(o => o.UserRoles.First().Role.PermissionPatterns);
-                if(condition != null)
-                    query = query.Where(condition);
+                var query = (IQueryable)_queryMethod.MakeGenericMethod(_userType).Invoke(unitOfWork, null);
+                query = query
+                    .Include("Claims")
+                    .Include("Logins")
+                    .Include("Settings")
+                    .Include("Organization.OrganizationRoles.Role.RolePermissions.Permission")
+                    .Include("Organization.OrganizationRoles.Role.PermissionPatterns")
+                    .Include("UserRoles.Role.RolePermissions.Permission")
+                    .Include("UserRoles.Role.PermissionPatterns");
 
-                var users = query.ToList();
+                if (!string.IsNullOrEmpty(_settings.AdditionalUserIncludes))
+                {
+                    var includes = _settings.AdditionalUserIncludes.Split(',');
+                    query = includes.Aggregate(query, (current, include) => current.Include(include.Trim()));
+                }
+
+                if (queryFn != null)
+                    query = queryFn(query);
+
+                var users = query.ToList<IUser>();
                 //Store each user separately in cache (slower at startup, faster on update, delete and insert)
                 foreach (var user in users)
                 {
@@ -147,12 +171,12 @@ namespace PowerArhitecture.Authentication
             var role = entity as Role;
             if (role != null)
                 return role.UserRoles.Select(o => o.User);
-            return entity is User ? entity : null;
+            return entity is IUser ? entity : null;
         }
 
         private void SetMonitoringTypes() //TODO: add settings
         {
-            MonitoringTypes.Add(typeof(User));
+            MonitoringTypes.Add(_userType);
             MonitoringTypes.Add(typeof(UserClaim));
             MonitoringTypes.Add(typeof(UserLogin));
             MonitoringTypes.Add(typeof(Role));

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Enums;
 using PowerArhitecture.Common.Extensions;
@@ -16,9 +17,14 @@ using Newtonsoft.Json;
 
 namespace PowerArhitecture.Authentication.Entities
 {
+    public class User : User<Organization>
+    {
+    }
+
     [Serializable]
     [IgnoreValidationAttributes(Properties = new[] { "CreatedBy", "LastModifiedBy" })] //Overridden in class PrincipalConvention //TODO: generate metadata for entities
-    public partial class User : VersionedEntity, IUser, IIdentity
+    public abstract partial class User<TOrganization> : VersionedEntity, IUser, IIdentity
+        where TOrganization: IOrganization
     {
         public virtual ISet<UserRole> UserRoles
         {
@@ -45,7 +51,7 @@ namespace PowerArhitecture.Authentication.Entities
 
         public virtual string CultureName { get; set; }
 
-        public virtual Organization Organization { get; set; }
+        public virtual TOrganization Organization { get; set; }
 
         public virtual CultureInfo Culture
         {

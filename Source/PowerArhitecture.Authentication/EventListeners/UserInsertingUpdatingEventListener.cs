@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Authentication.Entities;
+using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.Common.Specifications;
@@ -19,18 +20,17 @@ namespace PowerArhitecture.Authentication.EventListeners
         public void Handle(EntityPreInsertingEvent e)
         {
             var @event = e.Message;
-            var user = @event.Entity as User;
+            var user = @event.Entity as IUser;
             if (user == null) return;
-            Set(@event.Persister, @event.State, o => o.SecurityStamp, GenerateSecurityStamp());
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
         }
 
         public void Handle(EntityPreUpdatingEvent e)
         {
             var @event = e.Message;
-            var user = @event.Entity as User;
+            var user = @event.Entity as IUser;
             if (user == null) return;
-
-            Set(@event.Persister, @event.State, o => o.SecurityStamp, GenerateSecurityStamp());
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
         }
 
         private string GenerateSecurityStamp()
@@ -38,10 +38,9 @@ namespace PowerArhitecture.Authentication.EventListeners
             return Guid.NewGuid().ToString();
         }
 
-        private static void Set(IEntityPersister persister, object[] state, Expression<Func<User, object>> memberExp, object value)
+        private static void Set(IEntityPersister persister, object[] state, object value)
         {
-            var propertyName = ExpressionHelper.GetExpressionPath(memberExp.Body);
-            var index = Array.IndexOf(persister.PropertyNames, propertyName);
+            var index = Array.IndexOf(persister.PropertyNames, "SecurityStamp");
             if (index == -1)
                 return;
             state[index] = value;

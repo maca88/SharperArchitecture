@@ -47,19 +47,29 @@ namespace PowerArhitecture.DataAccess
 
         protected ISessionEventListener SessionEventListener { get; private set; }
 
-        public IQueryable<TModel> GetLinqQuery()
+        public IQueryable<TModel> Query()
         {
             return Session.Query<TModel>();
         }
 
-        public TModel Get(TId id)
+        public virtual TModel Get(TId id)
         {
             return Session.Get<TModel>(id);
         }
 
-        public TModel Load(TId id)
+        public virtual TModel Load(TId id)
         {
             return Session.Load<TModel>(id); //select query will not be executed until a property of the model is accessed
+        }
+
+        public virtual T Load<T>(object id)
+        {
+            return Session.Load<T>(id);
+        }
+
+        public T Get<T>(object id)
+        {
+            return Session.Get<T>(id);
         }
 
         public void AddAListener(Action action, SessionListenerType listenerType)
@@ -72,29 +82,39 @@ namespace PowerArhitecture.DataAccess
             SessionEventListener.AddAListener(listenerType, Session, () => action(this));
         }
 
-        public TModel DeepCopy(TModel model)
+        public T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity
         {
-            return Session.DeepCopy(model);
+            return Session.DeepCopy(model, opts);
         }
 
-        public void Save(TModel model)
+        public IQueryable<T> Query<T>() where T : IEntity
+        {
+            return Session.Query<T>();
+        }
+
+        public virtual void Save(TModel model)
         {
             Session.SaveOrUpdate(model); 
         }
 
-        public void Update(TModel model)
+        public virtual void Update(TModel model)
         {
             Session.Update(model);
         }
 
-        public void Delete(TModel model)
+        public virtual void Delete(TModel model)
         {
             Session.Delete(model);
         }
 
-        public void Delete(TId id)
+        public virtual void Delete(TId id)
         {
             Delete(Load(id));
+        }
+
+        public TModel DeepCopy(TModel model, DeepCopyOptions opts = null)
+        {
+            return Session.DeepCopy(model, opts);
         }
 
         public IEnumerable<PropertyInfo> GetMappedProperties()

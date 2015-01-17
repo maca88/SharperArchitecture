@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess.MappingSteps;
+using PowerArhitecture.DataAccess.Settings;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate;
@@ -34,7 +36,18 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Type type)
         {
-            return base.ShouldMap(type) && type.IsAssignableToGenericType(typeof(IEntity<>)) && type.GetCustomAttribute<IgnoreAttribute>(false) == null;
+            //Check for envers
+            if (typeof (RevisionEntity) == type && !AppConfiguration.GetSetting<bool>(DatabaseSettingKeys.EnableEnvers))
+                return false;
+
+            if (type.GetCustomAttribute<IncludeAttribute>() != null)
+                return true;
+            return base.ShouldMap(type) && typeof(IEntity).IsAssignableFrom(type) && type.GetCustomAttribute<IgnoreAttribute>(false) == null;
+        }
+
+        public override bool AbstractClassIsLayerSupertype(Type type)
+        {
+            return type.GetCustomAttribute<IncludeAttribute>() == null;
         }
 
         public override bool ShouldMap(Member member)
@@ -44,6 +57,8 @@ namespace PowerArhitecture.DataAccess.Configurations
                 var propInfo = (PropertyInfo)member.MemberInfo;
                 if (propInfo.GetCustomAttribute<IgnoreAttribute>() != null) 
                     return false;
+                if (propInfo.GetCustomAttribute<IncludeAttribute>() != null)
+                    return true;
                 var getMethod = propInfo.GetGetMethod(true);
                 if (getMethod.IsFamilyOrAssembly && !getMethod.IsFamily && !getMethod.IsAssembly) //ture for protected internal properties - .NET BUG?
                     return member.CanWrite;

@@ -46,7 +46,7 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task<Role> FindByNameAsync(string roleName)
         {
-            var roles = GetLinqQuery().FirstOrDefault(o => o.Name == roleName);
+            var roles = Query().FirstOrDefault(o => o.Name == roleName);
             return Task.FromResult(roles);
         }
 

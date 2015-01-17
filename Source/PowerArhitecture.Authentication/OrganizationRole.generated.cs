@@ -5,6 +5,7 @@ using System.CodeDom.Compiler;
 using System.Linq.Expressions;
 using System.Reflection;
 using FluentNHibernate.Automapping;
+using PowerArhitecture.Authentication.Specifications;
 
 namespace PowerArhitecture.Authentication.Entities
 {
@@ -17,7 +18,7 @@ namespace PowerArhitecture.Authentication.Entities
         [ReadOnly(true)]
         public virtual long? OrganizationId { get; set; }
 
-        public virtual void SetOrganization(Organization organization)
+        public virtual void SetOrganization(IOrganization organization)
         {
             this.SetManyToOne(o => o.Organization, organization, o => o.RemoveOrganizationRole, o => o.OrganizationRoles);
         }

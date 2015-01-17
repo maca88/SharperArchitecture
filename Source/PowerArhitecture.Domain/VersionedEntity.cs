@@ -10,7 +10,13 @@ namespace PowerArhitecture.Domain
 {
     [Serializable]
     [Ignore]
-    public class VersionedEntity : VersionedEntity<long, IUser> { }
+    public class VersionedEntity : VersionedEntity<long, IUser>
+    {
+        public override bool IsTransient()
+        {
+            return Id <= 0; //Breeze will set this to a negative value
+        }
+    }
 
     [Serializable]
     [Ignore]
@@ -27,5 +33,12 @@ namespace PowerArhitecture.Domain
 
         [NotNull]
         public virtual TUser LastModifiedBy { get; protected set; }
+
+        [ReadOnly(true)]
+        public virtual object CreatedById { get; protected set; }
+
+        [ReadOnly(true)]
+        public virtual object LastModifiedById { get; protected set; }
+
     }
 }

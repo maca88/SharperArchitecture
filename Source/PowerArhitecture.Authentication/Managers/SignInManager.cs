@@ -14,7 +14,8 @@ namespace PowerArhitecture.Authentication.Managers
 {
     public class SignInManager : SignInManager<User, long>
     {
-        public SignInManager(UserManager<User, long> userManager, IAuthenticationManager authenticationManager) : base(userManager, authenticationManager)
+        public SignInManager(UserManager<User, long> userManager, IAuthenticationManager authenticationManager) 
+            : base(userManager, authenticationManager)
         {
         }
     }

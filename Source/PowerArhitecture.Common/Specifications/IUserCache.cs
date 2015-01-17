@@ -11,6 +11,8 @@ namespace PowerArhitecture.Common.Specifications
 
         IUser GetUser(string userName);
 
+        IUser GetSystemUser();
+
         DateTimeOffset GetDateTimeOffset(DateTime userDateTime);
 
     }

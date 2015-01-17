@@ -6,6 +6,7 @@ using NHibernate;
 using Ninject.Activation;
 using Ninject.Extensions.ContextPreservation;
 using Ninject.Extensions.Logging;
+using PowerArhitecture.DataAccess.Wrappers;
 
 namespace PowerArhitecture.DataAccess.Providers
 {
@@ -26,7 +27,11 @@ namespace PowerArhitecture.DataAccess.Providers
         {
             var session = _sessionFactory.OpenSession();
             Type = session.GetType();
-            var sessionProps = _sessionManager.GetSessionProperties(session);
+
+            var sessionInfo = _sessionManager.GetSessionInfo(session);
+            if (sessionInfo == null)
+                throw new Exception("session is not present in ISessionManager");
+            var sessionProps = sessionInfo.SessionProperties;
             sessionProps.SessionResolutionRoot = context.GetContextPreservingResolutionRoot();
 
             if (context.IsAnyAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork))

@@ -23,28 +23,12 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListener(ReplaceListener = typeof(DefaultSaveOrUpdateEventListener))]
     public class NhSaveOrUpdateEventListener : DefaultSaveOrUpdateEventListener
     {
-        protected IEventAggregator EventAggregator { get; private set; }
         private readonly IUserCache _userCache;
-        private readonly ISessionEventListener _sessionEventListener;
 
-        private readonly ConcurrentDictionary<ISession, ConcurrentSet<object>> _cachedSessionEntites;
-
-        public NhSaveOrUpdateEventListener(IEventAggregator eventAggregator, IUserCache userCache, ISessionEventListener sessionEventListener)
+        public NhSaveOrUpdateEventListener(IUserCache userCache)
         {
-            EventAggregator = eventAggregator;
             _userCache = userCache;
-            _cachedSessionEntites = new ConcurrentDictionary<ISession, ConcurrentSet<object>>();
-            _sessionEventListener = sessionEventListener;
         }
-        /*
-        protected override object EntityIsPersistent(SaveOrUpdateEvent @event)
-        {
-            CacheSession(@event.Session);
-            if (!_cachedSessionEntites[@event.Session].Contains(@event.Entity) && HasDirtyProperties(@event))
-                SetAuditProperties(@event.Entity, false, @event.Session);
-            return base.EntityIsPersistent(@event);
-        }
-        */
 
         /// <summary>
         /// If a new versioned entity will be inserted we must set all audit properties here because of NH nullability check
@@ -52,26 +36,26 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         /// </summary>
         /// <param name="event"></param>
         /// <returns></returns>
-        protected override object EntityIsTransient(SaveOrUpdateEvent @event)
+        protected override object EntityIsTransient(SaveOrUpdateEvent @event) //override this for fixing not-null transient property
         {
-            CacheSession(@event.Session);
             //If entry is set then entity will be deleted otherwise will be inserted
             if (@event.Entry == null)
             {
-                SetAuditProperties(@event.Entity, true, @event.Session);
-                //EventAggregator.SendMessage(new EntityInserting(@event));
+                SetAuditProperties(@event.Entity, @event.Session);
             }
             return base.EntityIsTransient(@event);
         }
 
-        private void SetAuditProperties(object entity, bool isNew, ISession session)
+        private void SetAuditProperties(object entity, ISession session)
         {
+            
             var verEntity = entity as IVersionedEntity<IUser>;
             if (verEntity == null)
                 return;
             var user = _userCache.GetCurrentUser();
             var currentUser = user == null ? null : session.Load<IUser>(user.Id);
             var currentDate = DateTime.UtcNow;
+            var isNew = verEntity.IsTransient();
             
             if (isNew)
             {
@@ -81,10 +65,23 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
             verEntity.SetMemberValue(o => o.LastModifiedDate, DateTime.UtcNow);
             verEntity.SetMemberValue(o => o.LastModifiedBy, currentUser);
-
-            _cachedSessionEntites[session].Add(entity);
         }
 
+        /*
+        protected override object EntityIsPersistent(SaveOrUpdateEvent @event)
+        {
+            //if (HasDirtyProperties(@event))
+            //SetAuditProperties(@event.Entity, @event.Session);
+            return base.EntityIsPersistent(@event);
+        }
+        
+        protected override void EntityIsDetached(SaveOrUpdateEvent @event)
+        {
+            //if (HasDirtyProperties(@event))
+            SetAuditProperties(@event.Entity, @event.Session);
+            base.EntityIsDetached(@event);
+        }
+         
         private static bool HasDirtyProperties(SaveOrUpdateEvent @event)
         {
             ISessionImplementor session = @event.Session;
@@ -107,27 +104,9 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                                 property.Type.IsDirty(loadedState[i], currentState[i], session))
                             .Any();
         }
+         
+         */
 
-        #region Session entites caching
 
-        private void AfterTransactionCommit(ISession session)
-        {
-            ConcurrentSet<object> items;
-            if (_cachedSessionEntites.TryRemove(session, out items))
-                items.Clear();
-            else
-                throw new Exception("Unable to remove session from cached dictionary");
-        }
-
-        private void CacheSession(ISession session)
-        {
-            if (_cachedSessionEntites.ContainsKey(session)) return;
-            _cachedSessionEntites.TryAdd(session, new ConcurrentSet<object>());
-            _sessionEventListener.AddAListener(SessionListenerType.AfterCommit, session, AfterTransactionCommit);
-        }
-
-        #endregion
-
-        
     }
 }

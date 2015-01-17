@@ -80,10 +80,19 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             //Example 1: UnitOfWork inside a HttpRequest that have a Session
             //Example 2: UnitOfWork outside HttpRequest (SessionProvider will return always a new session) 
             //We have to get the validation
-            var props = _lazySessionManager.Value.GetSessionProperties(session);
+            var sessionInfo = _lazySessionManager.Value.GetSessionInfo(session);
+            if (sessionInfo == null)
+            {
+                _logger.Warn("Skip validation for type '{0}' as session is not managed", item.GetType());
+                return; //Unmanaged session
+            }
+            var props = sessionInfo.SessionProperties;
             var entity = item as IEntity;
-            if(entity == null)
-                throw new NullReferenceException("item must implements IEnitty interface");
+            if (entity == null)
+            {
+                _logger.Warn("Skip validation for type '{0}' as is not castable to IEntity", item.GetType());
+                return;
+            }
             var type = entity.GetTypeUnproxied();
 
             //For validation we want to have a clean session (cache lvl 1) that share the same connection and transaction from the current one
@@ -92,12 +101,21 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             var childSession = session.GetSession(EntityMode.Poco);
             childSession.FlushMode = FlushMode.Never;
 
+            if (props.SessionResolutionRoot == null) //When session is manually created, skip validation
+            {
+                _logger.Warn("Skip validation for type '{0}' as session was manually created", item.GetType());
+                return;
+            }
+
             var validator = (IValidator)props.SessionResolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type),
                 new TypeMatchingConstructorArgument(typeof(ISession), (context, target) => childSession, true));
 
             var validationResult = validator.Validate(GetValidationContext(type, entity, ruleSets));
             if (!validationResult.IsValid)
-                throw new ValidationException(validationResult.Errors);
+            {
+                throw new PAValidationException(validationResult.Errors, type, entity, ruleSets);
+            }
+                
         }
 
         private ValidationContext GetValidationContext(Type type, object entity, IEnumerable<string> ruleSets)

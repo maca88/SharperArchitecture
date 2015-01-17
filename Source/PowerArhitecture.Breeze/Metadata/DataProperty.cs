@@ -25,6 +25,7 @@ namespace PowerArhitecture.Breeze.Metadata
             DataType = BreezeTypeHelper.GetDataType(propertyInfo.PropertyType);
             NameOnServer = propertyInfo.Name;
             IsNullable = !propertyInfo.PropertyType.IsPrimitive;
+            PropertyInfo = propertyInfo;
             var typeVal = BreezeTypeHelper.GetTypeValidator(propertyInfo.PropertyType);
             if(typeVal != null)
                 Validators.Add(typeVal);
@@ -33,6 +34,8 @@ namespace PowerArhitecture.Breeze.Metadata
         public DataProperty(Dictionary<string, object> dict) : base(dict)
         {
         }
+
+        public PropertyInfo PropertyInfo { get; private set; }
 
         #region DataType
 

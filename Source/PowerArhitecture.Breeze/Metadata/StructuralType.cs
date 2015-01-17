@@ -17,10 +17,6 @@ namespace PowerArhitecture.Breeze.Metadata
         {
             Namespace = type.Namespace;
             ShortName = type.Name;
-            foreach (var prop in type.GetProperties())
-            {
-                DataProperties.Add(new DataProperty(prop));
-            }
         }
 
         protected StructuralType(Dictionary<string, object> dict) : base(dict) { }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using NHibernate.Impl;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Specifications;
@@ -19,72 +20,92 @@ namespace PowerArhitecture.DataAccess.Managers
         IListener<SessionCreatedEvent>,
         IListener<UnhandledExceptionEvent>
     {
-        private readonly ConcurrentDictionary<Thread, ConcurrentDictionary<ISession, SessionProperties>> _sessions = 
-            new ConcurrentDictionary<Thread, ConcurrentDictionary<ISession, SessionProperties>>();
+
+        public class SessionInfo
+        {
+            public SessionInfo()
+            {
+                SessionProperties = new SessionProperties();
+            }
+
+            public ISession Session { get; set; }
+
+            public Thread Thread { get; set; }
+
+            public SessionWrapper SessionWrapper
+            {
+                get { return Session as SessionWrapper; }
+            }
+
+            public ISession NHibernateSession
+            {
+                get { return SessionWrapper != null ? SessionWrapper.Session : Session; }
+            }
+
+            public SessionProperties SessionProperties { get; set; }
+        }
+
+
+        private readonly ConcurrentSet<SessionInfo> _sessionInfos = new ConcurrentSet<SessionInfo>();
+
         static readonly object AddLockObj = new object();
         static readonly object RemoveLockObj = new object();
+
+        public SessionManager()
+        {
+            
+        }
 
         public IEnumerable<ISession> GetAll()
         {
             return GetAll(Thread.CurrentThread);
         }
 
-        public SessionProperties GetSessionProperties(ISession session)
-        {
-            if (!_sessions.ContainsKey(Thread.CurrentThread) || !_sessions[Thread.CurrentThread].ContainsKey(session))
-                throw new Exception("Session is not present in the SessionManager");
-            return _sessions[Thread.CurrentThread][session];
-        }
-
         public IEnumerable<ISession> GetAll(Thread thread)
         {
-            var result = new ConcurrentSet<ISession>();
-            return !_sessions.ContainsKey(thread) ? result : _sessions[thread].Keys;
+            return _sessionInfos.Where(o => o.Thread == thread).Select(o => o.Session);
+        }
+
+        public SessionInfo GetSessionInfo(ISession session)
+        {
+            var sessionWrapper = session as SessionWrapper;
+            if (sessionWrapper != null)
+                session = sessionWrapper.Session; //Get the Nhibernate Session
+            return _sessionInfos.FirstOrDefault(o => ReferenceEquals(o.NHibernateSession, session));
         }
 
         public void Handle(SessionDisposingEvent e)
         {
             var session = e.Message;
-            ConcurrentDictionary<ISession, SessionProperties> dict = null;
-            Thread thread = null;
-            if (!_sessions.ContainsKey(Thread.CurrentThread) || !_sessions[Thread.CurrentThread].ContainsKey(session))
+            if (session.IsAlreadyDisposed())
             {
-                //TODO: there where done some changes about disposing in WebApi2, investigate it
-                foreach (var pair in _sessions.Where(pair => pair.Value.ContainsKey(session)))
-                {
-                    thread = pair.Key;
-                    dict = pair.Value;
-                    break;
-                }
-                if (dict == null)
-                    return;
+                return;
             }
-            else
+                
+            var sessionInfo = GetSessionInfo(session);
+            if (sessionInfo == null)
             {
-                dict = _sessions[Thread.CurrentThread];
-                thread = Thread.CurrentThread;
+                throw new Exception("session is not registered");
             }
+
             DisposeSession(session);
 
             lock (RemoveLockObj)
             {
-                SessionProperties props;
-                dict.TryRemove(session, out props);
+                _sessionInfos.Remove(sessionInfo);
             }
-            if (dict.Any()) return;
-
-            _sessions.TryRemove(thread, out dict);
         }
 
         public void Handle(SessionCreatedEvent e)
         {
             var session = e.Message;
-            if (!_sessions.ContainsKey(Thread.CurrentThread))
-                _sessions.TryAdd(Thread.CurrentThread, new ConcurrentDictionary<ISession, SessionProperties>());
-
             lock (AddLockObj)
             {
-                _sessions[Thread.CurrentThread].TryAdd(session, new SessionProperties());
+                _sessionInfos.Add(new SessionInfo
+                {
+                    Session = session,
+                    Thread = Thread.CurrentThread
+                });
             }
             
         }

@@ -15,6 +15,6 @@ namespace PowerArhitecture.Authentication.Entities
 
         public virtual string ClaimValue { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual IUser User { get; set; }
     }
 }

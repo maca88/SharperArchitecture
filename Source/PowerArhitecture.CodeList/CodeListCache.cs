@@ -94,6 +94,7 @@ namespace PowerArhitecture.CodeList
             {
                 var session = _sessionFactory.Value.OpenSession();
                 session.BeginTransaction();
+                session.FlushMode = FlushMode.Never;
                 //Expression<Func<ICodeListLoc<ICodeList, ICodeListLocalization<ICodeList, ICodeListLocalization>>, object>> namesExpr = list => list.Names;
                 const string namesPath = "Names"; //ExpressionProcessor.FindMemberExpression(namesExpr.Body);
                 const string languagePath = "Names.Language";

@@ -67,7 +67,7 @@ namespace PowerArhitecture.Common
                 .IncludingNonePublicTypes()
                 .Select(t => !t.IsInterface && !t.IsAbstract && t.IsAssignableToGenericType(typeof(IListener<>)) && 
                     t != typeof(DelegateListener<>) && !Kernel.GetBindings(t).Any())
-                .BindSelection((type, types) => new List<Type>{type}.Union(types))
+                .BindSelection((type, types) => new List<Type> {type}.Union(types))
                 .Configure(syntax => syntax.InSingletonScope()));
 
             Bind<IPrincipal>().ToMethod(o => Thread.CurrentPrincipal);

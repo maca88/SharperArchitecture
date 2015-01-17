@@ -47,7 +47,7 @@ namespace PowerArhitecture.Breeze
             var meta = GetMetadata();
             
             //new EntityErrorsException()
-            _metadataConfigurator.Configure(meta);
+            _metadataConfigurator.Configure(meta, Session.SessionFactory);
             var json = JsonConvert.SerializeObject(meta, Formatting.Indented);
             return json;
         }

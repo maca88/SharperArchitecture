@@ -11,53 +11,65 @@ using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess;
+using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.Validation.Specifications;
+using PowerArhitecture.Domain;
 using Microsoft.AspNet.Identity;
 using NHibernate;
 using Ninject.Extensions.Logging;
 
 namespace PowerArhitecture.Authentication.Repositories
 {
-    public class UserRepository : Repository<User>, IUserRepository
+    //[Repository(AutoBind = false)]
+    public class UserRepository : UserRepository<User, Organization>
+    {
+        public UserRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
+            : base(session, logger, sessionEventListener)
+        {
+        }
+    }
+
+    public abstract class UserRepository<TUser, TOrganization> : Repository<TUser>, IUserRepository<TUser>
+        where TOrganization : class, IOrganization, new()
+        where TUser : User<TOrganization>, new()
     {
         
-        public UserRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
+        protected UserRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
             : base(session, logger, sessionEventListener)
         {  
         }
 
-        public Task CreateAsync(User user)
+        public Task CreateAsync(TUser user)
         {
             Save(user);
             return Task.FromResult(1);
         }
 
-        public Task UpdateAsync(User user)
+        public Task UpdateAsync(TUser user)
         {
             Save(user);
             return Task.FromResult(1);
         }
 
-        public Task DeleteAsync(User user)
+        public Task DeleteAsync(TUser user)
         {
             Delete(user);
             return Task.FromResult(1);
         }
 
-        public Task<User> FindByIdAsync(long userId)
+        public Task<TUser> FindByIdAsync(long userId)
         {
             var user = Get(userId);
             return Task.FromResult(user);
         }
 
-        public Task<User> FindByNameAsync(string userName)
+        public Task<TUser> FindByNameAsync(string userName)
         {
-            var user = GetLinqQuery().FirstOrDefault(o => o.UserName == userName);
+            var user = Query().FirstOrDefault(o => o.UserName == userName);
             return Task.FromResult(user);
         }
 
-        public Task AddLoginAsync(User user, UserLoginInfo login)
+        public Task AddLoginAsync(TUser user, UserLoginInfo login)
         {
             var item = new UserLogin
             {
@@ -69,7 +81,7 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public Task RemoveLoginAsync(User user, UserLoginInfo login)
+        public Task RemoveLoginAsync(TUser user, UserLoginInfo login)
         {
             var item = user.Logins
                            .SingleOrDefault(o =>
@@ -81,7 +93,7 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
+        public Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
         {
             IList<UserLoginInfo> result = user.Logins
                 .Select(o => new UserLoginInfo(o.LoginProvider, o.ProviderKey))
@@ -89,23 +101,23 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(result);
         }
 
-        public Task<User> FindAsync(UserLoginInfo login)
+        public Task<TUser> FindAsync(UserLoginInfo login)
         {
             var user = Session.QueryOver<UserLogin>()
                               .Where(o => o.LoginProvider == login.LoginProvider &&
                                           o.ProviderKey == login.ProviderKey)
                               .Select(o => o.User)
-                              .SingleOrDefault<User>();
+                              .SingleOrDefault<TUser>();
             return Task.FromResult(user);
         }
 
-        public Task<IList<Claim>> GetClaimsAsync(User user)
+        public Task<IList<Claim>> GetClaimsAsync(TUser user)
         {
             IList<Claim> result = user.Claims.Select(claim => new Claim(claim.ClaimType, claim.ClaimValue)).ToList();
             return Task.FromResult(result);
         }
 
-        public Task AddClaimAsync(User user, Claim claim)
+        public Task AddClaimAsync(TUser user, Claim claim)
         {
             var item = new UserClaim
             {
@@ -116,7 +128,7 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public Task RemoveClaimAsync(User user, Claim claim)
+        public Task RemoveClaimAsync(TUser user, Claim claim)
         {
             foreach (var item in user.Claims
                 .Where(o => o.ClaimType == claim.Value && o.ClaimValue == claim.Value))
@@ -126,7 +138,7 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public Task AddToRoleAsync(User user, string role)
+        public Task AddToRoleAsync(TUser user, string role)
         {
             var roleName = role.ToUpper();
             var r = Session.QueryOver<Role>().Where(o => o.Name == roleName).SingleOrDefault();
@@ -140,47 +152,47 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public Task RemoveFromRoleAsync(User user, string role)
+        public Task RemoveFromRoleAsync(TUser user, string role)
         {
             user.RemoveFromRole(role);
             return Task.FromResult(0);
         }
 
-        public Task<IList<string>> GetRolesAsync(User user)
+        public Task<IList<string>> GetRolesAsync(TUser user)
         {
             IList<string> roles = user.UserRoles.Select(o => o.Role.Name).ToList();
             return Task.FromResult(roles);
         }
 
-        public Task<bool> IsInRoleAsync(User user, string role)
+        public Task<bool> IsInRoleAsync(TUser user, string role)
         {
             var inRole = user.IsInRole(role.ToUpper());
             return Task.FromResult(inRole);
         }
 
-        public Task SetPasswordHashAsync(User user, string passwordHash)
+        public Task SetPasswordHashAsync(TUser user, string passwordHash)
         {
             user.PasswordHash = passwordHash;
             return Task.FromResult(0);
         }
 
-        public Task<string> GetPasswordHashAsync(User user)
+        public Task<string> GetPasswordHashAsync(TUser user)
         {
             return Task.FromResult(user.PasswordHash);
         }
 
-        public Task<bool> HasPasswordAsync(User user)
+        public Task<bool> HasPasswordAsync(TUser user)
         {
             return Task.FromResult(user.PasswordHash != null);
         }
 
-        public Task SetSecurityStampAsync(User user, string stamp)
+        public Task SetSecurityStampAsync(TUser user, string stamp)
         {
             user.SecurityStamp = stamp;
             return Task.FromResult(0);
         }
 
-        public Task<string> GetSecurityStampAsync(User user)
+        public Task<string> GetSecurityStampAsync(TUser user)
         {
             return Task.FromResult(user.SecurityStamp);
         }
@@ -190,8 +202,10 @@ namespace PowerArhitecture.Authentication.Repositories
         }
     }
 
-    public interface IUserRepository : IRepository<User>,
-        IUserLoginStore<User, long>, IUserClaimStore<User, long>, IUserRoleStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>
+    public interface IUserRepository<TUser>
+        : IRepository<TUser>, IUserLoginStore<TUser, long>, IUserClaimStore<TUser, long>, IUserRoleStore<TUser, long>,
+        IUserPasswordStore<TUser, long>, IUserSecurityStampStore<TUser, long>
+        where TUser : class, Common.Specifications.IUser, IEntity<long>, new()
     {
     }
 }

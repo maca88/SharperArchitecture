@@ -81,7 +81,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NHibernate.4.0.1.4000\lib\net40\NHibernate.dll</HintPath>
     </Reference>
-    <Reference Include="NHibernate.Extensions">
+    <Reference Include="NHibernate.Extensions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NHibernate.Extensions\NHibernate.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Ninject, Version=3.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
@@ -112,7 +113,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alternations\EntityAlternation.cs" />
     <Compile Include="AuthenticationCache.cs" />
+    <Compile Include="Convention\OrganizationConvention.cs" />
     <Compile Include="Convention\PrincipalConvention.cs" />
     <Compile Include="Entities\Organization.cs" />
     <Compile Include="Entities\OrganizationRole.cs" />
@@ -133,10 +136,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>T4Permission.tt</DependentUpon>
     </Compile>
+    <Compile Include="Specifications\IOrganization.cs" />
     <Compile Include="UserCache.cs" />
     <Compile Include="MappingOverrides\RightMapping.cs" />
     <Compile Include="MappingOverrides\RoleMapping.cs" />
-    <Compile Include="MappingOverrides\UserMapping.cs" />
     <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Entities\Role.cs" />
     <Compile Include="Organization.generated.cs">

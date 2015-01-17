@@ -13,7 +13,8 @@ namespace PowerArhitecture.Breeze
                     {"Byte[]", "Binary" },
                     {"BinaryBlob", "Binary" },
                     {"Timestamp", "DateTime" },
-                    {"TimeAsTimeSpan", "Time" }
+                    {"TimeAsTimeSpan", "Time" },
+                    {"UtcDateTime", "DateTime"}
                 };
 
 
@@ -36,6 +37,7 @@ namespace PowerArhitecture.Breeze
         public static DataType GetDataType(Type type)
         {
             string newType;
+            type = Nullable.GetUnderlyingType(type) ?? type;
             var typeName = (BreezeTypeMap.TryGetValue(type.Name, out newType)) ? newType : type.Name;
             DataType dataType;
             return Enum.TryParse(typeName, out dataType) ? dataType : DataType.Undefined;
@@ -44,6 +46,7 @@ namespace PowerArhitecture.Breeze
         public static Validator GetTypeValidator(Type type)
         {
             string validationName;
+            type = Nullable.GetUnderlyingType(type) ?? type;
             return ValidationTypeMap.TryGetValue(type.Name, out validationName) 
                 ? new Validator { Name = validationName } 
                 : null;

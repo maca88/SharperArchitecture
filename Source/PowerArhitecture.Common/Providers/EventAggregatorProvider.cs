@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Publishers;
 using Ninject;
@@ -25,7 +28,12 @@ namespace PowerArhitecture.Common.Providers
         {
             foreach (var listenerType in AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(assembly => assembly.GetTypes()
-                    .Where(o => !o.IsInterface && !o.IsAbstract && o.IsAssignableToGenericType(typeof(IListener<>)) && o != typeof(DelegateListener<>))))
+                    .Where(o => !o.IsInterface && !o.IsAbstract && o.IsAssignableToGenericType(typeof(IListener<>)) && o != typeof(DelegateListener<>)))
+                    .OrderByDescending(o =>
+                    {
+                        var attr = o.GetCustomAttribute<PriorityAttribute>();
+                        return attr != null ? attr.Priority : 0;
+                    }))
             {
                 //Bind all listener that are not already binded
                 if (!context.Kernel.GetBindings(listenerType).Any())

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using NHibernate.AdoNet.Util;
 using NHibernate.Cfg;
 using NHibernate.Util;
@@ -140,7 +141,8 @@ namespace NHibernate.Tool.hbm2ddl
         /// </summary>
         /// <param name="scriptAction">The action to write the each schema line.</param>
         /// <param name="doUpdate">Commit the script to DB</param>
-        public void Execute(Action<IDbCommand> beforeExecute, Action<IDbCommand> afterExecute, IDbConnection dbConnection, bool doUpdate)
+        public void Execute(Action<IDbCommand> beforeExecute, Action<IDbCommand> afterExecute, IDbConnection dbConnection, bool doUpdate,
+            Func<System.Type, bool> canUpdateTableFn = null)
         {
             log.Info("Running hbm2ddl schema update");
 
@@ -179,7 +181,12 @@ namespace NHibernate.Tool.hbm2ddl
 
                 log.Info("updating schema");
 
-                string[] createSQL = configuration.GenerateSchemaUpdateScript(dialect, meta);
+                string[] createSQL = configuration.GenerateSchemaUpdateScript(dialect, meta, table =>
+                {
+                    if (canUpdateTableFn == null) return true;
+                    var pClass = configuration.ClassMappings.First(o => o.Table.Name == table.Name);
+                    return canUpdateTableFn(pClass.MappedClass);
+                });
                 for (int j = 0; j < createSQL.Length; j++)
                 {
                     string sql = createSQL[j];

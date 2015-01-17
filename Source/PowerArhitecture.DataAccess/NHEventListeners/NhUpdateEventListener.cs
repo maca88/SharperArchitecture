@@ -17,8 +17,8 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListener(ReplaceListener = typeof(DefaultUpdateEventListener))]
     public class NhUpdateEventListener : NhSaveOrUpdateEventListener
     {
-        public NhUpdateEventListener(IEventAggregator eventAggregator, IUserCache userCache, ISessionEventListener sessionEventListener)
-            : base(eventAggregator, userCache, sessionEventListener)
+        public NhUpdateEventListener(IUserCache userCache)
+            : base(userCache)
         {
         }
 

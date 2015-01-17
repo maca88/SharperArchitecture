@@ -66,7 +66,7 @@ namespace PowerArhitecture.DataAccess
             return _repositoryFactory.GetCustomRepository<TRepo>(_session);
         }
 
-        public void Save<TModel>(TModel model) where TModel : class, IEntity, new()
+        public void Save<TModel>(TModel model) where TModel : IEntity
         {
             _session.SaveOrUpdate(model);
         }
@@ -76,27 +76,27 @@ namespace PowerArhitecture.DataAccess
             SaveInternal(models);
         }
 
-        public TModel Merge<TModel>(TModel model) where TModel : class, IEntity, new()
+        public TModel Merge<TModel>(TModel model) where TModel : IEntity
         {
-            return _session.Merge(model);
+            return (TModel)_session.Merge((object)model);
         }
 
-        public TModel DeepCopy<TModel>(TModel model) where TModel : class, IEntity, new()
+        public TModel DeepCopy<TModel>(TModel model) where TModel : IEntity
         {
             return _session.DeepCopy(model);
         }
 
-        public IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : class, IEntity, new()
+        public IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : IEntity
         {
             return _session.DeepCopy(list);
         }
 
-        public TModel Get<TModel, TId>(TId id) where TModel : class, IEntity<TId>, new()
+        public TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>
         {
             return _session.Get<TModel>(id);
         }
 
-        public TModel Get<TModel>(long id) where TModel : class, IEntity<long>, new()
+        public TModel Get<TModel>(long id) where TModel : IEntity<long>
         {
             return _session.Get<TModel>(id);
         }
@@ -106,7 +106,7 @@ namespace PowerArhitecture.DataAccess
         /// </summary>
         /// <typeparam name="TModel"></typeparam>
         /// <param name="model"></param>
-        public void Refresh<TModel>(TModel model) where TModel : class, IEntity, new()
+        public void Refresh<TModel>(TModel model) where TModel : IEntity
         {
             _session.Refresh(model);
         }
@@ -155,6 +155,11 @@ namespace PowerArhitecture.DataAccess
         public T Get<T>()
         {
             return _resolutionRoot.Get<T>();
+        }
+
+        public ISession Session
+        {
+            get { return _session; }
         }
     }
 }

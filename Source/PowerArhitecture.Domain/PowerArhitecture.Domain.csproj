@@ -62,16 +62,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alternations\EntityAlternation.cs" />
+    <Compile Include="Attributes\FormulaAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Attributes\IncludeAttribute.cs" />
     <Compile Include="Attributes\IndexAttribute.cs" />
     <Compile Include="Attributes\LazyLoadAttribute.cs" />
+    <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
     <Compile Include="Convention\VersionedEntityConvention.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RevisionedEntity.cs" />
-    <Compile Include="Specifications\IRevisionedEntity.cs" />
+    <Compile Include="RevisionEntity.cs" />
+    <Compile Include="Specifications\IRevisionEntity.cs" />
     <Compile Include="Specifications\IVersionedEntity.cs" />
     <Compile Include="VersionedEntity.cs" />
   </ItemGroup>

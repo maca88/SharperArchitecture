@@ -10,7 +10,7 @@ namespace PowerArhitecture.DataAccess.Conventions
         protected override void Apply(UniqueAttribute attribute, IPropertyInstance instance)
         {
             if(attribute.IsKeySet)
-                instance.UniqueKey(attribute.KeyName);
+                instance.UniqueKey(string.Format("UQ_{0}", attribute.KeyName));
             else
                 instance.Unique();
         }

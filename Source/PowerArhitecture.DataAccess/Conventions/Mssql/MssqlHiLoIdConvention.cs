@@ -59,7 +59,7 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
             script.AppendLine();
             script.AppendLine("GO");
             script.AppendLine();
-            foreach (var entityName in config.ClassMappings.Select(m => m.MappedClass.Name).Distinct())
+            foreach (var entityName in config.ClassMappings.Select(m => m.MappedClass != null ? m.MappedClass.Name : m.Table.Name).Distinct())
             {
                 script.AppendFormat("INSERT INTO [{0}] ({1}, {2}) VALUES ('[{3}]', 0);", _hiLoIdentityTableName, TableColumnName, NextHiValueColumnName, entityName);
                 script.AppendLine();

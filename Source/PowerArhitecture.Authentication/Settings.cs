@@ -17,6 +17,9 @@ namespace PowerArhitecture.Authentication.Generated
 	{
 		public const string SystemUserPassword = "PowerArhitecture.Authentication.SystemUserPassword:string";
 		public const string SystemUserName = "PowerArhitecture.Authentication.SystemUserName:string";
+		public const string UserClass = "PowerArhitecture.Authentication.UserClass:string";
+		public const string OrganizationClass = "PowerArhitecture.Authentication.OrganizationClass:string";
+		public const string AdditionalUserIncludes = "PowerArhitecture.Authentication.AdditionalUserIncludes:string";
 	}
 }
 
@@ -40,6 +43,18 @@ namespace PowerArhitecture.Authentication
 		{ 
 			get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Authentication.SystemUserName:string"); } 
 		}
+		public virtual string UserClass 
+		{ 
+			get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Authentication.UserClass:string"); } 
+		}
+		public virtual string OrganizationClass 
+		{ 
+			get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Authentication.OrganizationClass:string"); } 
+		}
+		public virtual string AdditionalUserIncludes 
+		{ 
+			get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Authentication.AdditionalUserIncludes:string"); } 
+		}
 	}
 
 	public class AuthenticationSettingsRegistration : NinjectModule
@@ -57,6 +72,9 @@ namespace PowerArhitecture.Authentication.Specifications
 	{
 		string SystemUserPassword { get; }
 		string SystemUserName { get; }
+		string UserClass { get; }
+		string OrganizationClass { get; }
+		string AdditionalUserIncludes { get; }
 	}
 }
 

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Breeze.Specification;
 using Bootstrap.Extensions.StartupTasks;
+using PowerArhitecture.Common.Attributes;
 
 namespace PowerArhitecture.Breeze.StartupTasks
 {
@@ -19,7 +21,13 @@ namespace PowerArhitecture.Breeze.StartupTasks
 
         public void Run()
         {
-            foreach (var modelConfigurator in _modelConfiguratorsLazy.Value)
+            var configs = _modelConfiguratorsLazy.Value;
+
+            foreach (var modelConfigurator in configs.OrderByDescending(o =>
+            {
+                var attr = o.GetType().GetCustomAttribute<PriorityAttribute>();
+                return attr != null ? attr.Priority : 0;
+            }))
             {
                 modelConfigurator.Configure();
             }

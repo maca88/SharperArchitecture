@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq.Expressions;
+using NHibernate.Impl;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Managers;
@@ -17,14 +18,11 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public SessionWrapper(ISession session, IEventAggregator eventAggragator)
         {
-            Properties = new SessionProperties();
             Session = session;
             _eventAggregator = eventAggragator;
         }
 
         public ISession Session { get; private set; }
-
-        public SessionProperties Properties { get; private set; }
 
         public void Dispose()
         {
@@ -464,5 +462,10 @@ namespace PowerArhitecture.DataAccess.Wrappers
         {
             return Session.GetHashCode();
         }
+
+        public static implicit operator SessionImpl(SessionWrapper wrapper)
+        {
+            return wrapper.Session as SessionImpl;
+        } 
     }
 }

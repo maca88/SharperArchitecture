@@ -8,6 +8,10 @@ namespace PowerArhitecture.Domain
     [Ignore]
     public abstract class Entity : Entity<long>
     {
+        public override bool IsTransient()
+        {
+            return Id <= 0; //Breeze will set this to a negative value
+        }
     }
 
     /// <summary>

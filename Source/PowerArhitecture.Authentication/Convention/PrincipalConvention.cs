@@ -1,55 +1,51 @@
-﻿using System.Security.Principal;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Principal;
 using PowerArhitecture.Authentication.Entities;
-using PowerArhitecture.DataAccess.Settings;
+using PowerArhitecture.Authentication.Generated;
+using PowerArhitecture.Authentication.Specifications;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
+using PowerArhitecture.Common.Configuration;
+using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.Authentication.Convention
 {
-    public class PrincipalConvention : IReferenceConvention
+    public class PrincipalConvention : IReferenceConvention, IPropertyConvention
     {
-        private readonly ConventionsSettings _settings;
+        private readonly Type _userType = typeof(User);
 
-        public PrincipalConvention(ConventionsSettings conventionsSettings)
+        public PrincipalConvention()
         {
-            _settings = conventionsSettings;
-
+            var userClass = AppConfiguration.GetSetting<string>(AuthenticationSettingKeys.UserClass);
+            if (!string.IsNullOrEmpty(userClass))
+                _userType = Type.GetType(userClass, true);
         }
 
         public void Apply(IManyToOneInstance instance)
         {
             if (!typeof (IPrincipal).IsAssignableFrom(instance.Property.PropertyType)) return;
 
-            instance.OverrideInferredClass(typeof(User));
+            instance.OverrideInferredClass(_userType);
 
-            if(!typeof (User).IsAssignableFrom(instance.EntityType)) return;
+            if (!_userType.IsAssignableFrom(instance.EntityType)) return;
             instance.Nullable();
         }
 
-
-        /*
-        public bool CanApply(Dialect dialect)
+        public void Apply(IPropertyInstance instance)
         {
-            return _settings.UseBuiltInPrincipal;
+            var set = new HashSet<string> { "CreatedById", "LastModifiedById" };
+            if (!set.Contains(instance.Property.Name) ||
+                !instance.Property.DeclaringType.IsAssignableToGenericType(typeof (VersionedEntity<,>))) return;
+            instance.CustomType(typeof(long));
+            if (!_userType.IsAssignableFrom(instance.EntityType))
+            {
+                instance.Not.Nullable();
+            }
+            else
+            {
+                instance.Nullable();
+            }
         }
-
-        public void ApplyBeforeExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
-        {
-        }
-
-        public void ApplyAfterExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
-        {
-        }
-
-        public void ApplyBeforeSchemaCreate(Configuration config, IDbConnection connection)
-        {
-            var userMapping = config.ClassMappings.First(o => o.MappedClass == typeof (User));
-            userMapping.GetProperty("CreatedBy").ColumnIterator.OfType<Column>().First().IsNullable = true;
-            userMapping.GetProperty("LastModifiedBy").ColumnIterator.OfType<Column>().First().IsNullable = true;
-        }
-
-        public void ApplyAfterSchemaCreate(Configuration config, IDbConnection connection)
-        {
-        }*/
     }
 }

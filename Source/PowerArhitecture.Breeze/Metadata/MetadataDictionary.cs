@@ -7,21 +7,32 @@ using System.Threading.Tasks;
 
 namespace PowerArhitecture.Breeze.Metadata
 {
-    public class MetadataDictionary : IDictionary<string, object>, IDictionary
+    public class MetadataDictionary : MetadataDictionary<object>
     {
         public MetadataDictionary()
         {
-            OriginalDictionary = new Dictionary<string, object>();
         }
 
-        public MetadataDictionary(Dictionary<string, object> dict)
+        public MetadataDictionary(Dictionary<string, object> dict) : base(dict)
+        {
+        }
+    }
+
+    public class MetadataDictionary<TType> : IDictionary<string, TType>, IDictionary
+    {
+        public MetadataDictionary()
+        {
+            OriginalDictionary = new Dictionary<string, TType>();
+        }
+
+        public MetadataDictionary(Dictionary<string, TType> dict)
         {
             OriginalDictionary = dict;
         }
 
-        public Dictionary<string, object> OriginalDictionary { get; private set; }
+        public Dictionary<string, TType> OriginalDictionary { get; private set; }
 
-        public object this[string key]
+        public TType this[string key]
         {
             get { return OriginalDictionary[key]; }
             set { OriginalDictionary[key] = value; }
@@ -50,7 +61,7 @@ namespace PowerArhitecture.Breeze.Metadata
             set { ((IDictionary) OriginalDictionary)[key] = value; }
         }
 
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, TType>> IEnumerable<KeyValuePair<string, TType>>.GetEnumerator()
         {
             return OriginalDictionary.GetEnumerator();
         }
@@ -60,9 +71,9 @@ namespace PowerArhitecture.Breeze.Metadata
             return OriginalDictionary.GetEnumerator();
         }
 
-        public void Add(KeyValuePair<string, object> item)
+        public void Add(KeyValuePair<string, TType> item)
         {
-            ((ICollection<KeyValuePair<string, object>>)OriginalDictionary).Add(item);
+            ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).Add(item);
         }
 
         public bool Contains(object key)
@@ -75,24 +86,24 @@ namespace PowerArhitecture.Breeze.Metadata
             ((IDictionary)OriginalDictionary).Add(key, value);
         }
 
-        void ICollection<KeyValuePair<string, object>>.Clear()
+        void ICollection<KeyValuePair<string, TType>>.Clear()
         {
-            ((ICollection<KeyValuePair<string, object>>)OriginalDictionary).Clear();
+            ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).Clear();
         }
 
-        public bool Contains(KeyValuePair<string, object> item)
+        public bool Contains(KeyValuePair<string, TType> item)
         {
-           return ((ICollection<KeyValuePair<string, object>>) OriginalDictionary).Contains(item);
+            return ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, TType>[] array, int arrayIndex)
         {
-            ((ICollection<KeyValuePair<string, object>>) OriginalDictionary).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<string, object> item)
+        public bool Remove(KeyValuePair<string, TType> item)
         {
-            return ((ICollection<KeyValuePair<string, object>>) OriginalDictionary).Remove(item);
+            return ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).Remove(item);
         }
 
         public void CopyTo(Array array, int index)
@@ -103,24 +114,24 @@ namespace PowerArhitecture.Breeze.Metadata
         int ICollection.Count { get { return OriginalDictionary.Count; } }
         public object SyncRoot { get { return ((ICollection) OriginalDictionary).SyncRoot; } }
         public bool IsSynchronized { get { return ((ICollection)OriginalDictionary).IsSynchronized; } }
-        int ICollection<KeyValuePair<string, object>>.Count 
+        int ICollection<KeyValuePair<string, TType>>.Count 
         { 
             get
             {
-                return ((ICollection<KeyValuePair<string, object>>) OriginalDictionary).Count;
+                return ((ICollection<KeyValuePair<string, TType>>)OriginalDictionary).Count;
             } 
         }
         ICollection IDictionary.Values { get { return ((IDictionary) OriginalDictionary).Values; } }
         bool IDictionary.IsReadOnly { get { return ((IDictionary)OriginalDictionary).IsReadOnly; } }
         public bool IsFixedSize { get { return ((IDictionary)OriginalDictionary).IsFixedSize; } }
-        bool ICollection<KeyValuePair<string, object>>.IsReadOnly { get { return ((IDictionary)OriginalDictionary).IsReadOnly; } }
+        bool ICollection<KeyValuePair<string, TType>>.IsReadOnly { get { return ((IDictionary)OriginalDictionary).IsReadOnly; } }
 
         public bool ContainsKey(string key)
         {
             return OriginalDictionary.ContainsKey(key);
         }
 
-        public void Add(string key, object value)
+        public void Add(string key, TType value)
         {
             OriginalDictionary.Add(key, value);
         }
@@ -130,20 +141,20 @@ namespace PowerArhitecture.Breeze.Metadata
             return OriginalDictionary.Remove(key);
         }
 
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(string key, out TType value)
         {
             return OriginalDictionary.TryGetValue(key, out value);
         }
 
-        object IDictionary<string, object>.this[string key]
+        TType IDictionary<string, TType>.this[string key]
         {
             get { return OriginalDictionary[key]; }
             set { OriginalDictionary[key] = value; }
         }
 
-        ICollection<string> IDictionary<string, object>.Keys { get { return OriginalDictionary.Keys; } }
+        ICollection<string> IDictionary<string, TType>.Keys { get { return OriginalDictionary.Keys; } }
         ICollection IDictionary.Keys { get { return ((IDictionary) OriginalDictionary).Keys; } }
-        ICollection<object> IDictionary<string, object>.Values { get { return OriginalDictionary.Values; } }
+        ICollection<TType> IDictionary<string, TType>.Values { get { return OriginalDictionary.Values; } }
 
         #endregion
     }

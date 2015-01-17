@@ -5,11 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using FluentNHibernate;
+using FluentNHibernate.Mapping;
+using NHibernate.Envers.Configuration;
+using NHibernate.Envers.Configuration.Attributes;
 using PowerArhitecture.Common.Attributes;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Specifications;
+using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.DataAccess.Settings;
@@ -77,7 +83,8 @@ namespace PowerArhitecture.DataAccess
                 if (configureAction != null)
                     configureAction(fluentConfig);
                 var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
-                var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies, dbSettings.Conventions, conventionAssemblies, dialect);
+                var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies,
+                    dbSettings.Conventions, conventionAssemblies, dialect, eventAggregator);
                 fluentConfig
                     .Mappings(m =>
                         {
@@ -86,22 +93,29 @@ namespace PowerArhitecture.DataAccess
                             {
                                 m.HbmMappings.AddFromAssembly(domainAssembly);
                             }
-                            var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
-                            if (!Directory.Exists(mappingsDirecotry))
-                                Directory.CreateDirectory(mappingsDirecotry);
-                            m.AutoMappings.ExportTo(mappingsDirecotry);
-                            m.FluentMappings.ExportTo(mappingsDirecotry);
+                            //var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
+                            //if (!Directory.Exists(mappingsDirecotry))
+                            //    Directory.CreateDirectory(mappingsDirecotry);
+                            //m.AutoMappings.ExportTo(mappingsDirecotry);
+                            //m.FluentMappings.ExportTo(mappingsDirecotry);
                         })
                     .ExposeConfiguration(configuration =>
                         {
                             if (_eventAggregator != null)
                                 _eventAggregator.SendMessage(new NhConfigurationEvent(configuration));
+
                             ConfigureEnvers(configuration, entityAssemblies);
                             //ConfigureNhibernateValidator(configuration, entityAssemblies);
                             RecreateOrUpdateSchema(autoPestModel, configuration, dbSettings, 
                                 NHibernate.Dialect.Dialect.GetDialect(configuration.Properties));
                             if(dbSettings.ValidateSchema)
                                 ValidateSchema(configuration);
+
+                            var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
+                            if (!Directory.Exists(mappingsDirecotry))
+                                Directory.CreateDirectory(mappingsDirecotry);
+                            autoPestModel.WriteMappingsTo(mappingsDirecotry);
+
                         });
                 
                 var sessionFactory = fluentConfig.BuildSessionFactory();
@@ -143,7 +157,7 @@ namespace PowerArhitecture.DataAccess
 
         private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration,
             ICollection<Assembly> assemblies, ConventionsSettings conventionsSettings, IEnumerable<Assembly> conventionAssemblies,
-            NHibernate.Dialect.Dialect dialect)
+            NHibernate.Dialect.Dialect dialect, IEventAggregator eventAggregator)
         {
             var conventions = new List<IConvention>();
             foreach (var convType in conventionAssemblies
@@ -190,13 +204,26 @@ namespace PowerArhitecture.DataAccess
                 conventions.Add(conv);
             }
 
-            return AutoMap
-                .Assemblies(automappingConfiguration, assemblies)
+            return GetAutoPersistenceModel(eventAggregator, automappingConfiguration, assemblies)
                 .UseOverridesFromAssemblies(assemblies)
                 .AddConventions(conventions)
+                .AddFilters(GetFilterDefinitions(assemblies))
                 .Conventions.Add(PrimaryKey.Name.Is(o => "Id"))
                 .Conventions.Add(ForeignKey.EndsWith("Id"))
                 .Alterations(collection => collection.AddFromAssemblies(assemblies)); //TODO: add new list
+        }
+
+
+        private static IEnumerable<Type> GetFilterDefinitions(IEnumerable<Assembly> assemblies)
+        {
+            return assemblies.SelectMany(o => o.GetTypes()).Where(o => typeof (FilterDefinition).IsAssignableFrom(o));
+        }
+
+        private static CustomAutoPersistenceModel GetAutoPersistenceModel(IEventAggregator eventAggregator, IAutomappingConfiguration cfg, IEnumerable<Assembly> assemblies)
+        {
+            var model = new CustomAutoPersistenceModel(eventAggregator, cfg);
+            model.AddTypeSource(new CombinedAssemblyTypeSource(assemblies.Select(o => new AssemblyTypeSource(o))));
+            return model;
         }
 
         private static void RecreateOrUpdateSchema(AutoPersistenceModel autoPersistenceModel, Configuration config, IDatabaseSettings dbSettings, 
@@ -333,15 +360,21 @@ namespace PowerArhitecture.DataAccess
 
         private static void ConfigureEnvers(Configuration config, IEnumerable<Assembly> entityAssemblies)
         {
+            if (!AppConfiguration.GetSetting<bool>(DatabaseSettingKeys.EnableEnvers)) return;
+
             var enversConfig = new NHibernate.Envers.Configuration.Fluent.FluentConfiguration();
             var types = entityAssemblies
                 .SelectMany(o => o.GetTypes()
-                                  .Where(t => typeof (IRevisionedEntity).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract && !t.IsGenericType))
+                                  .Where(t => 
+                                      t.GetCustomAttribute<AuditedAttribute>() != null ||
+                                      (typeof (IRevisionEntity).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract && !t.IsGenericType)))
                 .ToList();
-
-            if (!types.Any()) return;
+            _eventAggregator.SendMessage(new EnverConfigurationEvent(enversConfig));
             enversConfig.Audit(types);
-            config.IntegrateWithEnvers(enversConfig);
+            config.SetEnversProperty(ConfigurationKey.AuditTableSuffix, "Revision");
+            config.SetEnversProperty(ConfigurationKey.RevisionFieldName, "RevisionEntityId");
+            config.SetEnversProperty(ConfigurationKey.RevisionTypeFieldName, "RevisionType");
+            config.IntegrateWithEnvers();
         }
 
         /*

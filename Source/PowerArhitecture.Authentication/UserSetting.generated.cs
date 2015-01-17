@@ -17,16 +17,6 @@ namespace PowerArhitecture.Authentication.Entities
         [ReadOnly(true)]
         public virtual long? UserId { get; set; }
 
-        public virtual void SetUser(User user)
-        {
-            this.SetManyToOne(o => o.User, user, o => o.RemoveSetting, o => o.Settings);
-        }
-
-        public virtual void UnsetUser()
-        {
-            this.UnsetManyToOne(o => o.User, o => o.Settings);
-        }
-
 		#endregion
 
 	}

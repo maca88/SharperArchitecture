@@ -16,21 +16,21 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         TRepo GetCustomRepository<TRepo>() where TRepo : IRepository;
 
-        void Save<TModel>(TModel model) where TModel : class, IEntity, new();
+        void Save<TModel>(TModel model) where TModel : IEntity;
 
         void Save(params object[] models);
 
-        TModel Merge<TModel>(TModel model) where TModel : class, IEntity, new();
+        TModel Merge<TModel>(TModel model) where TModel : IEntity;
 
-        IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : class, IEntity, new();
+        IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : IEntity;
 
-        TModel DeepCopy<TModel>(TModel model) where TModel : class, IEntity, new();
+        TModel DeepCopy<TModel>(TModel model) where TModel : IEntity;
 
-        TModel Get<TModel, TId>(TId id) where TModel : class, IEntity<TId>, new();
+        TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>;
 
-        TModel Get<TModel>(long id) where TModel : class, IEntity<long>, new();
+        TModel Get<TModel>(long id) where TModel : IEntity<long>;
 
-        void Refresh<TModel>(TModel model) where TModel : class, IEntity, new();
+        void Refresh<TModel>(TModel model) where TModel : IEntity;
 
         IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
 

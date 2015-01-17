@@ -73,8 +73,8 @@
     <Compile Include="CodeList.cs" />
     <Compile Include="CodeListCache.cs" />
     <Compile Include="CodeListLoc.cs" />
-    <Compile Include="Conventions\CodeListConvention.cs" />
     <Compile Include="CodeListLocalization.cs" />
+    <Compile Include="EventListeners\HibernateMappingsBuiltEventListener.cs" />
     <Compile Include="Extensions\IIdentityInstanceExtensions.cs" />
     <Compile Include="MappingSteps\CodeListStep.cs" />
     <Compile Include="NinjectRegistration.cs" />

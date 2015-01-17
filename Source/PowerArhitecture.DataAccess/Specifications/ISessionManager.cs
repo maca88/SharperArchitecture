@@ -2,6 +2,7 @@
 using System.Threading;
 using NHibernate;
 using Ninject.Syntax;
+using PowerArhitecture.DataAccess.Managers;
 
 namespace PowerArhitecture.DataAccess.Specifications
 {
@@ -11,7 +12,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         IEnumerable<ISession> GetAll(Thread thread);
 
-        SessionProperties GetSessionProperties(ISession session);
+        SessionManager.SessionInfo GetSessionInfo(ISession session);
 
     }
 }

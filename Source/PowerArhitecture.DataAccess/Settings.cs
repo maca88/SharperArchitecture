@@ -19,12 +19,12 @@ namespace PowerArhitecture.DataAccess.Settings
 		public const string RecreateAtStartup = "PowerArhitecture.Database.RecreateAtStartup:bool";
 		public const string UpdateSchemaAtStartup = "PowerArhitecture.Database.UpdateSchemaAtStartup:bool";
 		public const string AllowOneToOneWithoutLazyLoading = "PowerArhitecture.Database.AllowOneToOneWithoutLazyLoading:bool";
-		public const string ConventionsUseBuiltInPrincipal = "PowerArhitecture.Database.Conventions.UseBuiltInPrincipal:bool";
 		public const string ConventionsHiLoIdEnabled = "PowerArhitecture.Database.Conventions.HiLoId.Enabled:bool";
 		public const string ConventionsHiLoIdTableName = "PowerArhitecture.Database.Conventions.HiLoId.TableName:string";
 		public const string ConventionsHiLoIdMaxLo = "PowerArhitecture.Database.Conventions.HiLoId.MaxLo:int";
 		public const string ConventionsIdDescending = "PowerArhitecture.Database.Conventions.IdDescending:bool";
 		public const string ConventionsUniqueWithMultipleNulls = "PowerArhitecture.Database.Conventions.UniqueWithMultipleNulls:bool";
+		public const string EnableEnvers = "PowerArhitecture.Database.EnableEnvers:bool";
 	}
 }
 
@@ -38,10 +38,6 @@ namespace PowerArhitecture.DataAccess.Settings
 			HiLoId = new HiLoIdSettings();
 		}
 		public virtual HiLoIdSettings HiLoId { get; private set; }
-		public virtual bool UseBuiltInPrincipal 
-		{ 
-			get { return AppConfiguration.GetSetting<bool>("PowerArhitecture.Database.Conventions.UseBuiltInPrincipal:bool"); }
-		}
 		public virtual bool IdDescending 
 		{ 
 			get { return AppConfiguration.GetSetting<bool>("PowerArhitecture.Database.Conventions.IdDescending:bool"); }
@@ -51,6 +47,7 @@ namespace PowerArhitecture.DataAccess.Settings
 			get { return AppConfiguration.GetSetting<bool>("PowerArhitecture.Database.Conventions.UniqueWithMultipleNulls:bool"); }
 		}
 	}
+
 	public class HiLoIdSettings
 	{
 		public HiLoIdSettings()
@@ -95,6 +92,10 @@ namespace PowerArhitecture.DataAccess
 		{ 
 			get { return AppConfiguration.GetSetting<bool>("PowerArhitecture.Database.AllowOneToOneWithoutLazyLoading:bool"); } 
 		}
+		public virtual bool EnableEnvers 
+		{ 
+			get { return AppConfiguration.GetSetting<bool>("PowerArhitecture.Database.EnableEnvers:bool"); } 
+		}
 		public virtual Settings.ConventionsSettings Conventions { get; private set; } 
 	}
 
@@ -115,6 +116,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 		bool RecreateAtStartup { get; }
 		bool UpdateSchemaAtStartup { get; }
 		bool AllowOneToOneWithoutLazyLoading { get; }
+		bool EnableEnvers { get; }
 		Settings.ConventionsSettings Conventions { get; }
 	}
 }
