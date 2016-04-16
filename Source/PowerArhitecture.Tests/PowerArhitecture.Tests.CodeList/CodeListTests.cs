@@ -7,6 +7,8 @@ using PowerArhitecture.CodeList.Specifications;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ninject;
 using PowerArhitecture.Authentication;
+using PowerArhitecture.Authentication.Specifications;
+using PowerArhitecture.DataAccess.Factories;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.CodeList.Entities;
 
@@ -15,29 +17,24 @@ namespace PowerArhitecture.Tests.CodeList
     [TestClass]
     public class CodeListTests : BaseTest
     {
-        private ICodeListCache _codeListCache;
-
         public CodeListTests()
         {
-            EntityAssemblies.Add(Assembly.GetAssembly(typeof(CodeListCache)));
-            EntityAssemblies.Add(Assembly.GetAssembly(typeof(User)));
-            ConventionAssemblies.Add(Assembly.GetAssembly(typeof(CodeListCache)));
-            ConventionAssemblies.Add(Assembly.GetAssembly(typeof(User)));
-            AddMappingStepAssembly(Assembly.GetAssembly(typeof(CodeListCache)));
+            DatabaseConfiguration.AddEntityAssembly(Assembly.GetAssembly(typeof (ICodeList)));
+            DatabaseConfiguration.AddEntityAssembly(Assembly.GetAssembly(typeof(IUser)));
+            DatabaseConfiguration.AddConventionAssembly(Assembly.GetAssembly(typeof (ICodeList)));
+            DatabaseConfiguration.AddConventionAssembly(Assembly.GetAssembly(typeof(IUser)));
+            AddMappingStepAssembly(Assembly.GetAssembly(typeof(ICodeList)));
         }
 
         [TestMethod]
         public void TestMethod1()
         {
             FillData();
-            _codeListCache.UpdateOrInsertCodeList<CLCarCodeList>();
-            var list = _codeListCache.GetCodeList<CLCarCodeList>();
-            Assert.AreEqual(list.Count(), 2);
         }
 
-        protected override void AfterInitialization()
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _codeListCache = Kernel.Get<ICodeListCache>();
         }
 
         private void FillData()
@@ -73,10 +70,10 @@ namespace PowerArhitecture.Tests.CodeList
                 };
             car2LocSl.SetCodeList(car2);
 
-            using (var unitOfWork = UnitOfWorkFactory.GetNew())
-            {
-                unitOfWork.Save(car1, car2);
-            }
+            //using (var unitOfWork = UnitOfWorkFactory.GetNew())
+            //{
+            //    unitOfWork.Save(car1, car2);
+            //}
         }
     }
 }

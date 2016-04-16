@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using PowerArhitecture.DataAccess.Managers;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.DataAccess.Wrappers;
@@ -13,11 +14,14 @@ using Ninject;
 using Ninject.Extensions.Logging;
 using Ninject.Extensions.NamedScope;
 using Ninject.Syntax;
+using PowerArhitecture.Common.Events;
+using PowerArhitecture.DataAccess.EventListeners;
+using FlushMode = PowerArhitecture.DataAccess.Enums.FlushMode;
 using LockMode = PowerArhitecture.DataAccess.Enums.LockMode;
 
 namespace PowerArhitecture.DataAccess
 {
-    public class UnitOfWork : IUnitOfWork, IUnitOfWorkResolution
+    public class UnitOfWork : IUnitOfWork, IUnitOfWorkImplementor
     {
         private readonly ILogger _logger;
         private readonly IRepositoryFactory _repositoryFactory;
@@ -25,22 +29,11 @@ namespace PowerArhitecture.DataAccess
         private readonly ISession _session;
 
         public UnitOfWork(ILogger logger, IRepositoryFactory repositoryFactory, IResolutionRoot resolutionRoot, ISession session, 
-            IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+            IEventAggregator eventAggregator, [Optional]IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
             _logger = logger;
             session.BeginTransaction(isolationLevel);
-            //SessionManager.BeginTransaction(session, isolationLevel);
-            /*
-            var sessFactorywrapper = sessionFactory as SessionFactoryWrapper;
-            if (sessFactorywrapper != null)
-                sessionFactory = sessFactorywrapper.SessionFactory; //We want to skip the automatic handling of session
-            Session = sessionFactory.OpenSession();
-            Session.BeginTransaction(isolationLevel);
-
-            var childKernel = new ChildKernel(resolutionRoot);
-            childKernel.Bind<ISession>().ToConstant(Session).DefinesNamedScope("Test");
-            childKernel.Bind<IKernel, IResolutionRoot>().ToConstant(childKernel);
-            _repositoryFactory = childKernel.Get<IRepositoryFactory>();*/
+            session.Transaction.RegisterSynchronization(new TransactionEventListener(session, eventAggregator));
             _repositoryFactory = repositoryFactory;
             _resolutionRoot = resolutionRoot;
             _session = session;
@@ -81,24 +74,24 @@ namespace PowerArhitecture.DataAccess
             return (TModel)_session.Merge((object)model);
         }
 
-        public TModel DeepCopy<TModel>(TModel model) where TModel : IEntity
-        {
-            return _session.DeepCopy(model);
-        }
-
-        public IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : IEntity
-        {
-            return _session.DeepCopy(list);
-        }
-
         public TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>
         {
             return _session.Get<TModel>(id);
         }
 
+        public async Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>
+        {
+            return await _session.GetAsync<TModel>(id);
+        }
+
         public TModel Get<TModel>(long id) where TModel : IEntity<long>
         {
             return _session.Get<TModel>(id);
+        }
+
+        public async Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>
+        {
+            return await _session.GetAsync<TModel>(id);
         }
 
         /// <summary>
@@ -138,10 +131,44 @@ namespace PowerArhitecture.DataAccess
             _session.Flush();
         }
 
+        public async Task FlushAsync()
+        {
+            await _session.FlushAsync();
+        }
+
+        public void Commit()
+        {
+            _session.CommitTransaction();
+        }
+
+        public async Task CommitAsync()
+        {
+            await _session.CommitTransactionAsync();
+        }
+
+        public void Rollback()
+        {
+            _session.RollbackTransaction();
+        }
+
+        public IResolutionRoot ResolutionRoot
+        {
+            get { return _resolutionRoot; }
+        }
+
+        public void SetFlushMode(FlushMode mode)
+        {
+            _session.FlushMode = (NHibernate.FlushMode) ((int) mode);
+        }
+
+        public IUnitOfWorkImplementor GetUnitOfWorkImplementation()
+        {
+            return this;
+        }
+
         public void Dispose()
         {
             _session.Dispose();
-
         }
 
         private void SaveInternal<TModel>(IEnumerable<TModel> models) where TModel : new()
@@ -150,11 +177,6 @@ namespace PowerArhitecture.DataAccess
             {
                 _session.SaveOrUpdate(model);
             }
-        }
-
-        public T Get<T>()
-        {
-            return _resolutionRoot.Get<T>();
         }
 
         public ISession Session

@@ -4,7 +4,7 @@ using NHibernate;
 
 namespace PowerArhitecture.DataAccess.Specifications
 {
-    public interface ISessionEventListener
+    public interface ISessionEventProvider
     {
         void AddAListener(SessionListenerType type, ISession session, Action action);
 

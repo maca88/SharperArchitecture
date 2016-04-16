@@ -11,18 +11,12 @@ using PowerArhitecture.Validation;
 using FluentValidation.Results;
 using Microsoft.AspNet.Identity;
 using FluentValidation;
+using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 
 namespace PowerArhitecture.Authentication.Validators
 {
-    public class UserValidator : UserValidator<User>
-    {
-        public UserValidator(IUserRepository<User> repository) : base(repository)
-        {
-        }
-    }
-
     public abstract class UserValidator<TUser> : PAValidator<TUser>, IIdentityValidator<TUser>
-        where TUser : class, Common.Specifications.IUser, IEntity<long>, new()
+        where TUser : class, IUser, IEntity<long>, new()
     {
         private readonly IUserRepository<TUser> _repository;
 
@@ -30,7 +24,8 @@ namespace PowerArhitecture.Authentication.Validators
         {
             _repository = repository;
             RuleSet(ValidationRuleSet.Delete, () => Custom(AssertNonSystemUser));
-            RuleSet(ValidationRuleSet.InsertUpdate, () => Custom(ValidateUserName));
+            RuleSet(ValidationRuleSet.Update, () => Custom(ValidateUserName));
+            RuleSet(ValidationRuleSet.Insert, () => Custom(CheckDuplicates));
         }
 
         private ValidationFailure AssertNonSystemUser(TUser user)
@@ -48,9 +43,13 @@ namespace PowerArhitecture.Authentication.Validators
             }
             else
                 return ValidationFailure(o => o.UserName, I18N.Translate("'{0}' should not be empty.", I18N.Translate("UserName")));
+            return ValidationSuccess;
+        }
 
+        private ValidationFailure CheckDuplicates(TUser user)
+        {
             return _repository.Query().Any(o => o.UserName == user.UserName)
-                ? ValidationFailure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName)) 
+                ? ValidationFailure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName))
                 : null;
         }
 

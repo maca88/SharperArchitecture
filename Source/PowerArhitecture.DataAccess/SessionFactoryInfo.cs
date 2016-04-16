@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentNHibernate.Automapping;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Specifications;
 using NHibernate;
 using NHibernate.Cfg;
@@ -10,10 +12,15 @@ namespace PowerArhitecture.DataAccess
 {
     public class SessionFactoryInfo
     {
-        public SessionFactoryInfo(ISessionFactory sessionFactory, Configuration configuration) : this()
+        public SessionFactoryInfo(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 
+            DatabaseConfiguration databaseConfiguration, string name)
+            : this()
         {
             SessionFactory = sessionFactory;
             Configuration = configuration;
+            AutoPersistenceModel = autoPersistenceModel;
+            DatabaseConfiguration = databaseConfiguration;
+            Name = name;
             Initialize();
         }
 
@@ -22,9 +29,15 @@ namespace PowerArhitecture.DataAccess
             OneToOneWithoutLazyLoading = new Dictionary<string, List<string>>();
         }
 
+        public string Name { get; set; }
+
         public ISessionFactory SessionFactory { get; private set; }
 
         public Configuration Configuration { get; private set; }
+
+        public DatabaseConfiguration DatabaseConfiguration { get; private set; }
+
+        public AutoPersistenceModel AutoPersistenceModel { get; private set; }
 
         public Dictionary<string, List<string>> OneToOneWithoutLazyLoading { get; private set; } 
 
@@ -34,9 +47,9 @@ namespace PowerArhitecture.DataAccess
                    !OneToOneWithoutLazyLoading[type.FullName].Contains(propertyName);
         }
 
-        public void ValidateSettings(IDatabaseSettings settings)
+        public void ValidateSettings()
         {
-            if (!settings.AllowOneToOneWithoutLazyLoading && OneToOneWithoutLazyLoading.Any())
+            if (!DatabaseConfiguration.AllowOneToOneWithoutLazyLoading && OneToOneWithoutLazyLoading.Any())
                 throw new HibernateException(
                     "One to one relation without lazy loading is not permitted. " +
                     "Lazy loading is disabled for: " +

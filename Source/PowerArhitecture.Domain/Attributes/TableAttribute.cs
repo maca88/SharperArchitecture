@@ -10,6 +10,8 @@ namespace PowerArhitecture.Domain.Attributes
     {
         public string Name { get; set; }
 
+        public string Prefix { get; set; }
+
         public bool View { get; set; }
     }
 }

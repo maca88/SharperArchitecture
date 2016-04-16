@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using PowerArhitecture.Common.Helpers;
 
 namespace System.Reflection
@@ -174,6 +176,39 @@ namespace System.Reflection
                 {
                     currentType = currentType.GenericTypeArguments[0];
                 }*/
+
+                //Support CollectionName[0]
+                var collMath = Regex.Match(memberName, @"^([\w]+)\[(\d+)\]$");
+                if (collMath.Success)
+                {
+                    var memResult = GetMemberAndValue(value, collMath.Groups[1].Value);
+                    var coll = memResult.MemberValue as IEnumerable;
+                    if(coll == null)
+                        return memResult;
+
+                    var enumerator = coll.GetEnumerator();
+                    var currIdx = 0;
+                    var idx = int.Parse(collMath.Groups[2].Value);
+                    object item = null;
+                    while (enumerator.MoveNext())
+                    {
+                        if (currIdx == idx)
+                        {
+                            item = enumerator.Current;
+                            break;
+                        }
+                        currIdx++;
+                    }
+
+                    if(item == null)
+                        return memResult;
+
+                    currentMember = memResult.MemberInfo; //Collection member
+                    value = item; //Item in the collection
+                    currentType = item.GetType(); //item type
+                    continue;
+                }
+
                     
 
                 var property = GetProperty(currentType, memberName);

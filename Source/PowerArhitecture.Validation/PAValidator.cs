@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Ninject;
 using PowerArhitecture.Validation.Attributes;
 using PowerArhitecture.Validation.Extensions;
-using Castle.Core.Internal;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
@@ -13,13 +13,12 @@ using FluentValidation.Validators;
 
 namespace PowerArhitecture.Validation
 {
-    //the default validator if a custom one is not defined. This validator can validates validation attributes
+    //the default validator if a custom one is not defined. This validator validates validation attributes
     public class PAValidator<TModel> : AbstractValidator<TModel>
     {
-        public PAValidator(bool attributeValidation = true)
+        public PAValidator()
         {
-            if(attributeValidation)
-                AddAttributeValidation();
+            AddAttributeValidation();
         }
 
         protected ValidationFailure ValidationFailure(Expression<Func<TModel, object>> propertyExp,
@@ -60,7 +59,8 @@ namespace PowerArhitecture.Validation
         {
             var type = typeof(TModel);
 
-            var ignoreAttrsAttr = type.GetAttribute<IgnoreValidationAttributesAttribute>();
+            var ignoreAttrsAttr = type.GetCustomAttributes(typeof (IgnoreValidationAttributesAttribute), true)
+                .FirstOrDefault() as IgnoreValidationAttributesAttribute;
             var ignoreProps = ignoreAttrsAttr != null 
                 ? new HashSet<string>(ignoreAttrsAttr.Properties ?? new string[0])
                 : new HashSet<string>();
@@ -168,6 +168,13 @@ namespace PowerArhitecture.Validation
                     AddComparisonValidator(attr as GreaterThanAttribute, type, prop,
                         o => new GreaterThanValidator(o as IComparable),
                         (func, info) => new GreaterThanValidator(func, info));
+
+                    #endregion
+                    #region GreaterThanOrEqualAttribute
+
+                    AddComparisonValidator(attr as GreaterThanOrEqualAttribute, type, prop,
+                        o => new GreaterThanOrEqualValidator(o as IComparable),
+                        (func, info) => new GreaterThanOrEqualValidator(func, info));
 
                     #endregion
                     #region LessThanOrEqualAttribute

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.DataAccess.Events;
@@ -10,7 +11,7 @@ using NHibernate;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class SessionEventListener : ISessionEventListener,
+    public class SessionEventProvider : ISessionEventProvider,
         IListener<TransactionCommittedEvent>,
         IListener<TransactionCommittingEvent>
     {
@@ -46,9 +47,6 @@ namespace PowerArhitecture.DataAccess.EventListeners
         {
             if (!_dict.ContainsKey(type) || !_dict[type].ContainsKey(session))
             {
-                var wrapper = session as SessionWrapper;
-                if(wrapper != null)
-                    HandleEvent(type, wrapper.Session);
                 return;
             }
 

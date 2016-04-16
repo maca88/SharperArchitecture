@@ -18,6 +18,11 @@ namespace PowerArhitecture.Common.Extensions
             return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name));
         }
 
+        public static IBindingInNamedWithOrOnSyntax<T> WhenAnyAncestorOrCurrentNamedAnd<T>(this IBindingWhenSyntax<T> binding, string name, Func<IContext, bool> and)
+        {
+            return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name) && and(ctx));
+        }
+
         public static IBindingInNamedWithOrOnSyntax<T> WhenNoAncestorOrCurrentNamed<T>(this IBindingWhenSyntax<T> binding, string name)
         {
             return binding.WhenNoAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name));
@@ -33,9 +38,19 @@ namespace PowerArhitecture.Common.Extensions
             return binding.When(request => request.ExistsRequestScope() && !DoesAnyAncestorMatch(request, context => context.AncestorOrCurrentNamed(name)));
         }
 
+        public static IBindingInNamedWithOrOnSyntax<T> WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd<T>(this IBindingWhenSyntax<T> binding, string name, Func<IRequest, bool> and)
+        {
+            return binding.When(request => request.ExistsRequestScope() && !DoesAnyAncestorMatch(request, context => context.AncestorOrCurrentNamed(name)) && and(request));
+        }
+
         public static IBindingInNamedWithOrOnSyntax<T> WhenRequestScopeNotExistsAndNoAncestorOrCurrentNamed<T>(this IBindingWhenSyntax<T> binding, string name)
         {
             return binding.When(request => !request.ExistsRequestScope() && !DoesAnyAncestorMatch(request, context => context.AncestorOrCurrentNamed(name)));
+        }
+
+        public static IBindingInNamedWithOrOnSyntax<T> WhenRequestScopeNotExistsAndNoAncestorOrCurrentNamedAnd<T>(this IBindingWhenSyntax<T> binding, string name, Func<IRequest, bool> and)
+        {
+            return binding.When(request => !request.ExistsRequestScope() && !DoesAnyAncestorMatch(request, context => context.AncestorOrCurrentNamed(name)) && and(request));
         }
 
         public static bool ExistsRequestScope(this IRequest request)

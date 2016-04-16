@@ -17,7 +17,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using FluentNHibernate.Automapping;
 
-
 namespace FluentNHibernate.Automapping
 {
     internal static class EntityExtensions

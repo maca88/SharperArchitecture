@@ -1,5 +1,5 @@
-﻿using PowerArhitecture.Domain.Attributes;
-using Castle.Core.Internal;
+﻿using System.Reflection;
+using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
 
@@ -17,7 +17,7 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IManyToOneInstance instance)
         {
-            var attribute = instance.Property.MemberInfo.GetAttribute<UniqueAttribute>();
+            var attribute = instance.Property.MemberInfo.GetCustomAttribute<UniqueAttribute>();
             if (attribute == null) return;
             if (attribute.IsKeySet)
                 instance.UniqueKey(string.Format("UQ_{0}", attribute.KeyName));

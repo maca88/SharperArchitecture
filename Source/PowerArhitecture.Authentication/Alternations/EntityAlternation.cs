@@ -12,6 +12,11 @@ namespace PowerArhitecture.Authentication.Alternations
         public void Alter(AutoPersistenceModel model)
         {
             var organizationClass = AppConfiguration.GetSetting<string>(AuthenticationSettingKeys.OrganizationClass);
+
+            var organizationType = Type.GetType(organizationClass, true);
+
+
+
             var organizationType = typeof (Organization);
             if (!string.IsNullOrEmpty(AppConfiguration.GetSetting<string>(AuthenticationSettingKeys.UserClass)))
             {

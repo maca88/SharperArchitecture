@@ -18,6 +18,9 @@ namespace PowerArhitecture.DataAccess.Conventions
             var tableAttr = instance.EntityType.GetCustomAttribute<TableAttribute>();
             if(tableAttr == null) return;
 
+            if (!string.IsNullOrEmpty(tableAttr.Prefix))
+                instance.Table(tableAttr.Prefix + instance.TableName.Trim('`'));
+
             if(!string.IsNullOrEmpty(tableAttr.Name))
                 instance.Table(tableAttr.Name);
 

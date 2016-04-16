@@ -2,16 +2,16 @@
 
 namespace PowerArhitecture.Domain.Specifications
 {
-    public interface IVersionedEntity<TUser> : IEntity
+    public interface IVersionedEntity<out TId> : IEntity<TId>, IVersionedEntity
+    {
+    }
+
+    public interface IVersionedEntity : IEntity
     {
         int Version { get; }
 
         DateTime CreatedDate { get; }
 
-        TUser CreatedBy { get; }
-
-        DateTime LastModifiedDate { get; }
-
-        TUser LastModifiedBy { get; } 
+        DateTime? LastModifiedDate { get; }
     }
 }

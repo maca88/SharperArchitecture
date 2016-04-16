@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Attributes;
@@ -16,12 +17,12 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListener(ReplaceListener = typeof(DefaultSaveEventListener))]
     public class NhSaveEventListener : NhSaveOrUpdateEventListener
     {
-        public NhSaveEventListener(IUserCache userCache)
-            : base(userCache)
+        public NhSaveEventListener(IAuditUserProvider auditUserProvider, IEventAggregator eventAggregator)
+            : base(auditUserProvider, eventAggregator)
         {
         }
 
-        protected override object PerformSaveOrUpdate(SaveOrUpdateEvent @event)
+        protected override async Task<object> PerformSaveOrUpdate(SaveOrUpdateEvent @event, bool async)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
@@ -32,7 +33,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             }
             else
             {
-                return EntityIsTransient(@event);
+                return await EntityIsTransient(@event, async);
             }
         }
 

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using FluentNHibernate.Automapping;
 using PowerArhitecture.CodeList.Specifications;
-using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
-using FluentNHibernate.Automapping;
 
 namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract partial class CodeListLoc<TCodeList, TCodeListNames> : VersionedEntity<string, IUser>, ICodeListLoc<TCodeList, TCodeListNames>
+    public abstract class CodeListLoc<TCodeList, TCodeListNames> : VersionedEntity<string>, ICodeListLoc<TCodeList, TCodeListNames>
         where TCodeListNames : class, ICodeListLocalization<TCodeList, TCodeListNames>
         where TCodeList : CodeListLoc<TCodeList, TCodeListNames>
     {

@@ -1,0 +1,139 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-06-24 09:54+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Password"
+msgstr ""
+
+#, csharp-format
+msgid "'{0}' is too short."
+msgstr ""
+
+msgid "Pattern"
+msgstr ""
+
+#, csharp-format
+msgid "'{0}' is not in the correct format."
+msgstr ""
+
+msgid "System user cannot be deleted."
+msgstr ""
+
+msgid "UserName"
+msgstr ""
+
+#, csharp-format
+msgid "'{0}' should not be empty."
+msgstr ""
+
+#, csharp-format
+msgid "'{0}' '{1}' already exists."
+msgstr ""
+
+msgid "'{PropertyName}' is required."
+msgstr ""
+
+msgid "Is required."
+msgstr ""
+
+msgid "'{PropertyName}' is not a valid email address."
+msgstr ""
+
+msgid "Is not a valid email address."
+msgstr ""
+
+msgid "'{PropertyName}' should not be empty."
+msgstr ""
+
+msgid "Should not be empty."
+msgstr ""
+
+msgid "'{PropertyName}' should not be equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "Should be equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "'{PropertyName}' must be between {From} and {To} (exclusive)."
+msgstr ""
+
+msgid "Must be between {From} and {To} (exclusive)."
+msgstr ""
+
+msgid "'{PropertyName}' must be between {From} and {To}."
+msgstr ""
+
+msgid "Must be between {From} and {To}."
+msgstr ""
+
+msgid "'{PropertyName}' must be between {Min} and {Max} characters."
+msgstr ""
+
+msgid "Must be between {Min} and {Max} characters."
+msgstr ""
+
+msgid "'{PropertyName}' must be less than or equal to {Max} characters."
+msgstr ""
+
+msgid "Must be less than or equal to {Max} characters."
+msgstr ""
+
+msgid "Should not be equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "'{PropertyName}' is not in the correct format."
+msgstr ""
+
+msgid "Is not in the correct format."
+msgstr ""
+
+msgid "'{PropertyName}' is not a valid credit card number."
+msgstr ""
+
+msgid "Is not a valid credit card number."
+msgstr ""
+
+msgid "'{PropertyName}' must be {Max} characters in length."
+msgstr ""
+
+msgid "Must be {Max} characters in length."
+msgstr ""
+
+msgid "'{PropertyName}' must be greater than '{ComparisonValue}'."
+msgstr ""
+
+msgid "Must be greater than '{ComparisonValue}'."
+msgstr ""
+
+msgid "'{PropertyName}' must be greater than or equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "Must be greater than or equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "'{PropertyName}' must be less than or equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "Must be less than or equal to '{ComparisonValue}'."
+msgstr ""
+
+msgid "'{PropertyName}' must be less than '{ComparisonValue}'."
+msgstr ""
+
+msgid "Must be less than '{ComparisonValue}'."
+msgstr ""

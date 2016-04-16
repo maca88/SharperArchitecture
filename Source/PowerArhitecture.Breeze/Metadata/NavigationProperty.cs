@@ -87,6 +87,19 @@ namespace PowerArhitecture.Breeze.Metadata
 
         #endregion
 
+        #region InvForeignKeyNamesOnServer
+
+        /// <summary>
+        /// Same as ForeignKeyNames, but the names here are server side names as opposed to client side.  Only one or the other is needed.
+        /// </summary>
+        public IList<string> InvForeignKeyNamesOnServer
+        {
+            get { return OriginalDictionary.GetValue<IList<string>>("invForeignKeyNamesOnServer"); }
+            set { OriginalDictionary["invForeignKeyNamesOnServer"] = value; }
+        }
+
+        #endregion
+
         #region Validators
 
         private Validators _validators;

@@ -1,6 +1,6 @@
-﻿using PowerArhitecture.Common.Attributes;
+﻿using System.Reflection;
+using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Validation.Attributes;
-using Castle.Core.Internal;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
 
@@ -15,7 +15,7 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IManyToOneInstance instance)
         {
-            var attribute = instance.Property.MemberInfo.GetAttribute<NotNullAttribute>();
+            var attribute = instance.Property.MemberInfo.GetCustomAttribute<NotNullAttribute>();
             if (attribute == null) return;
             instance.Not.Nullable();
         }

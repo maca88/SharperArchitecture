@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Attributes;
@@ -17,16 +18,18 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListener(ReplaceListener = typeof(DefaultUpdateEventListener))]
     public class NhUpdateEventListener : NhSaveOrUpdateEventListener
     {
-        public NhUpdateEventListener(IUserCache userCache)
-            : base(userCache)
+        public NhUpdateEventListener(IAuditUserProvider auditUserProvider, IEventAggregator eventAggregator)
+            : base(auditUserProvider, eventAggregator)
         {
         }
 
-        protected override object PerformSaveOrUpdate(SaveOrUpdateEvent @event)
+        protected override async Task<object> PerformSaveOrUpdate(SaveOrUpdateEvent @event, bool async)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
             EntityEntry entry = @event.Session.PersistenceContext.GetEntry(@event.Entity);
+            if (async)
+                await Task.Yield();
             if (entry != null)
             {
                 if (entry.Status == Status.Deleted)
@@ -45,9 +48,9 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             }
         }
 
-        protected override object SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent @event)
+        protected override async Task<object> SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent @event, bool async)
         {
-            return SaveWithGeneratedId(@event.Entity, @event.EntityName, null, @event.Session, true);
+            return await SaveWithGeneratedId(@event.Entity, @event.EntityName, null, @event.Session, true, async);
         }
 
         /// <summary> 

@@ -17,25 +17,20 @@ using PowerArhitecture.Domain;
 using Microsoft.AspNet.Identity;
 using NHibernate;
 using Ninject.Extensions.Logging;
+using IUser = PowerArhitecture.Authentication.Specifications.IUser;
+using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
 namespace PowerArhitecture.Authentication.Repositories
 {
     //[Repository(AutoBind = false)]
-    public class UserRepository : UserRepository<User, Organization>
-    {
-        public UserRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
-            : base(session, logger, sessionEventListener)
-        {
-        }
-    }
-
-    public abstract class UserRepository<TUser, TOrganization> : Repository<TUser>, IUserRepository<TUser>
+    public abstract class UserRepository<TUser, TRole, TOrganization> : Repository<TUser>, IUserRepository<TUser>
         where TOrganization : class, IOrganization, new()
-        where TUser : User<TOrganization>, new()
+        where TUser : class, IUser, IEntity<long>, new()
+        where TRole : class, IRole, IEntity<long>, new()
     {
         
-        protected UserRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
-            : base(session, logger, sessionEventListener)
+        protected UserRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
+            : base(session, logger, sessionEventProvider)
         {  
         }
 
@@ -83,9 +78,10 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task RemoveLoginAsync(TUser user, UserLoginInfo login)
         {
-            var item = user.Logins
+            var id = ((IUser<long>)user).Id;
+            var item = user.GetAllLogins()
                            .SingleOrDefault(o =>
-                                            o.User.Id == user.Id &&
+                                            o.User.Id == id &&
                                             o.LoginProvider == login.LoginProvider &&
                                             o.ProviderKey == login.ProviderKey);
             if (item != null)
@@ -95,7 +91,7 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
         {
-            IList<UserLoginInfo> result = user.Logins
+            IList<UserLoginInfo> result = user.GetAllLogins()
                 .Select(o => new UserLoginInfo(o.LoginProvider, o.ProviderKey))
                 .ToList();
             return Task.FromResult(result);
@@ -113,7 +109,7 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task<IList<Claim>> GetClaimsAsync(TUser user)
         {
-            IList<Claim> result = user.Claims.Select(claim => new Claim(claim.ClaimType, claim.ClaimValue)).ToList();
+            IList<Claim> result = user.GetAllClaims().Select(claim => new Claim(claim.ClaimType, claim.ClaimValue)).ToList();
             return Task.FromResult(result);
         }
 
@@ -130,7 +126,7 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task RemoveClaimAsync(TUser user, Claim claim)
         {
-            foreach (var item in user.Claims
+            foreach (var item in user.GetAllClaims()
                 .Where(o => o.ClaimType == claim.Value && o.ClaimValue == claim.Value))
             {
                 user.RemoveClaim(item);
@@ -141,14 +137,10 @@ namespace PowerArhitecture.Authentication.Repositories
         public Task AddToRoleAsync(TUser user, string role)
         {
             var roleName = role.ToUpper();
-            var r = Session.QueryOver<Role>().Where(o => o.Name == roleName).SingleOrDefault();
+            var r = Session.QueryOver<TRole>().Where(o => o.Name == roleName).SingleOrDefault();
             if (r == null)
                 throw new InvalidOperationException(string.Format("Role '{0}' not found", role ));
-            var item = new Role
-                {
-                    Name = roleName
-                };
-            user.AddToRole(item);
+            r.AddUser(user);
             return Task.FromResult(0);
         }
 
@@ -160,7 +152,7 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task<IList<string>> GetRolesAsync(TUser user)
         {
-            IList<string> roles = user.UserRoles.Select(o => o.Role.Name).ToList();
+            IList<string> roles = user.GetRoles().Select(o => o.Name).ToList();
             return Task.FromResult(roles);
         }
 
@@ -205,7 +197,7 @@ namespace PowerArhitecture.Authentication.Repositories
     public interface IUserRepository<TUser>
         : IRepository<TUser>, IUserLoginStore<TUser, long>, IUserClaimStore<TUser, long>, IUserRoleStore<TUser, long>,
         IUserPasswordStore<TUser, long>, IUserSecurityStampStore<TUser, long>
-        where TUser : class, Common.Specifications.IUser, IEntity<long>, new()
+        where TUser : class, IUser, IEntity<long>, new()
     {
     }
 }

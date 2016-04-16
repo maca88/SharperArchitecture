@@ -1,0 +1,1629 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: app\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: app/main/login.html
+msgid "Kasdas {Ergreg} df s {FewDasf} 15% fasdfdsf %."
+msgstr ""
+
+#: app/main/login.html
+#, fuzzy
+msgid "Kasdas {Ergreg}."
+msgstr "Kasdas %ergreg%."
+
+#: app/main/login.html
+msgid "Login"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\PasswordValidator.cs:20
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:16
+msgid "Password"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\PasswordValidator.cs:20
+#, csharp-format
+msgid "'{0}' is too short."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\RightPatternValidator.cs:25
+msgid "Pattern"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\RightPatternValidator.cs:25
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:37
+#, csharp-format
+msgid "'{0}' is not in the correct format."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:29
+msgid "System user cannot be deleted."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:38
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:41
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:44
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:15
+msgid "UserName"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:41
+#, csharp-format
+msgid "'{0}' should not be empty."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Authentication\Validators\UserValidator.cs:44
+#, csharp-format
+msgid "'{0}' '{1}' already exists."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Localization\Validators\LanguageValidator.cs:41
+#, csharp-format
+msgid "Language has duplicated translations in language '{0}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Localization\Validators\LanguageValidator.cs:49
+#, csharp-format
+msgid "Langauge with culture '{0}' already exists."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:17
+msgid "'{PropertyName}' is required."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:18
+msgid "Is required."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:25
+msgid "'{PropertyName}' is not a valid email address."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:26
+msgid "Is not a valid email address."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:33
+msgid "'{PropertyName}' should not be empty."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:34
+msgid "Should not be empty."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:41
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:78
+msgid "'{PropertyName}' should not be equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:42
+msgid "Should be equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:49
+msgid "'{PropertyName}' must be between {From} and {To} (exclusive)."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:50
+msgid "Must be between {From} and {To} (exclusive)."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:57
+msgid "'{PropertyName}' must be between {From} and {To}."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:58
+msgid "Must be between {From} and {To}."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:67
+msgid "'{PropertyName}' must be between {Min} and {Max} characters."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:68
+msgid "Must be between {Min} and {Max} characters."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:70
+msgid "'{PropertyName}' must be less than or equal to {Max} characters."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:71
+msgid "Must be less than or equal to {Max} characters."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:79
+msgid "Should not be equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:86
+msgid "'{PropertyName}' is not in the correct format."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:87
+msgid "Is not in the correct format."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:94
+msgid "'{PropertyName}' is not a valid credit card number."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:95
+msgid "Is not a valid credit card number."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:102
+msgid "'{PropertyName}' must be {Max} characters in length."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:103
+msgid "Must be {Max} characters in length."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:110
+msgid "'{PropertyName}' must be greater than '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:111
+msgid "Must be greater than '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:118
+msgid "'{PropertyName}' must be greater than or equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:119
+msgid "Must be greater than or equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:126
+msgid "'{PropertyName}' must be less than or equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:127
+msgid "Must be less than or equal to '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:134
+msgid "'{PropertyName}' must be less than '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Validation\Extensions\IPropertyValidatorExtensions.cs:135
+msgid "Must be less than '{ComparisonValue}'."
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:17
+msgid "Test"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:18
+msgid "From"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:19
+msgid "To"
+msgstr ""
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:20
+msgid "ar"
+msgstr "Arabic"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:21
+msgid "bg"
+msgstr "Bulgarian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:22
+msgid "ca"
+msgstr "Catalan"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:23
+msgid "zh-Hans"
+msgstr "Chinese (Simplified)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:24
+msgid "cs"
+msgstr "Czech"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:25
+msgid "da"
+msgstr "Danish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:26
+msgid "de"
+msgstr "German"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:27
+msgid "el"
+msgstr "Greek"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:28
+msgid "en"
+msgstr "English"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:29
+msgid "es"
+msgstr "Spanish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:30
+msgid "fi"
+msgstr "Finnish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:31
+msgid "fr"
+msgstr "French"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:32
+msgid "he"
+msgstr "Hebrew"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:33
+msgid "hu"
+msgstr "Hungarian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:34
+msgid "is"
+msgstr "Icelandic"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:35
+msgid "it"
+msgstr "Italian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:36
+msgid "ja"
+msgstr "Japanese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:37
+msgid "ko"
+msgstr "Korean"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:38
+msgid "nl"
+msgstr "Dutch"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:39
+msgid "no"
+msgstr "Norwegian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:40
+msgid "pl"
+msgstr "Polish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:41
+msgid "pt"
+msgstr "Portuguese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:42
+msgid "rm"
+msgstr "Romansh"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:43
+msgid "ro"
+msgstr "Romanian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:44
+msgid "ru"
+msgstr "Russian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:45
+msgid "hr"
+msgstr "Croatian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:46
+msgid "sk"
+msgstr "Slovak"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:47
+msgid "sq"
+msgstr "Albanian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:48
+msgid "sv"
+msgstr "Swedish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:49
+msgid "th"
+msgstr "Thai"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:50
+msgid "tr"
+msgstr "Turkish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:51
+msgid "ur"
+msgstr "Urdu"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:52
+msgid "id"
+msgstr "Indonesian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:53
+msgid "uk"
+msgstr "Ukrainian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:54
+msgid "be"
+msgstr "Belarusian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:55
+msgid "sl"
+msgstr "Slovenian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:56
+msgid "et"
+msgstr "Estonian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:57
+msgid "lv"
+msgstr "Latvian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:58
+msgid "lt"
+msgstr "Lithuanian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:59
+msgid "tg"
+msgstr "Tajik"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:60
+msgid "fa"
+msgstr "Persian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:61
+msgid "vi"
+msgstr "Vietnamese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:62
+msgid "hy"
+msgstr "Armenian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:63
+msgid "az"
+msgstr "Azeri"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:64
+msgid "eu"
+msgstr "Basque"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:65
+msgid "hsb"
+msgstr "Upper Sorbian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:66
+msgid "mk"
+msgstr "Macedonian (FYROM)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:67
+msgid "tn"
+msgstr "Setswana"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:68
+msgid "xh"
+msgstr "isiXhosa"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:69
+msgid "zu"
+msgstr "isiZulu"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:70
+msgid "af"
+msgstr "Afrikaans"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:71
+msgid "ka"
+msgstr "Georgian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:72
+msgid "fo"
+msgstr "Faroese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:73
+msgid "hi"
+msgstr "Hindi"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:74
+msgid "mt"
+msgstr "Maltese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:75
+msgid "se"
+msgstr "Sami (Northern)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:76
+msgid "ga"
+msgstr "Irish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:77
+msgid "ms"
+msgstr "Malay"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:78
+msgid "kk"
+msgstr "Kazakh"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:79
+msgid "ky"
+msgstr "Kyrgyz"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:80
+msgid "sw"
+msgstr "Kiswahili"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:81
+msgid "tk"
+msgstr "Turkmen"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:82
+msgid "uz"
+msgstr "Uzbek"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:83
+msgid "tt"
+msgstr "Tatar"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:84
+msgid "bn"
+msgstr "Bengali"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:85
+msgid "pa"
+msgstr "Punjabi"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:86
+msgid "gu"
+msgstr "Gujarati"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:87
+msgid "or"
+msgstr "Oriya"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:88
+msgid "ta"
+msgstr "Tamil"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:89
+msgid "te"
+msgstr "Telugu"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:90
+msgid "kn"
+msgstr "Kannada"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:91
+msgid "ml"
+msgstr "Malayalam"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:92
+msgid "as"
+msgstr "Assamese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:93
+msgid "mr"
+msgstr "Marathi"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:94
+msgid "sa"
+msgstr "Sanskrit"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:95
+msgid "mn"
+msgstr "Mongolian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:96
+msgid "bo"
+msgstr "Tibetan"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:97
+msgid "cy"
+msgstr "Welsh"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:98
+msgid "km"
+msgstr "Khmer"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:99
+msgid "lo"
+msgstr "Lao"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:100
+msgid "gl"
+msgstr "Galician"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:101
+msgid "kok"
+msgstr "Konkani"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:102
+msgid "syr"
+msgstr "Syriac"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:103
+msgid "si"
+msgstr "Sinhala"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:104
+msgid "iu"
+msgstr "Inuktitut"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:105
+msgid "am"
+msgstr "Amharic"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:106
+msgid "tzm"
+msgstr "Tamazight"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:107
+msgid "ne"
+msgstr "Nepali"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:108
+msgid "fy"
+msgstr "Frisian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:109
+msgid "ps"
+msgstr "Pashto"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:110
+msgid "fil"
+msgstr "Filipino"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:111
+msgid "dv"
+msgstr "Divehi"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:112
+msgid "ha"
+msgstr "Hausa"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:113
+msgid "yo"
+msgstr "Yoruba"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:114
+msgid "quz"
+msgstr "Quechua"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:115
+msgid "nso"
+msgstr "Sesotho sa Leboa"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:116
+msgid "ba"
+msgstr "Bashkir"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:117
+msgid "lb"
+msgstr "Luxembourgish"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:118
+msgid "kl"
+msgstr "Greenlandic"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:119
+msgid "ig"
+msgstr "Igbo"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:120
+msgid "ii"
+msgstr "Yi"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:121
+msgid "arn"
+msgstr "Mapudungun"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:122
+msgid "moh"
+msgstr "Mohawk"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:123
+msgid "br"
+msgstr "Breton"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:125
+msgid "ug"
+msgstr "Uyghur"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:126
+msgid "mi"
+msgstr "Maori"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:127
+msgid "oc"
+msgstr "Occitan"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:128
+msgid "co"
+msgstr "Corsican"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:129
+msgid "gsw"
+msgstr "Alsatian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:130
+msgid "sah"
+msgstr "Yakut"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:131
+msgid "qut"
+msgstr "K'iche"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:132
+msgid "rw"
+msgstr "Kinyarwanda"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:133
+msgid "wo"
+msgstr "Wolof"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:134
+msgid "prs"
+msgstr "Dari"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:135
+msgid "gd"
+msgstr "Scottish Gaelic"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:136
+msgid "ar-SA"
+msgstr "Arabic (Saudi Arabia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:137
+msgid "bg-BG"
+msgstr "Bulgarian (Bulgaria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:138
+msgid "ca-ES"
+msgstr "Catalan (Catalan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:139
+msgid "zh-TW"
+msgstr "Chinese (Traditional, Taiwan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:140
+msgid "cs-CZ"
+msgstr "Czech (Czech Republic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:141
+msgid "da-DK"
+msgstr "Danish (Denmark)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:142
+msgid "de-DE"
+msgstr "German (Germany)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:143
+msgid "el-GR"
+msgstr "Greek (Greece)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:144
+msgid "en-US"
+msgstr "English (United States)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:145
+msgid "fi-FI"
+msgstr "Finnish (Finland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:146
+msgid "fr-FR"
+msgstr "French (France)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:147
+msgid "he-IL"
+msgstr "Hebrew (Israel)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:148
+msgid "hu-HU"
+msgstr "Hungarian (Hungary)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:149
+msgid "is-IS"
+msgstr "Icelandic (Iceland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:150
+msgid "it-IT"
+msgstr "Italian (Italy)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:151
+msgid "ja-JP"
+msgstr "Japanese (Japan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:152
+msgid "ko-KR"
+msgstr "Korean (Korea)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:153
+msgid "nl-NL"
+msgstr "Dutch (Netherlands)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:154
+msgid "nb-NO"
+msgstr "Norwegian, Bokmål (Norway)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:155
+msgid "pl-PL"
+msgstr "Polish (Poland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:156
+msgid "pt-BR"
+msgstr "Portuguese (Brazil)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:157
+msgid "rm-CH"
+msgstr "Romansh (Switzerland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:158
+msgid "ro-RO"
+msgstr "Romanian (Romania)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:159
+msgid "ru-RU"
+msgstr "Russian (Russia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:160
+msgid "hr-HR"
+msgstr "Croatian (Croatia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:161
+msgid "sk-SK"
+msgstr "Slovak (Slovakia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:162
+msgid "sq-AL"
+msgstr "Albanian (Albania)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:163
+msgid "sv-SE"
+msgstr "Swedish (Sweden)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:164
+msgid "th-TH"
+msgstr "Thai (Thailand)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:165
+msgid "tr-TR"
+msgstr "Turkish (Turkey)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:166
+msgid "ur-PK"
+msgstr "Urdu (Islamic Republic of Pakistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:167
+msgid "id-ID"
+msgstr "Indonesian (Indonesia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:168
+msgid "uk-UA"
+msgstr "Ukrainian (Ukraine)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:169
+msgid "be-BY"
+msgstr "Belarusian (Belarus)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:170
+msgid "sl-SI"
+msgstr "Slovenian (Slovenia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:171
+msgid "et-EE"
+msgstr "Estonian (Estonia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:172
+msgid "lv-LV"
+msgstr "Latvian (Latvia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:173
+msgid "lt-LT"
+msgstr "Lithuanian (Lithuania)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:174
+msgid "tg-Cyrl-TJ"
+msgstr "Tajik (Cyrillic, Tajikistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:175
+msgid "fa-IR"
+msgstr "Persian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:176
+msgid "vi-VN"
+msgstr "Vietnamese (Vietnam)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:177
+msgid "hy-AM"
+msgstr "Armenian (Armenia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:178
+msgid "az-Latn-AZ"
+msgstr "Azeri (Latin, Azerbaijan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:179
+msgid "eu-ES"
+msgstr "Basque (Basque)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:180
+msgid "hsb-DE"
+msgstr "Upper Sorbian (Germany)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:181
+msgid "mk-MK"
+msgstr "Macedonian (Former Yugoslav Republic of Macedonia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:182
+msgid "tn-ZA"
+msgstr "Setswana (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:183
+msgid "xh-ZA"
+msgstr "isiXhosa (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:184
+msgid "zu-ZA"
+msgstr "isiZulu (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:185
+msgid "af-ZA"
+msgstr "Afrikaans (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:186
+msgid "ka-GE"
+msgstr "Georgian (Georgia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:187
+msgid "fo-FO"
+msgstr "Faroese (Faroe Islands)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:188
+msgid "hi-IN"
+msgstr "Hindi (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:189
+msgid "mt-MT"
+msgstr "Maltese (Malta)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:190
+msgid "se-NO"
+msgstr "Sami, Northern (Norway)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:191
+msgid "ms-MY"
+msgstr "Malay (Malaysia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:192
+msgid "kk-KZ"
+msgstr "Kazakh (Kazakhstan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:193
+msgid "ky-KG"
+msgstr "Kyrgyz (Kyrgyzstan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:194
+msgid "sw-KE"
+msgstr "Kiswahili (Kenya)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:195
+msgid "tk-TM"
+msgstr "Turkmen (Turkmenistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:196
+msgid "uz-Latn-UZ"
+msgstr "Uzbek (Latin, Uzbekistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:197
+msgid "tt-RU"
+msgstr "Tatar (Russia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:198
+msgid "bn-IN"
+msgstr "Bengali (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:199
+msgid "pa-IN"
+msgstr "Punjabi (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:200
+msgid "gu-IN"
+msgstr "Gujarati (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:201
+msgid "or-IN"
+msgstr "Oriya (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:202
+msgid "ta-IN"
+msgstr "Tamil (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:203
+msgid "te-IN"
+msgstr "Telugu (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:204
+msgid "kn-IN"
+msgstr "Kannada (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:205
+msgid "ml-IN"
+msgstr "Malayalam (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:206
+msgid "as-IN"
+msgstr "Assamese (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:207
+msgid "mr-IN"
+msgstr "Marathi (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:208
+msgid "sa-IN"
+msgstr "Sanskrit (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:209
+msgid "mn-MN"
+msgstr "Mongolian (Cyrillic, Mongolia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:210
+msgid "bo-CN"
+msgstr "Tibetan (PRC)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:211
+msgid "cy-GB"
+msgstr "Welsh (United Kingdom)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:212
+msgid "km-KH"
+msgstr "Khmer (Cambodia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:213
+msgid "lo-LA"
+msgstr "Lao (Lao P.D.R.)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:214
+msgid "gl-ES"
+msgstr "Galician (Galician)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:215
+msgid "kok-IN"
+msgstr "Konkani (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:216
+msgid "syr-SY"
+msgstr "Syriac (Syria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:217
+msgid "si-LK"
+msgstr "Sinhala (Sri Lanka)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:218
+msgid "iu-Cans-CA"
+msgstr "Inuktitut (Syllabics, Canada)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:219
+msgid "am-ET"
+msgstr "Amharic (Ethiopia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:220
+msgid "ne-NP"
+msgstr "Nepali (Nepal)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:221
+msgid "fy-NL"
+msgstr "Frisian (Netherlands)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:222
+msgid "ps-AF"
+msgstr "Pashto (Afghanistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:223
+msgid "fil-PH"
+msgstr "Filipino (Philippines)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:224
+msgid "dv-MV"
+msgstr "Divehi (Maldives)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:225
+msgid "ha-Latn-NG"
+msgstr "Hausa (Latin, Nigeria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:226
+msgid "yo-NG"
+msgstr "Yoruba (Nigeria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:227
+msgid "quz-BO"
+msgstr "Quechua (Bolivia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:228
+msgid "nso-ZA"
+msgstr "Sesotho sa Leboa (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:229
+msgid "ba-RU"
+msgstr "Bashkir (Russia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:230
+msgid "lb-LU"
+msgstr "Luxembourgish (Luxembourg)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:231
+msgid "kl-GL"
+msgstr "Greenlandic (Greenland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:232
+msgid "ig-NG"
+msgstr "Igbo (Nigeria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:233
+msgid "ii-CN"
+msgstr "Yi (PRC)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:234
+msgid "arn-CL"
+msgstr "Mapudungun (Chile)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:235
+msgid "moh-CA"
+msgstr "Mohawk (Mohawk)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:236
+msgid "br-FR"
+msgstr "Breton (France)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:237
+msgid "ug-CN"
+msgstr "Uyghur (PRC)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:238
+msgid "mi-NZ"
+msgstr "Maori (New Zealand)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:239
+msgid "oc-FR"
+msgstr "Occitan (France)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:240
+msgid "co-FR"
+msgstr "Corsican (France)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:241
+msgid "gsw-FR"
+msgstr "Alsatian (France)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:242
+msgid "sah-RU"
+msgstr "Yakut (Russia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:243
+msgid "qut-GT"
+msgstr "K'iche (Guatemala)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:244
+msgid "rw-RW"
+msgstr "Kinyarwanda (Rwanda)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:245
+msgid "wo-SN"
+msgstr "Wolof (Senegal)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:246
+msgid "prs-AF"
+msgstr "Dari (Afghanistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:247
+msgid "gd-GB"
+msgstr "Scottish Gaelic (United Kingdom)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:248
+msgid "ar-IQ"
+msgstr "Arabic (Iraq)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:249
+msgid "zh-CN"
+msgstr "Chinese (Simplified, PRC)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:250
+msgid "de-CH"
+msgstr "German (Switzerland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:251
+msgid "en-GB"
+msgstr "English (United Kingdom)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:252
+msgid "es-MX"
+msgstr "Spanish (Mexico)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:253
+msgid "fr-BE"
+msgstr "French (Belgium)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:254
+msgid "it-CH"
+msgstr "Italian (Switzerland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:255
+msgid "nl-BE"
+msgstr "Dutch (Belgium)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:256
+msgid "nn-NO"
+msgstr "Norwegian, Nynorsk (Norway)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:257
+msgid "pt-PT"
+msgstr "Portuguese (Portugal)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:258
+msgid "sr-Latn-CS"
+msgstr "Serbian (Latin, Serbia and Montenegro (Former))"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:259
+msgid "sv-FI"
+msgstr "Swedish (Finland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:260
+msgid "az-Cyrl-AZ"
+msgstr "Azeri (Cyrillic, Azerbaijan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:261
+msgid "dsb-DE"
+msgstr "Lower Sorbian (Germany)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:262
+msgid "se-SE"
+msgstr "Sami, Northern (Sweden)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:263
+msgid "ga-IE"
+msgstr "Irish (Ireland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:264
+msgid "ms-BN"
+msgstr "Malay (Brunei Darussalam)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:265
+msgid "uz-Cyrl-UZ"
+msgstr "Uzbek (Cyrillic, Uzbekistan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:266
+msgid "bn-BD"
+msgstr "Bengali (Bangladesh)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:267
+msgid "mn-Mong-CN"
+msgstr "Mongolian (Traditional Mongolian, PRC)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:268
+msgid "iu-Latn-CA"
+msgstr "Inuktitut (Latin, Canada)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:269
+msgid "tzm-Latn-DZ"
+msgstr "Tamazight (Latin, Algeria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:270
+msgid "quz-EC"
+msgstr "Quechua (Ecuador)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:271
+msgid "ar-EG"
+msgstr "Arabic (Egypt)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:272
+msgid "zh-HK"
+msgstr "Chinese (Traditional, Hong Kong S.A.R.)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:273
+msgid "de-AT"
+msgstr "German (Austria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:274
+msgid "en-AU"
+msgstr "English (Australia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:275
+msgid "es-ES"
+msgstr "Spanish (Spain, International Sort)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:276
+msgid "fr-CA"
+msgstr "French (Canada)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:277
+msgid "sr-Cyrl-CS"
+msgstr "Serbian (Cyrillic, Serbia and Montenegro (Former))"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:278
+msgid "se-FI"
+msgstr "Sami, Northern (Finland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:279
+msgid "quz-PE"
+msgstr "Quechua (Peru)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:280
+msgid "ar-LY"
+msgstr "Arabic (Libya)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:281
+msgid "zh-SG"
+msgstr "Chinese (Simplified, Singapore)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:282
+msgid "de-LU"
+msgstr "German (Luxembourg)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:283
+msgid "en-CA"
+msgstr "English (Canada)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:284
+msgid "es-GT"
+msgstr "Spanish (Guatemala)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:285
+msgid "fr-CH"
+msgstr "French (Switzerland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:286
+msgid "hr-BA"
+msgstr "Croatian (Latin, Bosnia and Herzegovina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:287
+msgid "smj-NO"
+msgstr "Sami, Lule (Norway)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:288
+msgid "ar-DZ"
+msgstr "Arabic (Algeria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:289
+msgid "zh-MO"
+msgstr "Chinese (Traditional, Macao S.A.R.)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:290
+msgid "de-LI"
+msgstr "German (Liechtenstein)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:291
+msgid "en-NZ"
+msgstr "English (New Zealand)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:292
+msgid "es-CR"
+msgstr "Spanish (Costa Rica)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:293
+msgid "fr-LU"
+msgstr "French (Luxembourg)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:294
+msgid "bs-Latn-BA"
+msgstr "Bosnian (Latin, Bosnia and Herzegovina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:295
+msgid "smj-SE"
+msgstr "Sami, Lule (Sweden)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:296
+msgid "ar-MA"
+msgstr "Arabic (Morocco)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:297
+msgid "en-IE"
+msgstr "English (Ireland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:298
+msgid "es-PA"
+msgstr "Spanish (Panama)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:299
+msgid "fr-MC"
+msgstr "French (Monaco)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:300
+msgid "sr-Latn-BA"
+msgstr "Serbian (Latin, Bosnia and Herzegovina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:301
+msgid "sma-NO"
+msgstr "Sami, Southern (Norway)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:302
+msgid "ar-TN"
+msgstr "Arabic (Tunisia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:303
+msgid "en-ZA"
+msgstr "English (South Africa)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:304
+msgid "es-DO"
+msgstr "Spanish (Dominican Republic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:305
+msgid "sr-Cyrl-BA"
+msgstr "Serbian (Cyrillic, Bosnia and Herzegovina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:306
+msgid "sma-SE"
+msgstr "Sami, Southern (Sweden)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:307
+msgid "ar-OM"
+msgstr "Arabic (Oman)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:308
+msgid "en-JM"
+msgstr "English (Jamaica)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:309
+msgid "es-VE"
+msgstr "Spanish (Bolivarian Republic of Venezuela)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:310
+msgid "bs-Cyrl-BA"
+msgstr "Bosnian (Cyrillic, Bosnia and Herzegovina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:311
+msgid "sms-FI"
+msgstr "Sami, Skolt (Finland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:312
+msgid "ar-YE"
+msgstr "Arabic (Yemen)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:313
+msgid "en-029"
+msgstr "English (Caribbean)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:314
+msgid "es-CO"
+msgstr "Spanish (Colombia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:315
+msgid "sr-Latn-RS"
+msgstr "Serbian (Latin, Serbia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:316
+msgid "smn-FI"
+msgstr "Sami, Inari (Finland)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:317
+msgid "ar-SY"
+msgstr "Arabic (Syria)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:318
+msgid "en-BZ"
+msgstr "English (Belize)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:319
+msgid "es-PE"
+msgstr "Spanish (Peru)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:320
+msgid "sr-Cyrl-RS"
+msgstr "Serbian (Cyrillic, Serbia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:321
+msgid "ar-JO"
+msgstr "Arabic (Jordan)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:322
+msgid "en-TT"
+msgstr "English (Trinidad and Tobago)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:323
+msgid "es-AR"
+msgstr "Spanish (Argentina)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:324
+msgid "sr-Latn-ME"
+msgstr "Serbian (Latin, Montenegro)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:325
+msgid "ar-LB"
+msgstr "Arabic (Lebanon)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:326
+msgid "en-ZW"
+msgstr "English (Zimbabwe)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:327
+msgid "es-EC"
+msgstr "Spanish (Ecuador)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:328
+msgid "sr-Cyrl-ME"
+msgstr "Serbian (Cyrillic, Montenegro)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:329
+msgid "ar-KW"
+msgstr "Arabic (Kuwait)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:330
+msgid "en-PH"
+msgstr "English (Republic of the Philippines)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:331
+msgid "es-CL"
+msgstr "Spanish (Chile)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:332
+msgid "ar-AE"
+msgstr "Arabic (U.A.E.)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:333
+msgid "es-UY"
+msgstr "Spanish (Uruguay)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:334
+msgid "ar-BH"
+msgstr "Arabic (Bahrain)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:335
+msgid "es-PY"
+msgstr "Spanish (Paraguay)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:336
+msgid "ar-QA"
+msgstr "Arabic (Qatar)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:337
+msgid "en-IN"
+msgstr "English (India)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:338
+msgid "es-BO"
+msgstr "Spanish (Bolivia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:339
+msgid "en-MY"
+msgstr "English (Malaysia)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:340
+msgid "es-SV"
+msgstr "Spanish (El Salvador)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:341
+msgid "en-SG"
+msgstr "English (Singapore)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:342
+msgid "es-HN"
+msgstr "Spanish (Honduras)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:343
+msgid "es-NI"
+msgstr "Spanish (Nicaragua)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:344
+msgid "es-PR"
+msgstr "Spanish (Puerto Rico)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:345
+msgid "es-US"
+msgstr "Spanish (United States)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:346
+msgid "bs-Cyrl"
+msgstr "Bosnian (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:347
+msgid "bs-Latn"
+msgstr "Bosnian (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:348
+msgid "sr-Cyrl"
+msgstr "Serbian (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:349
+msgid "sr-Latn"
+msgstr "Serbian (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:350
+msgid "smn"
+msgstr "Sami (Inari)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:351
+msgid "az-Cyrl"
+msgstr "Azeri (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:352
+msgid "sms"
+msgstr "Sami (Skolt)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:353
+msgid "zh"
+msgstr "Chinese"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:354
+msgid "nn"
+msgstr "Norwegian (Nynorsk)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:355
+msgid "bs"
+msgstr "Bosnian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:356
+msgid "az-Latn"
+msgstr "Azeri (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:357
+msgid "sma"
+msgstr "Sami (Southern)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:358
+msgid "uz-Cyrl"
+msgstr "Uzbek (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:359
+msgid "mn-Cyrl"
+msgstr "Mongolian (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:360
+msgid "iu-Cans"
+msgstr "Inuktitut (Syllabics)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:361
+msgid "zh-Hant"
+msgstr "Chinese (Traditional)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:362
+msgid "nb"
+msgstr "Norwegian (Bokmål)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:363
+msgid "sr"
+msgstr "Serbian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:364
+msgid "tg-Cyrl"
+msgstr "Tajik (Cyrillic)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:365
+msgid "dsb"
+msgstr "Lower Sorbian"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:366
+msgid "smj"
+msgstr "Sami (Lule)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:367
+msgid "uz-Latn"
+msgstr "Uzbek (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:368
+msgid "mn-Mong"
+msgstr "Mongolian (Traditional Mongolian)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:369
+msgid "iu-Latn"
+msgstr "Inuktitut (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:370
+msgid "tzm-Latn"
+msgstr "Tamazight (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:371
+msgid "ha-Latn"
+msgstr "Hausa (Latin)"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:372
+msgid "zh-CHS"
+msgstr "Chinese (Simplified) Legacy"
+
+#: C:\Workspace\Svn\BAF\trunk\BAF\BAF.Web2\Localization.cs:373
+msgid "zh-CHT"
+msgstr "Chinese (Traditional) Legacy"
+
+#~ msgid "Kasdas %ergreg% df s %fewDasf% 15% fasdfdsf %."
+#~ msgstr "Kasdas %ergreg% df s %fewDasf% 15% fasdfdsf %."

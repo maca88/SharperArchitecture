@@ -9,13 +9,13 @@ namespace PowerArhitecture.Common.Extensions
 {
     public static class PatternOptionExtensions
     {
-        public static string ProcessPattern(this PatternOption opt, string pattern)
+        public static string ProcessPattern(this PatternOptions opt, string pattern)
         {
-            if (opt.HasFlag(PatternOption.Contains))
+            if (opt.HasFlag(PatternOptions.Contains))
                 return string.Format("*{0}*", pattern);
-            if(opt.HasFlag(PatternOption.StartsWith))
+            if(opt.HasFlag(PatternOptions.StartsWith))
                 pattern = string.Format("*{0}", pattern);
-            if (opt.HasFlag(PatternOption.EndsWith))
+            if (opt.HasFlag(PatternOptions.EndsWith))
                 pattern = string.Format("{0}*", pattern);
             return pattern;
         }

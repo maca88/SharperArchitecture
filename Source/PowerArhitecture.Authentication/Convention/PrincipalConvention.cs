@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Principal;
+using PowerArhitecture.Authentication.Configurations;
 using PowerArhitecture.Authentication.Entities;
-using PowerArhitecture.Authentication.Generated;
 using PowerArhitecture.Authentication.Specifications;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
@@ -13,13 +13,12 @@ namespace PowerArhitecture.Authentication.Convention
 {
     public class PrincipalConvention : IReferenceConvention, IPropertyConvention
     {
-        private readonly Type _userType = typeof(User);
+        private readonly Type _userType;
 
         public PrincipalConvention()
         {
-            var userClass = AppConfiguration.GetSetting<string>(AuthenticationSettingKeys.UserClass);
-            if (!string.IsNullOrEmpty(userClass))
-                _userType = Type.GetType(userClass, true);
+            var userClass = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.UserClass);
+            _userType = Type.GetType(userClass, true);
         }
 
         public void Apply(IManyToOneInstance instance)
@@ -36,7 +35,7 @@ namespace PowerArhitecture.Authentication.Convention
         {
             var set = new HashSet<string> { "CreatedById", "LastModifiedById" };
             if (!set.Contains(instance.Property.Name) ||
-                !instance.Property.DeclaringType.IsAssignableToGenericType(typeof (VersionedEntity<,>))) return;
+                !instance.Property.DeclaringType.IsAssignableToGenericType(typeof (VersionedEntityWithUser<,>))) return;
             instance.CustomType(typeof(long));
             if (!_userType.IsAssignableFrom(instance.EntityType))
             {

@@ -18,6 +18,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Security.Policy" #>
 <#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Xml.Schema" #>
 <#@ import namespace="System.Xml.XPath" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Globalization" #>
@@ -67,6 +68,9 @@ var cSharpCodeProvider = new CSharpCodeProvider();
 //reset static props
 DomainModelWrapper.GlobalModelRelations.Clear();
 
+/*TODOS*/
+//TODO: Strict - do note that non public getter or setter are not serialized/deserialized by default with Json.net
+
 //Get and save all overrides
 VSHelper.ProcessFiles(projectItems, (file, name) => VSHelper.ProcessTypes(file, (type, pItem) => 
     {
@@ -89,13 +93,21 @@ VSHelper.ProcessFiles(projectItems, (file, name) => VSHelper.ProcessTypes(file, 
 
 		domainOverrideFiles.Add(overrideType, pItem.FileNames[0]);
 
+        EntityType entityType = null;
+
 		//Get properties for overriden type
 		var properties = new Dictionary<string, CodeProperty2>();
 		foreach(var partialType in pTypes[overrideType])
-        {
+		{
+		    if (entityType == null)
+		        entityType = settings.GetEntityType(VSHelper, partialType, false);
+
 			foreach(var p in VSHelper.GetProperties(partialType))
 				properties.Add(p.Name, p);
         }
+
+        if(entityType == null)
+            throw new Exception("EntityType for type " + overrideType + " does not exists");
 
 		//get override method
 		var method = VSHelper.GetMethod(type, "Override");
@@ -138,9 +150,9 @@ VSHelper.ProcessFiles(projectItems, (file, name) => VSHelper.ProcessTypes(file, 
             foreach (var keyColumnMatch in keyColumnMatches.OfType<Match>().Where(o => o.Success))
             {
                 keyColumn = !string.IsNullOrEmpty(keyColumnMatch.Groups[1].Value)
-                    ? settings.KeyColumnPrefix + keyColumnMatch.Groups[1].Value + settings.KeyColumnPostfix
+                    ? entityType.KeyColumnPrefix + keyColumnMatch.Groups[1].Value + entityType.KeyColumnPostfix
                     : keyColumnMatch.Groups[2].Value;
-                relatedPropName = VSHelper.Trim(keyColumn, settings.KeyColumnPrefix, settings.KeyColumnPostfix);
+                relatedPropName = VSHelper.Trim(keyColumn, entityType.KeyColumnPrefix, entityType.KeyColumnPostfix);
             }
 
             //PropertyRef - support PropertyRef(o => o.Category) or PropertyRef("CategoryId")
@@ -320,8 +332,7 @@ VSHelper.ProcessFiles(projectItems, (file, name) =>
 		{
 			if(VSHelper.GetAttribute(type.Attributes, "System.CodeDom.Compiler.GeneratedCodeAttribute") != null) return;
 			//VSHelper.GetAllCodeElementsOfType(type.)
-			if(!type.get_IsDerivedFrom(settings.BaseEntity) || settings.IgnoreTypes.Contains(type.FullName)) return;
-            
+			if(!type.get_IsDerivedFrom(settings.BaseEntityType) || settings.IgnoreTypes.Contains(type.FullName)) return;
 			//VSHelper.Warning(pItem.get_FileNames(0) + " gener created: " + (generatedFiles.ContainsKey(type.FullName) ?  File.GetCreationTime(generatedFiles[type.FullName]).ToString() : "WTF") + " gener modif: " + (generatedFiles.ContainsKey(type.FullName) ?  File.GetLastWriteTime(generatedFiles[type.FullName]).ToString() : "WTF") + " real: " + File.GetLastWriteTime(pItem.get_FileNames(0)));
 			var domainModelModified = true;
 
@@ -349,26 +360,43 @@ VSHelper.ProcessFiles(projectItems, (file, name) =>
 		}));
 
 manager.StartHeader(); 
-#>
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.CodeDom.Compiler;
-using System.Linq.Expressions;
-using System.Reflection;
-using FluentNHibernate.Automapping;
 
+var knownNamespaces = new HashSet<string>()
+    {
+        "System",
+        "System.Collections.Generic",
+        "System.ComponentModel",
+        "System.CodeDom.Compiler",
+        "System.Linq.Expressions",
+        "System.Reflection",
+        "FluentNHibernate.Automapping",
+    };
+foreach (var ns in knownNamespaces)
+{
+#>
+using <#=ns#>;
 <#
+}
 manager.EndBlock(); 
 
 foreach(var type in domainClasses.Values)
 {
-	manager.StartNewFile(string.Format("{0}.generated.cs", type.Name)); 
+    var fileName = type.Name;
+    var classNamePostFix = "";
+    if (type.CodeClass.IsGeneric)
+    {
+        classNamePostFix = string.Format("<{0}>", string.Join(", ", VSHelper.GetGenericAgruments(type.FullName)));
+        fileName = string.Format("{0}({1})", type.Name, string.Join("_", VSHelper.GetGenericAgruments(type.FullName)));
+
+        //VSHelper.Warning(type.FullName + " - " + type.Name + " - " + type.CodeClass.Kind.ToString());
+    }
+    
+	manager.StartNewFile(string.Format("{0}.generated.cs", fileName)); 
 #>
 namespace <#=type.Namespace.FullName#>
 {
 	[GeneratedCode("T4Template", "1.0")]
-	public partial class <#=type.Name#>
+	public partial class <#=type.Name + classNamePostFix#>
 	{
 
 <#
@@ -394,14 +422,30 @@ namespace <#=type.Namespace.FullName#>
         : new List<ModelRelation>();
 	foreach(var relation in type.RelatedModels.Union(globalTypeRelations))
 	{
-		var relatedType = domainClasses[relation.RelatedModelType];
+		var relatedType = domainClasses.ContainsKey(relation.RelatedModelType) 
+            ? domainClasses[relation.RelatedModelType]
+            : null; //external type
         var propName = relation.Property == null 
             ? type.Name
             : relation.Property.Name;
+	    var externalType = settings.GetExternalType(relation.RelatedModelType);
 
+	    var useFullNs = relatedType != null && (type.Namespace.FullName != relatedType.Namespace.FullName ||
+	                    !knownNamespaces.Contains(relatedType.Namespace.FullName));
+	    var relatedTypeName = relatedType != null
+	        ? (useFullNs ? relatedType.FullName : relatedType.Name)
+	        : (useFullNs ? relation.RelatedModelType : relation.RelatedModelType.Split('.').Last());
+	    var syntheticPropRequired = relation.Property != null && 
+            VSHelper.GetAttribute(relation.Property.Attributes, settings.NotNullAttribute) != null;
+	    var entityType = relatedType != null 
+            ? settings.GetEntityType(VSHelper, relatedType.CodeClass, true)
+            : settings.GetEntityType(externalType, true);
+	    var syntheticPropType = VSHelper.SimplifyTypeName(entityType.IdentifierPropertyType);
+        var syntheticPropValueType = VSHelper.IsValueType(entityType.IdentifierPropertyType);
 	    var syntheticPropName = !string.IsNullOrEmpty(relation.KeyColumn)
 	        ? relation.KeyColumn
-	        : settings.KeyColumnPrefix + propName + settings.KeyColumnPostfix;
+	        : entityType.KeyColumnPrefix + propName + entityType.KeyColumnPostfix;
+	    var syntheticPropLength = entityType.GetIdentifierLength(relation.RelatedModelType);
 
 		var paramName = false //relation.Type == ModelRelationType.OneToMany || relation.Type == ModelRelationType.ManyToMany
 			? VSHelper.Pluralize(VSHelper.FirstCharToLower(propName))
@@ -419,18 +463,18 @@ namespace <#=type.Namespace.FullName#>
         {
 			case ModelRelationType.OneToMany:
 #>
-		private <#=VSHelper.GetValidNHibernteEnumerableInterface(relation.Property, relation.ListType, settings.Strict)#> <#=fieldName#>;
+		private <#=VSHelper.GetValidNHibernteEnumerableInterface(relation.Property, relation.ListType, settings.Strict, relatedTypeName)#> <#=fieldName#>;
 <#
                 if (relation.AssociationType == AssociationType.Bidirectional)
                 {
 #>
 
-        public virtual void Add<#=VSHelper.Singularize(propName) #>(<#=relatedType.Name #> <#=paramName #>)
+        public virtual void Add<#=VSHelper.Singularize(propName) #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.AddOneToMany(o => o.<#=propName #>, <#=paramName #>, o => o.<#=relation.PathInRelatedModel #>, o=> o.Remove<#=VSHelper.Singularize(propName) #>);
         }
 
-        public virtual void Remove<#=VSHelper.Singularize(propName) #>(<#=relatedType.Name #> <#=paramName #>)
+        public virtual void Remove<#=VSHelper.Singularize(propName) #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.RemoveOneToMany(o => o.<#=propName #>, <#=paramName #>, o => o.<#=relation.PathInRelatedModel #>);
         }
@@ -444,12 +488,12 @@ namespace <#=type.Namespace.FullName#>
                 if (relation.AssociationType == AssociationType.Bidirectional)
                 {
 #>
-        public virtual void Add<#=VSHelper.Singularize(propName) #>(<#=relatedType.Name #> <#=paramName #>)
+        public virtual void Add<#=VSHelper.Singularize(propName) #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.AddManyToMany(o => o.<#=propName #>, <#=paramName #>, o => o.<#=relation.PathInRelatedModel #>);
         }
 
-        public virtual void Remove<#=VSHelper.Singularize(propName) #>(<#=relatedType.Name #> <#=paramName #>)
+        public virtual void Remove<#=VSHelper.Singularize(propName) #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.RemoveManyToMany(o => o.<#=propName #>, <#=paramName #>, o => o.<#=relation.PathInRelatedModel #>);
         }
@@ -457,18 +501,35 @@ namespace <#=type.Namespace.FullName#>
                 }
                 break;
 			case ModelRelationType.ManyToOne:
-                if (settings.SyntheticProperties)
+                if (settings.SyntheticProperties.Generate)
                 {
+                    foreach (var attr in settings.SyntheticProperties.CustomAttributes)
+                    {
 #>
-        [ReadOnly(true)]
-        public virtual <#=settings.IdentifierPropertyType#> <#=syntheticPropName#> { get; protected set; }
+        [<#=attr#>]
+<#                       
+                    }
+                    if (syntheticPropRequired && !string.IsNullOrEmpty(settings.NotNullAttribute) && settings.SyntheticProperties.AddNotNullAttribute)
+                    {
+#>
+        [<#=settings.NotNullAttribute#>]
+<#
+                    }
+                    if (!string.IsNullOrEmpty(syntheticPropLength) && !string.IsNullOrEmpty(settings.LengthAttribute) && settings.SyntheticProperties.AddLengthAttribute)
+                    {
+#>
+        [<#=settings.LengthAttribute#>(<#=syntheticPropLength#>)]
+<#
+                    }
+#>
+        public virtual <#=syntheticPropType#><#=(!syntheticPropRequired && syntheticPropValueType ? "?" : "")#> <#=syntheticPropName#> { get; <#=settings.Strict ? "protected " : ""#>set; }
 <#      
                 }
                 if (relation.AssociationType == AssociationType.Bidirectional)
                 {
 #>
 
-        public virtual void Set<#=propName #>(<#=relatedType.Name #> <#=paramName #>)
+        public virtual void Set<#=propName #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.SetManyToOne(o => o.<#=propName #>, <#=paramName #>, o => o.Remove<#=VSHelper.Singularize(relation.PathInRelatedModel) #>, o => o.<#=relation.PathInRelatedModel #>);
         }
@@ -481,19 +542,35 @@ namespace <#=type.Namespace.FullName#>
                 }
                 break;
 			case ModelRelationType.OneToOne:
-
-                if (settings.SyntheticProperties)
+                if (settings.SyntheticProperties.Generate)
                 {
+                    foreach (var attr in settings.SyntheticProperties.CustomAttributes)
+                    {
 #>
-        [ReadOnly(true)]
-        public virtual <#=settings.IdentifierPropertyType#> <#=syntheticPropName#> { get; protected set; }
+        [<#=attr#>]
+<#                       
+                    }
+                    if (syntheticPropRequired && !string.IsNullOrEmpty(settings.NotNullAttribute) && settings.SyntheticProperties.AddNotNullAttribute)
+                    {
+#>
+        [<#=settings.NotNullAttribute#>]
+<#
+                    }
+                    if (!string.IsNullOrEmpty(syntheticPropLength) && !string.IsNullOrEmpty(settings.LengthAttribute) && settings.SyntheticProperties.AddLengthAttribute)
+                    {
+#>
+        [<#=settings.LengthAttribute#>(<#=syntheticPropLength#>)]
+<#
+                    }
+#>
+        public virtual <#=syntheticPropType#><#=(!syntheticPropRequired && syntheticPropValueType ? "?" : "")#> <#=syntheticPropName#> { get; <#=settings.Strict ? "protected " : ""#>set; }
 <#      
                 }
                 if (relation.AssociationType == AssociationType.Bidirectional)
                 {
 #>
 
-		public virtual void Set<#=propName #>(<#=relatedType.Name #> <#=paramName #>)
+		public virtual void Set<#=propName #>(<#=relatedTypeName #> <#=paramName #>)
         {
             this.SetOneToOne(o => o.<#=propName #>, <#=paramName #>, o => o.<#=relation.PathInRelatedModel #>);
         }
@@ -567,8 +644,8 @@ namespace FluentNHibernate.Automapping
             Expression<Func<TOne, IEnumerable<TMany>>> manyListExpr, TMany many,
             Expression<Func<TMany, TOne>> oneExpr,
             Expression<Func<TOne, Action<TMany>>> removeManyExpr)
-            where TOne : <#=settings.BaseEntity#>
-            where TMany : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TMany : <#=settings.BaseEntityType#>
         {
             var enumerable = manyListExpr.Compile()(one);
             var collection = (ICollection<TMany>)enumerable;
@@ -595,8 +672,8 @@ namespace FluentNHibernate.Automapping
             Expression<Func<TOne, IEnumerable<TMany>>> manyListExpr, TMany many,
             Expression<Func<TMany, TOne>> entityExpr
             )
-            where TOne : <#=settings.BaseEntity#>
-            where TMany : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TMany : <#=settings.BaseEntityType#>
         {
             var enumerable = manyListExpr.Compile()(one);
             var collection = (ICollection<TMany>)enumerable;
@@ -616,8 +693,8 @@ namespace FluentNHibernate.Automapping
             Expression<Func<TMany, TOne>> oneExpr, TOne newOne,
             Expression<Func<TOne, Action<TMany>>> removeManyExpr,
             Expression<Func<TOne, IEnumerable<TMany>>> manyExp)
-            where TOne : <#=settings.BaseEntity#>
-            where TMany : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TMany : <#=settings.BaseEntityType#>
         {
             var one = oneExpr.Compile()(many);
             var onePropInfo = GetPropertyInfo(many, oneExpr);
@@ -639,8 +716,8 @@ namespace FluentNHibernate.Automapping
         public static void UnsetManyToOne<TMany, TOne>(this TMany many,
             Expression<Func<TMany, TOne>> oneExpr,
             Expression<Func<TOne, IEnumerable<TMany>>> manyListExpr)
-            where TOne : <#=settings.BaseEntity#>
-            where TMany : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TMany : <#=settings.BaseEntityType#>
         {
             var one = oneExpr.Compile()(many);
             var onePropInfo = GetPropertyInfo(many, oneExpr);
@@ -658,8 +735,8 @@ namespace FluentNHibernate.Automapping
         public static void AddManyToMany<TMany, TMany2>(this TMany many,
             Expression<Func<TMany, IEnumerable<TMany2>>> many2ListExpr, TMany2 many2,
             Expression<Func<TMany2, IEnumerable<TMany>>> manyListExpr)
-            where TMany : <#=settings.BaseEntity#>
-            where TMany2 : <#=settings.BaseEntity#>
+            where TMany : <#=settings.BaseEntityType#>
+            where TMany2 : <#=settings.BaseEntityType#>
         {
             var many2List = (ICollection<TMany2>)many2ListExpr.Compile()(many);
             var manyList = (ICollection<TMany>)manyListExpr.Compile()(many2);
@@ -674,8 +751,8 @@ namespace FluentNHibernate.Automapping
         public static void RemoveManyToMany<TMany, TMany2>(this TMany many,
             Expression<Func<TMany, IEnumerable<TMany2>>> many2ListExpr, TMany2 many2,
             Expression<Func<TMany2, IEnumerable<TMany>>> manyListExpr)
-            where TMany : <#=settings.BaseEntity#>
-            where TMany2 : <#=settings.BaseEntity#>
+            where TMany : <#=settings.BaseEntityType#>
+            where TMany2 : <#=settings.BaseEntityType#>
         {
             var many2List = (ICollection<TMany2>)many2ListExpr.Compile()(many);
             var manyList = (ICollection<TMany>)manyListExpr.Compile()(many2);
@@ -690,8 +767,8 @@ namespace FluentNHibernate.Automapping
         public static void SetOneToOne<TOne, TOne2>(this TOne one,
             Expression<Func<TOne, TOne2>> one2Expr, TOne2 one2,
             Expression<Func<TOne2, TOne>> oneExpr)
-            where TOne : <#=settings.BaseEntity#>
-            where TOne2 : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TOne2 : <#=settings.BaseEntityType#>
         {
             var oneInOne2 = oneExpr.Compile()(one2);
             var oneInOne2PropInfo = GetPropertyInfo(one2, oneExpr);
@@ -716,8 +793,8 @@ namespace FluentNHibernate.Automapping
         public static void UnsetOneToOne<TOne, TOne2>(this TOne one,
             Expression<Func<TOne, TOne2>> one2Expr,
             Expression<Func<TOne2, TOne>> oneExpr)
-            where TOne : <#=settings.BaseEntity#>
-            where TOne2 : <#=settings.BaseEntity#>
+            where TOne : <#=settings.BaseEntityType#>
+            where TOne2 : <#=settings.BaseEntityType#>
         {
             var one2 = one2Expr.Compile()(one);
             var one2PropInfo = GetPropertyInfo(one, one2Expr);
@@ -792,7 +869,8 @@ public class DomainModelWrapper
 	public DomainModelWrapper(CodeClass2 domainModel, Dictionary<string, List<CodeClass2>> pTypes, 
 		Dictionary<string, Dictionary<string, ModelRelation>> overrides, VisualStudioHelper vsHelper, bool wasModified, ProjectItem pItem, XmlSettings settings, 
         Dictionary<string, Dictionary<string, CodeProperty2>> domainComponents)
-    {
+	{
+	    CodeClass = domainModel;
 		VSHelper = vsHelper;
 		ProjectItem = pItem;
 		WasModified = wasModified;
@@ -805,6 +883,8 @@ public class DomainModelWrapper
 	    Components = domainComponents;
 		Initialize();
     }
+
+    public CodeClass2 CodeClass { get; private set; }
 
     public static Dictionary<string, List<ModelRelation>> GlobalModelRelations { get; set; }
 
@@ -872,9 +952,12 @@ public class DomainModelWrapper
 		//VSHelper.Warning(_domainModel.FullName);
 		foreach(CodeProperty2 prop in VSHelper.GetProperties(_domainModel))
 		{
-			VSHelper.SetAsVirtual(prop);
+			//dont touch overrides and abstract props           
+            if(prop.OverrideKind != vsCMOverrideKind.vsCMOverrideKindOverride && prop.OverrideKind != vsCMOverrideKind.vsCMOverrideKindAbstract)
+			    VSHelper.SetAsVirtual(prop);
 
-			if (!VSHelper.IsNHibernateProperty(prop) || Settings.IgnoreTypes.Contains(prop.Type.AsFullName))
+			if (!VSHelper.IsNHibernateProperty(prop) || Settings.IgnoreTypes.Contains(prop.Type.AsFullName) ||
+                prop.Type.TypeKind == vsCMTypeRef.vsCMTypeRefOther) //Generic type
 		        continue;
 			
 			if (VSHelper.IsEnumerable(prop.Type) && VSHelper.IsGeneric(prop.Type))
@@ -907,28 +990,57 @@ public class DomainModelWrapper
             ? prop.Type.CodeType.FullName
             : VSHelper.GetGenericAgruments(prop.Type).First();
 
-		if(!ProjectTypes.ContainsKey(typeFullName))
-		{ 
-			VSHelper.Warning(String.Format("Type {0} does not exists in the current project", typeFullName));
-		    return new ModelRelation {Type = ModelRelationType.None};
-		}
-        //Skip further processing if the related type is not an entity
-	    if (!ProjectTypes[typeFullName].Any(o => o.IsDerivedFrom[Settings.BaseEntity]))
-	    {
-	        return new ModelRelation {Type = ModelRelationType.None};
-	    }
+	    var externalType = Settings.IsExternalType(typeFullName);
 
-        //Check for Bidirectional association
-		foreach(var cls in ProjectTypes[typeFullName])
-        {
-			foreach(var p in VSHelper.GetProperties(cls))
+        //External type cannot have a bidirectional association
+	    if (!externalType)
+	    {
+	        if(!ProjectTypes.ContainsKey(typeFullName))
+		    { 
+			    VSHelper.Warning(String.Format("Type {0} does not exists in the current project", typeFullName));
+		        return new ModelRelation {Type = ModelRelationType.None};
+		    }
+            //Skip further processing if the related type is not an entity
+	        if (!ProjectTypes[typeFullName].Any(o => o.IsDerivedFrom[Settings.BaseEntityType]))
+	        {
+	            return new ModelRelation {Type = ModelRelationType.None};
+	        }
+
+            //Check for Bidirectional association
+		    foreach(var cls in ProjectTypes[typeFullName])
             {
-				if(VSHelper.IsEnumerable(p.Type) && VSHelper.IsGeneric(p.Type) && VSHelper.GetGenericAgruments(p.Type).First() == FullName && prop.Name == cls.Name) //generic collection
+			    foreach(var p in VSHelper.GetProperties(cls))
                 {
-                    //VSHelper.Warning(cls.Name +  " " + p.Name  + " " + typeFullName + " " + (one ?  "OM" : "MM"));
+				    if(VSHelper.IsEnumerable(p.Type) && VSHelper.IsGeneric(p.Type) && VSHelper.GetGenericAgruments(p.Type).First() == FullName && prop.Name == cls.Name) //generic collection
+                    {
+                        //VSHelper.Warning(cls.Name +  " " + p.Name  + " " + typeFullName + " " + (one ?  "OM" : "MM"));
+                        return new ModelRelation
+                        {
+                            Type = one ? ModelRelationType.ManyToOne : ModelRelationType.ManyToMany,
+                            RelatedModelType = typeFullName,
+                            ListType = one ? null : VSHelper.GetPropertyType(prop),
+                            Property = prop,
+                            PathInRelatedModel = p.Name,
+                            AssociationType = AssociationType.Bidirectional
+                        };
+                    }
+                    if (p.Type.AsFullName != FullName) continue;
+                    if (one && 
+                        (
+                            //by default convenction one to one is not generated
+                            VSHelper.GetAttribute(prop.Attributes, "T4FluentNH.Attributes.AsOneToOneAttribute") == null ||
+                            //property must be the same when one to one is defined on the same type
+                            (typeFullName == FullName && p.Name != prop.Name)
+                        )
+                    )
+                    {
+                        continue;
+                    }
+                    
+                    //VSHelper.Warning(cls.Name +  " " + p.Name  + " " + typeFullName + " " + (one ?  "OO" : "MO"));
                     return new ModelRelation
                     {
-                        Type = one ? ModelRelationType.ManyToOne : ModelRelationType.ManyToMany,
+                        Type = one ? ModelRelationType.OneToOne : ModelRelationType.OneToMany,
                         RelatedModelType = typeFullName,
                         ListType = one ? null : VSHelper.GetPropertyType(prop),
                         Property = prop,
@@ -936,31 +1048,9 @@ public class DomainModelWrapper
                         AssociationType = AssociationType.Bidirectional
                     };
                 }
-                if (p.Type.AsFullName != FullName) continue;
-                if (one && 
-                    (
-                        //by default convenction one to one is not generated
-                        VSHelper.GetAttribute(prop.Attributes, "T4FluentNH.Attributes.AsOneToOneAttribute") == null ||
-                        //property must be the same when one to one is defined on the same type
-                        (typeFullName == FullName && p.Name != prop.Name)
-                    )
-                )
-                {
-                    continue;
-                }
-                    
-                //VSHelper.Warning(cls.Name +  " " + p.Name  + " " + typeFullName + " " + (one ?  "OO" : "MO"));
-                return new ModelRelation
-                {
-                    Type = one ? ModelRelationType.OneToOne : ModelRelationType.OneToMany,
-                    RelatedModelType = typeFullName,
-                    ListType = one ? null : VSHelper.GetPropertyType(prop),
-                    Property = prop,
-                    PathInRelatedModel = p.Name,
-                    AssociationType = AssociationType.Bidirectional
-                };
             }
-        }
+	    }
+
 
         //Unidirectional association - By default unidirectional associations are oneToMany and manyToOne
 
@@ -1084,6 +1174,49 @@ public class DomainModelWrapper
 #>
 <#+
 
+    public class EntityType
+    {
+        public string DerivedFromType { get; set; }
+
+        public string KeyColumnPrefix { get; set; }
+
+        public string KeyColumnPostfix { get; set; }
+
+        public string IdentifierPropertyType { get; set; }
+
+        public string IdentifierLength { get; set; }
+
+        public Dictionary<string,string> CustomIdentifierLengths { get; set; }
+
+        public string GetIdentifierLength(string typeFullName)
+        {
+            if (CustomIdentifierLengths.ContainsKey(typeFullName))
+                return CustomIdentifierLengths[typeFullName];
+            return IdentifierLength;
+        }
+    }
+
+    public class ExternalType
+    {
+        public string FullName { get; set; }
+
+        public string DerivedFromType { get; set; }
+
+    }
+
+    public class SyntheticProperties
+    {
+        public bool Generate { get; set; }
+
+        public string Comment { get; set; }
+
+        public bool AddNotNullAttribute { get; set; }
+
+        public bool AddLengthAttribute { get; set; }
+
+        public List<string> CustomAttributes { get; set; } 
+    }
+
     public class XmlSettings
     {
         public static XmlSettings Load(string path)
@@ -1095,35 +1228,93 @@ public class DomainModelWrapper
             
             var settings = new XmlSettings
             {
-                BaseEntity = xElement.XPathSelectElement("/BaseEntity").Value,
+                BaseEntityType = xElement.XPathSelectElement("/BaseEntityType").Value,
                 Strict = xElement.XPathSelectElement("/Strict").Value.ToUpperInvariant() == "TRUE",
                 DefaultCollectionMapType = (CollectionMapType)Enum.Parse(typeof(CollectionMapType), xElement.XPathSelectElement("/DefaultCollectionMapType").Value, true),
-                KeyColumnPrefix = xElement.XPathSelectElement("/KeyColumn/Prefix").Value,
-                KeyColumnPostfix = xElement.XPathSelectElement("/KeyColumn/Postfix").Value,
-                SyntheticProperties = xElement.XPathSelectElement("/SyntheticProperties").Value.ToUpperInvariant() == "TRUE",
-                IdentifierPropertyType = xElement.XPathSelectElement("/IdentifierPropertyType").Value,
-                IgnoreTypes = new HashSet<string>(xElement.XPathSelectElements("/IgnoreTypes//IgnoreType").Select(o => o.Value)) 
+                SyntheticProperties = new SyntheticProperties
+                {
+                  AddLengthAttribute  = xElement.XPathSelectElement("/SyntheticProperties/AddLengthAttribute").Value.ToUpperInvariant() == "TRUE",
+                  AddNotNullAttribute = xElement.XPathSelectElement("/SyntheticProperties/AddNotNullAttribute").Value.ToUpperInvariant() == "TRUE",
+                  Comment = xElement.XPathSelectElement("/SyntheticProperties/Comment").Value,
+                  Generate = xElement.XPathSelectElement("/SyntheticProperties/Generate").Value.ToUpperInvariant() == "TRUE",
+                  CustomAttributes = xElement.XPathSelectElements("SyntheticProperties/CustomAttributes//CustomAttribute")
+                    .Select(o => o.Value).ToList()
+                },
+                EntityTypes = xElement.XPathSelectElements("/EntityTypes//EntityType")
+                .Select(o => new EntityType
+                {
+                    DerivedFromType = o.XPathSelectElement("DerivedFromType").Value,
+                    KeyColumnPrefix = o.XPathSelectElement("KeyColumn/Prefix").Value,
+                    KeyColumnPostfix = o.XPathSelectElement("KeyColumn/Postfix").Value,
+                    IdentifierPropertyType = o.XPathSelectElement("IdentifierPropertyType").Value,
+                    IdentifierLength = o.XPathSelectElement("IdentifierLength") != null 
+                        ? o.XPathSelectElement("IdentifierLength").Value
+                        : null,
+                    CustomIdentifierLengths = o.XPathSelectElements("CustomIdentifierLengths//CustomIdentifierLength").Any()
+                        ? o.XPathSelectElements("CustomIdentifierLengths//CustomIdentifierLength")
+                            .ToDictionary(c => c.XPathSelectElement("Type").Value, c => c.XPathSelectElement("Length").Value)
+                        : new Dictionary<string,string>()
+                }).ToList(),
+                ExternalTypes = new List<ExternalType>(xElement.XPathSelectElements("/ExternalTypes//ExternalType")
+                    .Select(o => new ExternalType
+                    {
+                        DerivedFromType = o.XPathSelectElement("DerivedFromType").Value,
+                        FullName = o.XPathSelectElement("FullName").Value,
+                    })),
+                IgnoreTypes = new HashSet<string>(xElement.XPathSelectElements("/IgnoreTypes//IgnoreType").Select(o => o.Value)),
+                NotNullAttribute = xElement.XPathSelectElement("/NotNullAttribute").Value,
+                LengthAttribute = xElement.XPathSelectElement("/LengthAttribute").Value,
             };
-            if(string.IsNullOrEmpty(settings.BaseEntity))
-                throw new Exception("BaseEntity is not set");
+            if(string.IsNullOrEmpty(settings.BaseEntityType))
+                throw new Exception("BaseEntityType is not set");
             return settings;
         }
 
-        public string KeyColumnPrefix { get; set; }
+        public List<EntityType> EntityTypes { get; set; }
 
-        public string KeyColumnPostfix { get; set; }
+        public EntityType GetEntityType(VisualStudioHelper vsHelper, CodeClass2 codeClass, bool throwIfNotFound)
+        {
+            var eType = EntityTypes.FirstOrDefault(o => codeClass.IsDerivedFrom[o.DerivedFromType] || vsHelper.ContainBaseType(codeClass, o.DerivedFromType));
+            if(eType == null && throwIfNotFound)
+                throw new Exception("EntityType for type " + codeClass.FullName + " does not exists");
+            return eType;
+        }
 
+        public EntityType GetEntityType(ExternalType externalType, bool throwIfNotFound)
+        {
+            var eType = EntityTypes.FirstOrDefault(o => o.DerivedFromType == externalType.DerivedFromType);
+            if(eType == null && throwIfNotFound)
+                throw new Exception("EntityType that derives from type " + externalType.DerivedFromType + " does not exists");
+            return eType;
+        }
+
+        public bool IsExternalType(string typeFullName)
+        {
+            return ExternalTypes.Any(o => o.FullName == typeFullName);
+        }
+
+        public ExternalType GetExternalType(string typeFullName)
+        {
+            return ExternalTypes.FirstOrDefault(o => o.FullName == typeFullName);
+        }
+
+        public string NotNullAttribute { get; set; }
+
+        public string LengthAttribute { get; set; }
+        
         public HashSet<string> IgnoreTypes { get; set; }
 
-        public string BaseEntity { get; set; }
+        public List<ExternalType> ExternalTypes { get; set; }
+
+        public string BaseEntityType { get; set; }
 
         public CollectionMapType DefaultCollectionMapType { get; set; }
 
         public bool Strict { get; set; }
 
-        public bool SyntheticProperties { get; set; }
+        public SyntheticProperties SyntheticProperties { get; set; }
 
-        public string IdentifierPropertyType { get; set; }
+        
 
     }
 
@@ -1239,11 +1430,16 @@ public class VisualStudioHelper : AutomationHelper
 		return PluralizationService.Singularize(name);
 	}
 
-	public string GetValidNHibernteEnumerableInterface(CodeProperty2 prop, string listImplType, bool strict)
+	public string GetValidNHibernteEnumerableInterface(CodeProperty2 prop, string listImplType, bool strict, string newItemType = null) 
 	{
 		var typeName = GetPropertyType(prop);
 	    //if (typeName.Contains("IEnumerable"))
 	     //   typeName = typeName.Replace("IEnumerable", listImplType);
+	    if (!string.IsNullOrEmpty(newItemType))
+	    {
+	        typeName = Regex.Replace(typeName, "<([^.]+)>", "<" + newItemType + ">");
+	    }
+         
 
 	    if (typeName.Contains("IEnumerable"))
 	        return typeName;
@@ -1305,6 +1501,50 @@ public class VisualStudioHelper : AutomationHelper
             type == typeof (TimeSpan) ||
             type == typeof (DateTimeOffset) ||
             IsNullable(type);
+    }
+
+    public bool IsValueType(string typeFullName)
+    {
+        var type = Type.GetType(typeFullName);
+	    if(type == null) return false; //External type
+        return type.IsValueType;
+    }
+
+    public string SimplifyTypeName(string typeFullName)
+    {
+        switch (typeFullName)
+        {
+            case "System.Int16":
+                return "short";
+            case "System.Int32":
+                return "int";
+            case "System.Int64":
+                return "long";
+            case "System.String":
+                return "string";
+            case "System.Decimal":
+                return "decimal";
+            default:
+                return typeFullName;
+        }
+    }
+
+    public bool IsSimpleType(string typeFullName)
+    {
+        var type = Type.GetType(typeFullName);
+		if(type == null) return false; //External type
+        return
+            type.IsPrimitive ||
+            type == typeof (Decimal) ||
+            type == typeof (String) ||
+            type == typeof (DateTime) ||
+            type == typeof (TimeSpan) ||
+            type == typeof (DateTimeOffset);
+    }
+
+    public bool IsSimpleType(CodeTypeRef codeTypeRef)
+    {
+        return IsSimpleType(codeTypeRef.AsFullName);
     }
 
     public bool IsNullable(CodeTypeRef codeTypeRef)

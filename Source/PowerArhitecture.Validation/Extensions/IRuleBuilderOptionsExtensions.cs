@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Internationalization;
-using Castle.Core.Internal;
 using FluentValidation;
 using FluentValidation.Resources;
 

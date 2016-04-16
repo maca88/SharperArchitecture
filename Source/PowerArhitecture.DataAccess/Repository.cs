@@ -19,8 +19,8 @@ namespace PowerArhitecture.DataAccess
 {
     public class Repository<TModel> : Repository<TModel, long>, IRepository<TModel> where TModel : class, IEntity<long>, new()
     {
-        public Repository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) //TODO: Session Lazy - need to test perserving context!
-            : base(session, logger, sessionEventListener)
+        public Repository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) //TODO: Session Lazy - need to test perserving context!
+            : base(session, logger, sessionEventProvider)
         {
         }
     }
@@ -32,20 +32,18 @@ namespace PowerArhitecture.DataAccess
     /// <typeparam name="TId"></typeparam>
     public class Repository<TModel, TId> : IRepository<TModel, TId> where TModel : class, IEntity<TId>, new()
     {
-        public Repository(ISession session, ILogger logger, ISessionEventListener sessionEventListener)
+        public Repository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider)
         {
             Logger = logger;
             Session = session;
-            SessionEventListener = sessionEventListener;
+            SessionEventProvider = sessionEventProvider;
         }
 
         protected ILogger Logger { get; private set; }
 
-        protected ISession Session { get; private set; }
+        public ISession Session { get; private set; }
 
-        protected IValidatorEngine Validator { get; private set; }
-
-        protected ISessionEventListener SessionEventListener { get; private set; }
+        protected ISessionEventProvider SessionEventProvider { get; private set; }
 
         public IQueryable<TModel> Query()
         {
@@ -72,20 +70,25 @@ namespace PowerArhitecture.DataAccess
             return Session.Get<T>(id);
         }
 
+        public void Save(object model)
+        {
+            Session.Save(model);
+        }
+
         public void AddAListener(Action action, SessionListenerType listenerType)
         {
-            SessionEventListener.AddAListener(listenerType, Session, action);
+            SessionEventProvider.AddAListener(listenerType, Session, action);
         }
 
         public void AddAListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType)
         {
-            SessionEventListener.AddAListener(listenerType, Session, () => action(this));
+            SessionEventProvider.AddAListener(listenerType, Session, () => action(this));
         }
 
-        public T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity
-        {
-            return Session.DeepCopy(model, opts);
-        }
+        //public T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity
+        //{
+        //    return Session.DeepCopy(model, opts);
+        //}
 
         public IQueryable<T> Query<T>() where T : IEntity
         {
@@ -112,10 +115,10 @@ namespace PowerArhitecture.DataAccess
             Delete(Load(id));
         }
 
-        public TModel DeepCopy(TModel model, DeepCopyOptions opts = null)
-        {
-            return Session.DeepCopy(model, opts);
-        }
+        //public TModel DeepCopy(TModel model, DeepCopyOptions opts = null)
+        //{
+        //    return Session.DeepCopy(model, opts);
+        //}
 
         public IEnumerable<PropertyInfo> GetMappedProperties()
         {

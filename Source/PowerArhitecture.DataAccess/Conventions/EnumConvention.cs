@@ -1,5 +1,5 @@
-﻿using PowerArhitecture.Common.Attributes;
-using Castle.Core.Internal;
+﻿using System.Reflection;
+using PowerArhitecture.Common.Attributes;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.AcceptanceCriteria;
 using FluentNHibernate.Conventions.Inspections;
@@ -14,7 +14,7 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IPropertyInstance instance)
         {
-            var attr = instance.Property.MemberInfo.GetAttribute<EnumStringAttribute>();
+            var attr = instance.Property.MemberInfo.GetCustomAttribute<EnumStringAttribute>();
             if (attr == null)
                 instance.CustomType(instance.Property.PropertyType);
             else

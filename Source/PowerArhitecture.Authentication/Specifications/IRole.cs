@@ -1,11 +1,14 @@
-﻿namespace PowerArhitecture.Authentication.Specifications
+﻿using Microsoft.AspNet.Identity;
+using PowerArhitecture.Domain;
+
+namespace PowerArhitecture.Authentication.Specifications
 {
-    public interface IRole
+    public interface IRole : IRole<long>, IEntity
     {
-        long Id { get; }
-
-        string Name { get; }
-
         string Description { get; set; }
+
+        void AddUser(IUser user);
+
+        void RemoveUser(IUser user);
     }
 }

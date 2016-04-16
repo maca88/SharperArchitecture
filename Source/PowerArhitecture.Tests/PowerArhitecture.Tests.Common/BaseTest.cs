@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Web;
+using System.Web.SessionState;
+using FluentNHibernate.Automapping;
+using Ninject.Modules;
+using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Internationalization;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Events;
+using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Authentication.Specifications;
-using PowerArhitecture.DataAccess.Settings;
 using Bootstrap.Extensions.StartupTasks;
 using Bootstrap.Ninject;
 using FluentNHibernate.Cfg.Db;
@@ -25,72 +32,58 @@ namespace PowerArhitecture.Tests.Common
 {
     public abstract class BaseTest
     {
-        protected MoqMockingKernel Kernel;
-        protected ISessionFactory SessionFactory;
-        protected IUnitOfWorkFactory UnitOfWorkFactory;
-        protected AutomappingConfiguration AutomappingConfiguration;
-        protected IPersistenceConfigurer PersistenceConfigurer;
-        protected ICollection<Assembly> EntityAssemblies;
-        protected ICollection<Assembly> ConventionAssemblies;
-
-        /*DAL Settings*/
-        protected Mock<HiLoIdSettings> HiLoIdSettings;
-        protected Mock<ConventionsSettings> ConventionsSettings;
-        protected Mock<DatabaseSettings> DatabaseSettings;
-
-        /*Authentication Settings*/
-        protected Mock<IAuthenticationSettings> AuthenticationSettings;
-
-
-        protected BaseTest()
+        protected static MoqMockingKernel Kernel;
+        protected static IFluentDatabaseConfiguration DatabaseConfiguration;
+        protected static AutomappingConfiguration AutomappingConfiguration;
+        protected static List<Assembly> TestAssemblies = new List<Assembly>
         {
-            Kernel = new MoqMockingKernel();
-            NHibernateProfiler.Initialize();
-            EntityAssemblies = new List<Assembly>
-                {
-                    Assembly.GetExecutingAssembly(), 
-                    Assembly.GetCallingAssembly(), 
-                    Assembly.GetAssembly(typeof(Entity))
-                };
-            ConventionAssemblies = new List<Assembly>
-                {
-                    Assembly.GetAssembly(typeof (Database)), 
-                    Assembly.GetAssembly(typeof (Entity)), 
-                    Assembly.GetExecutingAssembly(),
+            typeof(I18N).Assembly
+        };
+        protected static List<Assembly> EntityAssemblies = new List<Assembly>
+        {
+            Assembly.GetExecutingAssembly(),
+            Assembly.GetAssembly(typeof (Entity))
+        };
+        protected static List<Assembly> ConventionAssemblies = new List<Assembly>
+        {
+            Assembly.GetAssembly(typeof (Database)),
+            Assembly.GetAssembly(typeof (Entity)),
+        };
 
-                };
-            AutomappingConfiguration = new AutomappingConfiguration();
+        protected static List<ISessionFactory> SessionFactories = new List<ISessionFactory>();
 
+        static BaseTest()
+        {
+        }
 
-            HiLoIdSettings = new Mock<HiLoIdSettings>();
-            HiLoIdSettings.Setup(o => o.Enabled).Returns(true);
-            HiLoIdSettings.Setup(o => o.MaxLo).Returns(100);
-            HiLoIdSettings.Setup(o => o.TableName).Returns("TestHiLoIdentity");
-
-            ConventionsSettings = new Mock<ConventionsSettings>();
-            ConventionsSettings.Setup(o => o.IdDescending).Returns(true);
-            ConventionsSettings.Setup(o => o.UseBuiltInPrincipal).Returns(true);
-            ConventionsSettings.Setup(o => o.UniqueWithMultipleNulls).Returns(true);
-            ConventionsSettings.Setup(o => o.HiLoId).Returns(HiLoIdSettings.Object);
-
-            DatabaseSettings = new Mock<DatabaseSettings>();
-            DatabaseSettings.Setup(o => o.AllowOneToOneWithoutLazyLoading).Returns(false);
-            DatabaseSettings.Setup(o => o.RecreateAtStartup).Returns(true);
-            DatabaseSettings.Setup(o => o.AllowOneToOneWithoutLazyLoading).Returns(false);
-            DatabaseSettings.Setup(o => o.Conventions).Returns(ConventionsSettings.Object);
-
-            AuthenticationSettings = new Mock<IAuthenticationSettings>();
-            AuthenticationSettings.Setup(o => o.SystemUserPassword).Returns("Test");
-            AuthenticationSettings.Setup(o => o.SystemUserName).Returns("System");
-
-            PersistenceConfigurer = MsSqlConfiguration
-                .MsSql2008
-                .ConnectionString(
-                    o => o
-                             .Database("_PCS")
-                             .Password("q1w2e3r4")
-                             .Server("93.103.9.169")
-                             .Username("test"));
+        public static IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
+        {
+            return FluentDatabaseConfiguration.Create(new Configuration())
+                .AddConventionAssemblies(ConventionAssemblies)
+                .AddEntityAssemblies(EntityAssemblies)
+                .FluentNHibernate(f => f
+                    .Database(MsSqlConfiguration
+                        .MsSql2008
+                        //.ConnectionString(string.Format("Data Source=(local);Initial Catalog={0};Integrated Security=true", dbName))
+                        .ConnectionString(o => o
+                            .Database(dbName)
+                            .Server("(local)")
+                            .TrustedConnection()
+                        )
+                    )
+                )
+                .RecreateAtStartup()
+                .AutomappingConfiguration(AutomappingConfiguration)
+                .HbmMappingsPath(".\\Mappings")
+                .Conventions(c => c
+                    .IdDescending()
+                    .UniqueWithMultipleNulls()
+                    .HiLoId(h => h
+                        .Enabled()
+                        .MaxLo(100)
+                        .TableName("TestHiLoIdentity")
+                    )
+                );
         }
 
         //No need to add reference to FluentNhibernate
@@ -99,58 +92,83 @@ namespace PowerArhitecture.Tests.Common
             AutomappingConfiguration.AddStepAssembly(assembly);
         }
 
-        [TestInitialize]
-        public void Initialize()
+        public static void BaseClassInitialize(TestContext testContext, IFluentDatabaseConfiguration configuration)
         {
-            Bootstrap.Bootstrapper
-                .With
-                .Ninject()
-                .WithContainer(Kernel).And
-                //.AutoMapper().And
-                .Extension(new ActionBootstrapperExtension(BeforeStartupTasks)).And
-                .StartupTasks()
-                .Start();
-
-            UnitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            AfterInitialization();
-        }
-
-        protected virtual void BeforeStartupTasks()
-        {
-            Kernel.Rebind<ISessionFactory>().ToMethod(context => //Simulate SessionFactoryProvider
+            Kernel = new MoqMockingKernel();
+            NHibernateProfiler.Initialize();
+            AutomappingConfiguration = new AutomappingConfiguration();
+            DatabaseConfiguration = configuration;
+            Kernel.RegisterDatabaseConfiguration(DatabaseConfiguration.Build());
+            try
             {
-                var eventAggregator = Kernel.Get<IEventAggregator>();
-                SessionFactory = Database.CreateSessionFactory(
-                    new Configuration(), 
-                    eventAggregator,
-                    DatabaseSettings.Object,
-                    EntityAssemblies,
-                    ConventionAssemblies,
-                    AutomappingConfiguration,
-                    Directory.GetCurrentDirectory(),
-                    false,
-                    configuration => configuration.Database(PersistenceConfigurer));
-                
-                eventAggregator.SendMessage(new SessionFactoryInitializedEvent(SessionFactory));
-                if (!DatabaseSettings.Object.RecreateAtStartup) return SessionFactory;
-                using (var unitOfWork = UnitOfWorkFactory.GetNew())
-                {
-                    //SessionProvider.OnActivation(context.Kernel, session);
-                    eventAggregator.SendMessage(new PopulateDbEvent(unitOfWork));
-                    //SessionProvider.OnDeactivation(context.Kernel, session);
-                }
-                return SessionFactory;
-            }).InSingletonScope();
+                Bootstrap.Bootstrapper
+                    .With
+                    .Ninject()
+                    .WithContainer(Kernel).And
+                    //.Extension(new ActionBootstrapperExtension(BeforeStartupTasks)).And
+                    .StartupTasks()
+                    .IncludingOnly.AssemblyRange(TestAssemblies)
+                    .Start();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                throw new Exception(string.Join(", ", e.LoaderExceptions.Select(o => o.ToString())));
+            }
 
-            Kernel.Rebind<IAuthenticationSettings>().ToConstant(AuthenticationSettings.Object).InSingletonScope();
+            SessionFactories.Add(Kernel.Get<ISessionFactory>());
         }
 
-        protected virtual void AfterInitialization() { }
+        public static void BaseClassCleanup()
+        {
+            foreach (var sessionFactory in SessionFactories)
+            {
+                Database.DropTables(sessionFactory);
+            }
+        }
+
+        protected void HttpContextSetup()
+        {
+            // We need to setup the Current HTTP Context as follows:            
+
+            // Step 1: Setup the HTTP Request
+            var httpRequest = new HttpRequest("", "http://localhost/", "");
+
+            // Step 2: Setup the HTTP Response
+            var httpResponce = new HttpResponse(new StringWriter());
+
+            // Step 3: Setup the Http Context
+            var httpContext = new HttpContext(httpRequest, httpResponce);
+            var sessionContainer =
+                new HttpSessionStateContainer("id",
+                                               new SessionStateItemCollection(),
+                                               new HttpStaticObjectsCollection(),
+                                               10,
+                                               true,
+                                               HttpCookieMode.AutoDetect,
+                                               SessionStateMode.InProc,
+                                               false);
+            httpContext.Items["AspSession"] =
+                typeof(HttpSessionState)
+                .GetConstructor(
+                                    BindingFlags.NonPublic | BindingFlags.Instance,
+                                    null,
+                                    CallingConventions.Standard,
+                                    new[] { typeof(HttpSessionStateContainer) },
+                                    null)
+                .Invoke(new object[] { sessionContainer });
+
+            // Step 4: Assign the Context
+            HttpContext.Current = httpContext;
+        }
 
         [TestCleanup]
-        public void Cleanup()
+        public void TestCleanup()
         {
-            Database.DropTables(SessionFactory);
+            foreach (var sessionFactory in SessionFactories)
+            {
+                Database.RecreateTables(sessionFactory);
+            }
         }
+        
     }
 }

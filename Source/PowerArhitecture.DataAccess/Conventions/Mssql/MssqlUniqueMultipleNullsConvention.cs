@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Settings;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
@@ -19,7 +19,7 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
     /// </summary>
     public class MssqlUniqueMultipleNullsConvention : ISchemaConvention
     {
-        private readonly ConventionsSettings _settings;
+        private readonly ConventionsConfiguration _configuration;
         private static readonly IInternalLogger Logger = LoggerProvider.LoggerFor(typeof(SchemaExport));
         private readonly HashSet<string> _validDialects = new HashSet<string>
             {
@@ -27,14 +27,18 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
                 typeof (MsSql2008Dialect).FullName
             };
 
-        public MssqlUniqueMultipleNullsConvention(ConventionsSettings settings)
+        public MssqlUniqueMultipleNullsConvention(ConventionsConfiguration configuration)
         {
-            _settings = settings;
+            _configuration = configuration;
         }
 
         public bool CanApply(Dialect dialect)
         {
-            return _settings.UniqueWithMultipleNulls && _validDialects.Contains(dialect.GetType().FullName);
+            return _configuration.UniqueWithMultipleNulls && _validDialects.Contains(dialect.GetType().FullName);
+        }
+
+        public void Setup(Configuration configuration)
+        {
         }
 
         public void ApplyBeforeExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)

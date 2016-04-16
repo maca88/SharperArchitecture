@@ -7,7 +7,7 @@
         bool IsNew();
     }
 
-    public class ClientModel : IClientModel
+    public abstract class ClientModel : IClientModel
     {
         private const int HashMultiplier = 31;
         private int? _cachedHashcode;

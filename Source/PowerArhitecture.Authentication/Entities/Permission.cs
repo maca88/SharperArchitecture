@@ -21,12 +21,6 @@ namespace PowerArhitecture.Authentication.Entities
         [NotNull]
         public virtual string Module { get; set; }
 
-        public virtual ISet<RolePermission> RolePermissions
-        {
-            get { return _rolePermissions ?? (_rolePermissions = new HashSet<RolePermission>()); }
-            set { _rolePermissions = value; }
-        }
-
         public virtual string FullName
         {
             get

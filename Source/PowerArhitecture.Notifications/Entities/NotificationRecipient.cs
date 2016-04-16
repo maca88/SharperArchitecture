@@ -6,16 +6,22 @@ using System.Threading.Tasks;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
+using PowerArhitecture.Notifications.Specifications;
 
 namespace PowerArhitecture.Notifications.Entities
 {
-    public partial class NotificationRecipient : Entity
+    [Ignore]
+    [Serializable]
+    public abstract partial class NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient> : VersionedEntity, INotificationRecipient<TRecipient>
+        where TNotification : Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+        where TNotificationSearchPattern : NotificationSearchPattern<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
     {
         [Unique("Recipient")]
-        public virtual Notification Notification { get; set; }
+        public virtual TNotification Notification { get; set; }
 
         [Unique("Recipient")]
-        public virtual IUser Recipient { get; set; }
+        public virtual TRecipient Recipient { get; set; }
 
         public virtual DateTime? ReadDate { get; set; }
     }

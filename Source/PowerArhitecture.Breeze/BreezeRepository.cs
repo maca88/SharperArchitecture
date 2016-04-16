@@ -22,6 +22,8 @@ namespace PowerArhitecture.Breeze
         SaveOptions SaveOptions { get; set; }
 
         SaveResult SaveChanges(JObject saveBundle, TransactionSettings transactionSettings = null);
+
+        SaveResult SaveChanges(JObject saveBundle, Func<List<EntityInfo>, List<EntityInfo>> beforeEntitySaveFunc);
     }
     /*
     public interface IBreezeRepository<T, TId> : IRepository<T, TId>, IBreezeRepository
@@ -32,6 +34,7 @@ namespace PowerArhitecture.Breeze
     public class BreezeRepository : NHContext, IBreezeRepository
     {
         private readonly BreezeMetadataConfigurator _metadataConfigurator;
+        private Func<List<EntityInfo>, List<EntityInfo>> _beforeEntitySaveFunc;
 
         public BreezeRepository(ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
         {
@@ -58,6 +61,19 @@ namespace PowerArhitecture.Breeze
 
         protected override void OpenDbConnection()
         {
+        }
+
+        public SaveResult SaveChanges(JObject saveBundle, Func<List<EntityInfo>, List<EntityInfo>> beforeEntitySaveFunc)
+        {
+            _beforeEntitySaveFunc = beforeEntitySaveFunc;
+            var result = SaveChanges(saveBundle);
+            _beforeEntitySaveFunc = null;
+            return result;
+        }
+
+        public override List<EntityInfo> BeforeSaveEntityGraph(List<EntityInfo> entitiesToPersist)
+        {
+            return _beforeEntitySaveFunc != null ? _beforeEntitySaveFunc(entitiesToPersist) : entitiesToPersist;
         }
     }
     /*//Problem : IRepository<T, TId> repository, ISession session can have two different session if used outside HttpContext and UnitOfWork

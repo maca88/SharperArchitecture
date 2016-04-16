@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess.MappingSteps;
-using PowerArhitecture.DataAccess.Settings;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate;
@@ -36,10 +35,6 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Type type)
         {
-            //Check for envers
-            if (typeof (RevisionEntity) == type && !AppConfiguration.GetSetting<bool>(DatabaseSettingKeys.EnableEnvers))
-                return false;
-
             if (type.GetCustomAttribute<IncludeAttribute>() != null)
                 return true;
             return base.ShouldMap(type) && typeof(IEntity).IsAssignableFrom(type) && type.GetCustomAttribute<IgnoreAttribute>(false) == null;
@@ -75,10 +70,10 @@ namespace PowerArhitecture.DataAccess.Configurations
                     new IdentityStep(this),
                     new VersionStep(this),
                     new ComponentStep(this),
-                    new PropertyStep(conventionFinder, this),
+                    new PAPropertyStep(conventionFinder, this), //support overrides
                     new CustomHasManyToManyStep(this),
                     new ReferenceStep(this),
-                    new HasManyStep(this)
+                    new PAHasManyStep(this)
                 };
             steps.AddRange(basicSteps);
             return steps;

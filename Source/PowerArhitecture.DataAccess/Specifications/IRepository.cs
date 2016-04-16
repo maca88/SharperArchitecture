@@ -15,7 +15,9 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         T Get<T>(object id);
 
-        T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity;
+        void Save(object model);
+
+        //T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity;
 
         IQueryable<T> Query<T>() where T : IEntity;
     } 
@@ -44,7 +46,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         void Delete(TId id);
 
-        TModel DeepCopy(TModel model, DeepCopyOptions opts = null);
+        //TModel DeepCopy(TModel model, DeepCopyOptions opts = null);
 
         IEnumerable<PropertyInfo> GetMappedProperties();
     }

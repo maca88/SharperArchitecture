@@ -1,5 +1,5 @@
-﻿using PowerArhitecture.Domain.Attributes;
-using Castle.Core.Internal;
+﻿using System.Reflection;
+using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate.Conventions;
 using FluentNHibernate.Conventions.Instances;
 
@@ -16,7 +16,7 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IManyToOneInstance instance)
         {
-            var attribute = instance.Property.MemberInfo.GetAttribute<IndexAttribute>();
+            var attribute = instance.Property.MemberInfo.GetCustomAttribute<IndexAttribute>();
             if (attribute == null) return;
             instance.Index(attribute.IsKeySet
                 ? GetIndexName(instance.EntityType.Name, attribute.KeyName)
@@ -25,7 +25,7 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         private static string GetIndexName(string tableName, string name)
         {
-            return string.Format("IX_{0}_{1}", tableName, name);
+            return string.Format("IX_{0}", name);
         }
     }
 }

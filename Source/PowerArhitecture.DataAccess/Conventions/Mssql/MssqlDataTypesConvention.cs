@@ -23,6 +23,10 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
             return _validDialects.Contains(dialect.GetType().FullName);
         }
 
+        public void Setup(Configuration configuration)
+        {
+        }
+
         public void ApplyBeforeExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
         {
         }
@@ -41,6 +45,12 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
             */
             if (new[] { typeof(DateTimeOffset), typeof(DateTimeOffset?) }.Contains(instance.Property.PropertyType))
                 instance.CustomType("datetimeoffset");
+
+            if (new[] { typeof(ushort), typeof(ushort?) }.Contains(instance.Property.PropertyType))
+                instance.CustomSqlType("int");
+
+            if (new[] { typeof(uint), typeof(uint?) }.Contains(instance.Property.PropertyType))
+                instance.CustomSqlType("bigint");
         }
     }
 }

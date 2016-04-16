@@ -32,28 +32,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentNHibernate, Version=1.4.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\FluentNHibernate.1.4.0.0\lib\net35\FluentNHibernate.dll</HintPath>
-    </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate, Version=4.0.0.1000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHibernate.4.0.1.4000\lib\net40\NHibernate.dll</HintPath>
+    <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernateX.1.2.0.4000\lib\net45\NHibernate.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="NHibernate.Envers, Version=2.0.0.500, Culture=neutral, PublicKeyToken=e2c5b946037fb7f8, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHibernate.Envers.2.0.0\lib\Net40\NHibernate.Envers.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Interactive.Async, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ix-Async.1.2.5\lib\net45\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alternations\EntityAlternation.cs" />
+    <Compile Include="Attributes\FetchModeAttribute.cs" />
     <Compile Include="Attributes\FormulaAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="Attributes\IncludeAttribute.cs" />
@@ -69,14 +61,15 @@
     <Compile Include="Attributes\LazyLoadAttribute.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
-    <Compile Include="Convention\VersionedEntityConvention.cs" />
     <Compile Include="Entity.cs" />
+    <Compile Include="Enums\FetchMode.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RevisionEntity.cs" />
-    <Compile Include="Specifications\IRevisionEntity.cs" />
+    <Compile Include="Specifications\IAggregateChild.cs" />
     <Compile Include="Specifications\IVersionedEntity.cs" />
+    <Compile Include="Specifications\IVersionedEntityWithUser.cs" />
     <Compile Include="VersionedEntity.cs" />
+    <Compile Include="VersionedEntityWithUser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">

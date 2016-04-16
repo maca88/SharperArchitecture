@@ -46,6 +46,27 @@ namespace System
             return baseType != null && IsAssignableToGenericType(baseType, genericType);
         }
 
+        public static Type GetGenericType(this Type givenType, Type genericType)
+        {
+            while (true)
+            {
+                var interfaceTypes = givenType.GetInterfaces();
+
+                var i = interfaceTypes.FirstOrDefault(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType);
+                if (i != null)
+                {
+                    return i;
+                }
+
+                if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+                    return givenType;
+
+                var baseType = givenType.BaseType;
+                if (baseType == null) return null;
+                givenType = baseType;
+            }
+        }
+
         public static bool IsDateTime(this Type type)
         {
             return DateTimeTypes.Contains(type);
@@ -201,6 +222,60 @@ namespace System
         private static MethodInfo GetMethod(Type type, string methodName)
         {
             return type.GetMethod(methodName, AllBinding);
+        }
+
+        /// <summary>
+        ///   Returns list of all unique interfaces implemented given types, including their base interfaces.
+        /// </summary>
+        /// <param name="types"> </param>
+        /// <returns> </returns>
+        public static Type[] GetAllInterfaces(params Type[] types)
+        {
+            if (types == null)
+            {
+                return Type.EmptyTypes;
+            }
+
+            var interfaces = new HashSet<Type>();
+            for (var index = 0; index < types.Length; index++)
+            {
+                var type = types[index];
+                if (type == null)
+                {
+                    continue;
+                }
+
+                if (type.IsInterface)
+                {
+                    if (interfaces.Add(type) == false)
+                    {
+                        continue;
+                    }
+                }
+
+                var innerInterfaces = type.GetInterfaces();
+                for (var i = 0; i < innerInterfaces.Length; i++)
+                {
+                    var @interface = innerInterfaces[i];
+                    interfaces.Add(@interface);
+                }
+            }
+
+            return Sort(interfaces);
+        }
+
+        private static Type[] Sort(ICollection<Type> types)
+        {
+            var array = new Type[types.Count];
+            types.CopyTo(array, 0);
+            //NOTE: is there a better, stable way to sort Types. We will need to revise this once we allow open generics
+            Array.Sort(array, (l, r) => string.Compare(l.AssemblyQualifiedName, r.AssemblyQualifiedName, StringComparison.OrdinalIgnoreCase));
+            return array;
+        }
+
+        public static Type[] GetAllInterfaces(this Type type)
+        {
+            return GetAllInterfaces(new[] { type });
         }
     }
 }

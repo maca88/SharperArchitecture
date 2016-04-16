@@ -7,6 +7,6 @@ namespace PowerArhitecture.Notifications.Specifications
     {
         //string QueryName { get; }
 
-        IEnumerable<IUser> GetRecipients(string pattern);
+        IEnumerable<object> GetRecipients(string pattern);
     }
 }

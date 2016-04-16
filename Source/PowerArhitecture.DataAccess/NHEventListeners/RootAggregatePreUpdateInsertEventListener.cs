@@ -7,6 +7,7 @@ using NHibernate;
 using NHibernate.Engine;
 using NHibernate.Event;
 using PowerArhitecture.DataAccess.Specifications;
+using PowerArhitecture.Domain.Specifications;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
 {

@@ -152,3 +152,4 @@ $RECYCLE.BIN/
 node_modules
 bower_components
 
+Source/packages/*

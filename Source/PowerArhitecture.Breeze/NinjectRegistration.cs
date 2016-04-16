@@ -27,15 +27,14 @@ namespace PowerArhitecture.Breeze
                 .WhichAreNotGeneric()
                 .BindAllInterfaces()
                 .Configure(c => c.InSingletonScope()));
-
-            BreezeModelConfigurator.SerializationMemberRuleCreated += (rule =>
-            {
-                rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
-            });
-            BreezeModelConfigurator.ModelConfigurationCreated += (rule =>
-            {
-                rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
-            });
+            //BreezeModelConfigurator.SerializationMemberRuleCreated += (rule =>
+            //{
+            //    rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
+            //});
+            //BreezeModelConfigurator.ModelConfigurationCreated += (rule =>
+            //{
+            //    rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
+            //});
         }
     }
 }

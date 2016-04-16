@@ -8,8 +8,12 @@ namespace PowerArhitecture.Validation.Extensions
     {
         public static string GetMessageId(this IPropertyValidator propVal, bool includePropName = false)
         {
-            var propValType = propVal.GetType();
+            var delegVal = propVal as DelegatingValidator;
+            if (delegVal != null)
+                propVal = delegVal.InnerValidator; //Get the actual validator
 
+            var propValType = propVal.GetType();
+            
             #region NotNullValidator
             if (propValType == typeof(NotNullValidator))
             {

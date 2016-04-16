@@ -14,7 +14,7 @@ namespace PowerArhitecture.Breeze.Extensions
         #region SerializeWhenUserHasPermission
 
         public static IMemberConfiguration<TModel, TType> SerializeWhenUserHasPermission<TModel, TType>(
-            this IMemberConfiguration<TModel, TType> configuration, string pattern, PatternOption opt = PatternOption.None)
+            this IMemberConfiguration<TModel, TType> configuration, string pattern, PatternOptions opt = PatternOptions.None)
         {
             var memberConfig = (IMemberConfiguration)configuration;
             var userCache = memberConfig.GetUserCache();
@@ -22,16 +22,16 @@ namespace PowerArhitecture.Breeze.Extensions
             return configuration;
         }
 
-        public static ICustomMemberConfiguration<TModel, TType> SerializeWhenUserHasPermission<TModel, TType>(
-            this ICustomMemberConfiguration<TModel, TType> configuration, string pattern, PatternOption opt = PatternOption.None)
-        {
-            var memberConfig = (IMemberConfiguration)configuration;
-            memberConfig.SerializeWhenUserHasPermission(pattern, opt);
-            return configuration;
-        }
+        //public static ICustomMemberConfiguration<TModel, TType> SerializeWhenUserHasPermission<TModel, TType>(
+        //    this ICustomMemberConfiguration<TModel, TType> configuration, string pattern, PatternOptions opt = PatternOptions.None)
+        //{
+        //    var memberConfig = (IMemberConfiguration)configuration;
+        //    memberConfig.SerializeWhenUserHasPermission(pattern, opt);
+        //    return configuration;
+        //}
 
         public static IMemberConfiguration SerializeWhenUserHasPermission(
-            this IMemberConfiguration configuration, string pattern, PatternOption opt = PatternOption.None)
+            this IMemberConfiguration configuration, string pattern, PatternOptions opt = PatternOptions.None)
         {
             var userCache = configuration.GetUserCache();
             configuration.ShouldSerializePredicate = o => userCache.GetCurrentUser().HasPermission(pattern, opt);

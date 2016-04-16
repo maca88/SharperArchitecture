@@ -14,7 +14,8 @@ namespace PowerArhitecture.Breeze
                     {"BinaryBlob", "Binary" },
                     {"Timestamp", "DateTime" },
                     {"TimeAsTimeSpan", "Time" },
-                    {"UtcDateTime", "DateTime"}
+                    {"UtcDateTime", "DateTime"},
+                    {"LocalDateTime", "DateTime"}
                 };
 
 

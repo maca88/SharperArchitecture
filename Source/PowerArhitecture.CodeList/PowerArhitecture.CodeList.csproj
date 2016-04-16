@@ -32,9 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentNHibernate, Version=1.4.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
+    <Reference Include="FluentNHibernate, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\FluentNHibernate.1.4.0.0\lib\net35\FluentNHibernate.dll</HintPath>
+      <HintPath>..\packages\FluentNHibernate.2.0.1.0\lib\net40\FluentNHibernate.dll</HintPath>
     </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -44,24 +44,35 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate, Version=4.0.0.1000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHibernate.4.0.1.4000\lib\net40\NHibernate.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernateX.1.2.0.4000\lib\net45\NHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate.Extensions">
+      <HintPath>..\packages\NHibernate.Extensions.1.0.1\lib\net40\NHibernate.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Ninject">
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.Extensions.Logging">
-      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
+    <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.Extensions.Logging.Log4Net">
-      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
+    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Interactive.Async, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ix-Async.1.2.5\lib\net45\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,18 +80,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\GenerateCodeListAttribute.cs" />
+    <Compile Include="Attributes\CodeListAttribute.cs" />
     <Compile Include="CodeList.cs" />
-    <Compile Include="CodeListCache.cs" />
     <Compile Include="CodeListLoc.cs" />
+    <Compile Include="CodeListWithUser.cs" />
+    <Compile Include="CodeListLocWithUser.cs" />
     <Compile Include="CodeListLocalization.cs" />
+    <Compile Include="Configurations\CodeListConfiguration.cs" />
+    <Compile Include="Configurations\CodeListConfigurationKeys.cs" />
+    <Compile Include="Configurations\FluentCodeListConfiguration.cs" />
     <Compile Include="EventListeners\HibernateMappingsBuiltEventListener.cs" />
     <Compile Include="Extensions\IIdentityInstanceExtensions.cs" />
     <Compile Include="MappingSteps\CodeListStep.cs" />
     <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Specifications\ICodeList.cs" />
-    <Compile Include="Specifications\ICodeListCache.cs" />
+    <Compile Include="Specifications\ICodeListConfiguration.cs" />
+    <Compile Include="Specifications\IFluentCodeListConfiguration.cs" />
     <Compile Include="Specifications\ICodeListLoc.cs" />
     <Compile Include="Specifications\ICodeListLocalization.cs" />
     <Compile Include="Specifications\ICodeListNoLoc.cs" />
@@ -98,10 +114,6 @@
     <ProjectReference Include="..\PowerArhitecture.DataAccess\PowerArhitecture.DataAccess.csproj">
       <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
       <Name>PowerArhitecture.DataAccess</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PowerArhitecture.DataCaching\PowerArhitecture.DataCaching.csproj">
-      <Project>{3e7de745-c0f3-48ca-8636-b515cac259a8}</Project>
-      <Name>PowerArhitecture.DataCaching</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerArhitecture.Domain\PowerArhitecture.Domain.csproj">
       <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>

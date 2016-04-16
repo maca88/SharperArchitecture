@@ -21,7 +21,7 @@ namespace PowerArhitecture.Common.Principal
 
         public string UserName { get { return ""; } set { return;} }
 
-        public bool HasPermission(string pattern, PatternOption opt = PatternOption.None)
+        public bool HasPermission(string pattern, PatternOptions opt = PatternOptions.None)
         {
             return false;
         }

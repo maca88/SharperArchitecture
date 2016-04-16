@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using PowerArhitecture.Common.Reporting;
 using PowerArhitecture.Reporting.Specifications;
 using PowerArhitecture.Reporting.TextSharp;
-using DocumentFormat.OpenXml.Office.CustomUI;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.tool.xml;

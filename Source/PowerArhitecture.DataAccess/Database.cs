@@ -7,18 +7,16 @@ using System.Reflection;
 using System.Web;
 using FluentNHibernate;
 using FluentNHibernate.Mapping;
-using NHibernate.Envers.Configuration;
-using NHibernate.Envers.Configuration.Attributes;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Events;
+using PowerArhitecture.DataAccess.Interceptors;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Specifications;
-using PowerArhitecture.DataAccess.Settings;
 using FluentNHibernate.Automapping;
 using FluentNHibernate.Automapping.Steps;
 using FluentNHibernate.Cfg;
@@ -34,98 +32,101 @@ namespace PowerArhitecture.DataAccess
 {
     public class Database
     {
-        private NHibernate.Caches.SysCache.SysCache _dummyCache; //Only here because it needs to be copied in bin folder
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Database));
         private static readonly Dictionary<ISessionFactory, SessionFactoryInfo> SessionFactories = new Dictionary<ISessionFactory, SessionFactoryInfo>();
         private static IEventAggregator _eventAggregator;
 
         static Database(){}
 
-        public static ISessionFactory CreateSessionFactory(Configuration configuration, IEventAggregator eventAggregator, 
-            IDatabaseSettings databaseSettings)
-        {
-            return CreateSessionFactory(
-                configuration,
-                eventAggregator,
-                databaseSettings,
-                AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(assembly => assembly.GetTypes().Any(o => (typeof(IEntity)).IsAssignableFrom(o))).ToList(),
-                AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
-                    .Where(assembly => assembly.GetTypes().Any(o => (typeof(IConvention)).IsAssignableFrom(o))).ToList(),
-                new AutomappingConfiguration()
-                    .AddStepAssemblies(AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
-                        .Where(assembly => assembly != Assembly.GetExecutingAssembly())
-                        .Where(assembly => assembly.GetTypes().Any(o => (typeof(IAutomappingStep)).IsAssignableFrom(o))).ToList()),
-                HttpRuntime.AppDomainAppPath,
-                true,
-                null);
-        }
-
         public static ISessionFactory CreateSessionFactory(
-            Configuration cfg,
             IEventAggregator eventAggregator,
-            IDatabaseSettings dbSettings, 
-            ICollection<Assembly> entityAssemblies,
-            IEnumerable<Assembly> conventionAssemblies,
-            IAutomappingConfiguration automappingConfiguration, 
-            string hbmMappingsPath, 
-            bool xmlConfig,
-            Action<FluentConfiguration> configureAction)
+            DatabaseConfiguration dbConfiguration,
+            string name = null)
         {
+            var cfg = dbConfiguration.NHibernateConfiguration;
+            var entityAssemblies = dbConfiguration.EntityAssemblies.Any()
+                ? dbConfiguration.EntityAssemblies
+                : AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IEntity)).IsAssignableFrom(o))).ToList();
+
+            var conventionAssemblies = dbConfiguration.ConventionAssemblies.Any()
+                ? dbConfiguration.ConventionAssemblies
+                : AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
+                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IConvention)).IsAssignableFrom(o)))
+                    .ToList();
+
+            var automappingConfiguration = dbConfiguration.AutomappingConfiguration ?? new AutomappingConfiguration()
+                .AddStepAssemblies(AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
+                    .Where(assembly => assembly != Assembly.GetExecutingAssembly())
+                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IAutomappingStep)).IsAssignableFrom(o)))
+                    .ToList());
+
+            var hbmMappingsPath = dbConfiguration.HbmMappingsPath;
+            if (!string.IsNullOrEmpty(hbmMappingsPath) && hbmMappingsPath.StartsWith("."))
+                hbmMappingsPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, hbmMappingsPath));
+
             try
             {
                 _eventAggregator = eventAggregator;
-                if (xmlConfig) //configure with xml
-                    cfg.Configure();
                 var fluentConfig = Fluently.Configure(cfg);
-                if (configureAction != null)
-                    configureAction(fluentConfig);
+                if (dbConfiguration.FluentConfigurationAction != null)
+                    dbConfiguration.FluentConfigurationAction(fluentConfig);
                 var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
                 var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies,
-                    dbSettings.Conventions, conventionAssemblies, dialect, eventAggregator);
+                    dbConfiguration.Conventions, conventionAssemblies, dialect, eventAggregator);
                 fluentConfig
                     .Mappings(m =>
+                    {
+                        m.AutoMappings.Add(autoPestModel);
+                        foreach (var domainAssembly in entityAssemblies)
                         {
-                            m.AutoMappings.Add(autoPestModel);
-                            foreach (var domainAssembly in entityAssemblies)
-                            {
-                                m.HbmMappings.AddFromAssembly(domainAssembly);
-                            }
-                            //var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
-                            //if (!Directory.Exists(mappingsDirecotry))
-                            //    Directory.CreateDirectory(mappingsDirecotry);
-                            //m.AutoMappings.ExportTo(mappingsDirecotry);
-                            //m.FluentMappings.ExportTo(mappingsDirecotry);
-                        })
+                            m.HbmMappings.AddFromAssembly(domainAssembly);
+                        }
+                        //var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
+                        //if (!Directory.Exists(mappingsDirecotry))
+                        //    Directory.CreateDirectory(mappingsDirecotry);
+                        //m.AutoMappings.ExportTo(mappingsDirecotry);
+                        //m.FluentMappings.ExportTo(mappingsDirecotry);
+                    })
                     .ExposeConfiguration(configuration =>
+                    {
+                        if (_eventAggregator != null)
+                            _eventAggregator.SendMessage(new NhConfigurationEvent(configuration));
+
+                        configuration.SetInterceptor(new NhibernateInterceptor());
+
+                        //ConfigureEnvers(configuration, entityAssemblies);
+                        RecreateOrUpdateSchema(autoPestModel, configuration, dbConfiguration);
+                        if (dbConfiguration.ValidateSchema)
+                            ValidateSchema(configuration);
+
+                        if (!string.IsNullOrEmpty(hbmMappingsPath))
                         {
-                            if (_eventAggregator != null)
-                                _eventAggregator.SendMessage(new NhConfigurationEvent(configuration));
-
-                            ConfigureEnvers(configuration, entityAssemblies);
-                            //ConfigureNhibernateValidator(configuration, entityAssemblies);
-                            RecreateOrUpdateSchema(autoPestModel, configuration, dbSettings, 
-                                NHibernate.Dialect.Dialect.GetDialect(configuration.Properties));
-                            if(dbSettings.ValidateSchema)
-                                ValidateSchema(configuration);
-
-                            var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
-                            if (!Directory.Exists(mappingsDirecotry))
-                                Directory.CreateDirectory(mappingsDirecotry);
-                            autoPestModel.WriteMappingsTo(mappingsDirecotry);
-
-                        });
+                            if (!Directory.Exists(hbmMappingsPath))
+                                Directory.CreateDirectory(hbmMappingsPath);
+                            autoPestModel.WriteMappingsTo(hbmMappingsPath);
+                        }
+                    });
                 
                 var sessionFactory = fluentConfig.BuildSessionFactory();
-                RegisterSessionFactory(sessionFactory, cfg, dbSettings);
+                RegisterSessionFactory(sessionFactory, cfg, autoPestModel, dbConfiguration, name);
                 return sessionFactory;
             }
             catch (FluentConfigurationException e)
             {
-                Logger.Fatal(e);
-                throw;
+                var innerEx = e.InnerException as FluentConfigurationException;
+                if (innerEx != null)
+                {
+                    e = innerEx;
+                }
+                if (e.PotentialReasons.Any())
+                {
+                    Logger.Fatal("PotentialReasons: " +  string.Join(System.Environment.NewLine, e.PotentialReasons));
+                }
+                Logger.Fatal(e.InnerException);
+                throw e.InnerException;
             }
         }
 
@@ -138,6 +139,16 @@ namespace PowerArhitecture.DataAccess
             schema.Drop(true, true);
         }
 
+        public static void RecreateTables(ISessionFactory sessionFactory)
+        {
+            if (!SessionFactories.ContainsKey(sessionFactory))
+                throw new KeyNotFoundException("sessionFactory");
+            var info = SessionFactories[sessionFactory];
+
+            SetupSchema(info.AutoPersistenceModel, info.Configuration,
+                (dbConnection, conventions) => RecreateSchema(info.Configuration, dbConnection, conventions));
+        }
+
         public static SessionFactoryInfo GetSessionFactoryInfo(ISession session)
         {
             return GetSessionFactoryInfo(session.SessionFactory);
@@ -148,15 +159,16 @@ namespace PowerArhitecture.DataAccess
             return SessionFactories[sessionFactory];
         }
 
-        private static void RegisterSessionFactory(ISessionFactory sessionFactory, Configuration configuration, IDatabaseSettings dbSettings)
+        private static void RegisterSessionFactory(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 
+            DatabaseConfiguration dbConfiguration, string name = null)
         {
-            var sessionFactoryInfo = new SessionFactoryInfo(sessionFactory, configuration);
-            sessionFactoryInfo.ValidateSettings(dbSettings);
+            var sessionFactoryInfo = new SessionFactoryInfo(sessionFactory, configuration, autoPersistenceModel, dbConfiguration, name);
+            sessionFactoryInfo.ValidateSettings();
             SessionFactories.Add(sessionFactory, sessionFactoryInfo);
         }
 
-        private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration,
-            ICollection<Assembly> assemblies, ConventionsSettings conventionsSettings, IEnumerable<Assembly> conventionAssemblies,
+        private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration, ICollection<Assembly> assemblies, 
+            ConventionsConfiguration conventionsConfiguration, IEnumerable<Assembly> conventionAssemblies,
             NHibernate.Dialect.Dialect dialect, IEventAggregator eventAggregator)
         {
             var conventions = new List<IConvention>();
@@ -164,8 +176,8 @@ namespace PowerArhitecture.DataAccess
                 .Select(a => new
                     {
                         Assembly = a,
-                        Order = a.GetCustomAttribute<ConventionsAttribute>() != null
-                                    ? a.GetCustomAttribute<ConventionsAttribute>().Order
+                        Order = a.GetCustomAttribute<ConventionAttribute>() != null
+                                    ? a.GetCustomAttribute<ConventionAttribute>().Order
                                     : int.MaxValue
                     })
                 .OrderBy(a => a.Order)
@@ -175,17 +187,17 @@ namespace PowerArhitecture.DataAccess
                     .Select(t => new
                         {
                             Type = t,
-                            Order = t.GetCustomAttribute<ConventionsAttribute>() != null
-                                        ? t.GetCustomAttribute<ConventionsAttribute>().Order
+                            Order = t.GetCustomAttribute<ConventionAttribute>() != null
+                                        ? t.GetCustomAttribute<ConventionAttribute>().Order
                                         : int.MaxValue
                         })
                     .OrderBy(o => o.Order)
                     .Select(o => o.Type)))
             {
                 IConvention conv;
-                var constuctor = convType.GetConstructor(new[] { typeof(ConventionsSettings) });
+                var constuctor = convType.GetConstructor(new[] { typeof(ConventionsConfiguration) });
                 if (constuctor != null)
-                    conv = (IConvention) constuctor.Invoke(new object[] {conventionsSettings});
+                    conv = (IConvention) constuctor.Invoke(new object[] {conventionsConfiguration});
                 else
                 {
                     try
@@ -209,7 +221,7 @@ namespace PowerArhitecture.DataAccess
                 .AddConventions(conventions)
                 .AddFilters(GetFilterDefinitions(assemblies))
                 .Conventions.Add(PrimaryKey.Name.Is(o => "Id"))
-                .Conventions.Add(ForeignKey.EndsWith("Id"))
+                //.Conventions.Add(ForeignKey.EndsWith("Id"))
                 .Alterations(collection => collection.AddFromAssemblies(assemblies)); //TODO: add new list
         }
 
@@ -226,15 +238,13 @@ namespace PowerArhitecture.DataAccess
             return model;
         }
 
-        private static void RecreateOrUpdateSchema(AutoPersistenceModel autoPersistenceModel, Configuration config, IDatabaseSettings dbSettings, 
-            NHibernate.Dialect.Dialect dialect, Action beforeCreateOrUpdateAction = null)
+        private static void SetupSchema(AutoPersistenceModel autoPersistenceModel, Configuration config,
+            Action<IDbConnection, ICollection<ISchemaConvention>> setupAction)
         {
-            //Run only if recreate or update db is allowed
-            if (!dbSettings.RecreateAtStartup && !dbSettings.UpdateSchemaAtStartup) return;
-
             IDbConnection connection = null;
             IConnectionProvider provider = null;
             var settings = new Dictionary<string, string>();
+            var dialect = NHibernate.Dialect.Dialect.GetDialect(config.Properties);
             foreach (var pair in dialect.DefaultProperties)
             {
                 settings[pair.Key] = pair.Value;
@@ -252,10 +262,7 @@ namespace PowerArhitecture.DataAccess
                 connection = provider.GetConnection();
                 SchemaMetadataUpdater.QuoteTableAndColumns(config);
                 var schemaConvs = autoPersistenceModel.Conventions.Find<ISchemaConvention>().ToList();
-                if (dbSettings.RecreateAtStartup)
-                    RecreateSchema(config, connection, schemaConvs, beforeCreateOrUpdateAction);
-                else if (dbSettings.UpdateSchemaAtStartup) //Usefull only in develop environment
-                    UpdateSchema(config, connection, schemaConvs, beforeCreateOrUpdateAction);
+                setupAction(connection, schemaConvs);
             }
             catch (HibernateException)
             {
@@ -275,17 +282,30 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
-        /*
-        private static void SubscribeEventListeners(Configuration config)
+        private static void RecreateOrUpdateSchema(AutoPersistenceModel autoPersistenceModel, Configuration config, DatabaseConfiguration dbConfiguration)
         {
-            config.SetListener(ListenerType.Save, new NhSaveEventListener()); //TODO: envers
-            config.SetListener(ListenerType.SaveUpdate, new NhSaveOrUpdateEventListener());
-            config.SetListener(ListenerType.PreUpdate, new PreUpdateEventListener());
-            //config.SetListener(ListenerType.PreInsert, new PreInsertEventListener());
-        }*/
+            //Run only if recreate or update db is allowed
+            if (!dbConfiguration.RecreateAtStartup && !dbConfiguration.UpdateSchemaAtStartup) return;
+
+            SetupSchema(autoPersistenceModel, config,
+                (dbConnection, conventions) =>
+                {
+                    //Setup schema conventions (this will happen only one time)
+                    foreach (var conv in conventions)
+                    {
+                        conv.Setup(config);
+                    }
+
+                    if (dbConfiguration.RecreateAtStartup)
+                        RecreateSchema(config, dbConnection, conventions);
+                    else if (dbConfiguration.UpdateSchemaAtStartup) //Usefull only in develop environment
+                        UpdateSchema(config, dbConnection, conventions);
+                });
+        }
+
 
         private static void RecreateSchema(Configuration config, IDbConnection dbConnection,
-            ICollection<ISchemaConvention> conventions, Action beforeCreateOrUpdateAction)
+            ICollection<ISchemaConvention> conventions, Action beforeCreateOrUpdateAction = null)
         {
             var schema = new SchemaExportExt(config);
             Action<IDbCommand> beforeExecuteSql = dbCommand =>
@@ -323,7 +343,7 @@ namespace PowerArhitecture.DataAccess
         }
 
         private static void UpdateSchema(Configuration config, IDbConnection dbConnection,
-            ICollection<ISchemaConvention> conventions, Action beforeCreateOrUpdateAction)
+            ICollection<ISchemaConvention> conventions, Action beforeCreateOrUpdateAction = null)
         {
             var schema = new SchemaUpdateExt(config);
             Action<IDbCommand> beforeExecuteSql = dbCommand =>
@@ -358,40 +378,17 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
-        private static void ConfigureEnvers(Configuration config, IEnumerable<Assembly> entityAssemblies)
-        {
-            if (!AppConfiguration.GetSetting<bool>(DatabaseSettingKeys.EnableEnvers)) return;
+        //private static void ConfigureEnvers(Configuration config, IEnumerable<Assembly> entityAssemblies)
+        //{
+        //    if (!AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.EnableEnvers)) return;
 
-            var enversConfig = new NHibernate.Envers.Configuration.Fluent.FluentConfiguration();
-            var types = entityAssemblies
-                .SelectMany(o => o.GetTypes()
-                                  .Where(t => 
-                                      t.GetCustomAttribute<AuditedAttribute>() != null ||
-                                      (typeof (IRevisionEntity).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract && !t.IsGenericType)))
-                .ToList();
-            _eventAggregator.SendMessage(new EnverConfigurationEvent(enversConfig));
-            enversConfig.Audit(types);
-            config.SetEnversProperty(ConfigurationKey.AuditTableSuffix, "Revision");
-            config.SetEnversProperty(ConfigurationKey.RevisionFieldName, "RevisionEntityId");
-            config.SetEnversProperty(ConfigurationKey.RevisionTypeFieldName, "RevisionType");
-            config.IntegrateWithEnvers();
-        }
-
-        /*
-        private static void ConfigureNhibernateValidator(Configuration config, IEnumerable<Assembly> entityAssemblies)
-        {
-            var nhvConfiguration = new NHibernate.Validator.Cfg.Loquacious.FluentConfiguration();
-            nhvConfiguration
-               .SetDefaultValidatorMode(ValidatorMode.OverrideExternalWithAttribute)
-               .Register(entityAssemblies.SelectMany(o => o.ValidationDefinitions()))
-               .IntegrateWithNHibernate
-                   .ApplyingDDLConstraints()
-                   .RegisteringListeners();
-            var provider = NHibernate.Validator.Cfg.Environment.SharedEngineProvider; //Was initialized in a startup task
-            var validatorEngine = provider.GetEngine();
-            validatorEngine.Configure(nhvConfiguration);
-            config.Initialize(validatorEngine);
-        }*/
+        //    var enversConfig = new NHibernate.Envers.Configuration.Fluent.FluentConfiguration();
+        //    _eventAggregator.SendMessage(new EnverConfigurationEvent(enversConfig));
+        //    config.SetEnversProperty(ConfigurationKey.AuditTableSuffix, "Revision");
+        //    config.SetEnversProperty(ConfigurationKey.RevisionFieldName, "RevisionEntityId");
+        //    config.SetEnversProperty(ConfigurationKey.RevisionTypeFieldName, "RevisionType");
+        //    config.IntegrateWithEnvers();
+        //}
 
         private static void ValidateSchema(Configuration config)
         {

@@ -42,11 +42,10 @@
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -58,11 +57,11 @@
     </Reference>
     <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
+      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
+      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
     </Reference>
     <Reference Include="Ninject.Extensions.NamedScope">
       <HintPath>..\packages\Ninject.Extensions.NamedScope.3.2.0.0\lib\net45-full\Ninject.Extensions.NamedScope.dll</HintPath>
@@ -71,8 +70,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
     </Reference>
-    <Reference Include="SecondLanguage">
-      <HintPath>..\packages\SecondLanguage.1.0.0\lib\net35\SecondLanguage.dll</HintPath>
+    <Reference Include="SecondLanguage, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SecondLanguage.1.0.1\lib\net35\SecondLanguage.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -86,7 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\ConventionsAttribute.cs" />
+    <Compile Include="Attributes\ConventionAttribute.cs" />
     <Compile Include="Attributes\EnumStringAttribute.cs" />
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
@@ -95,7 +95,8 @@
     <Compile Include="Cryptographics\AESCryptography.cs" />
     <Compile Include="Cryptographics\Sha1Cryptography.cs" />
     <Compile Include="DynamicLinq\Dynamic.cs" />
-    <Compile Include="Enums\PatternOption.cs" />
+    <Compile Include="Enums\PatternOptions.cs" />
+    <Compile Include="Exceptions\PowerArhitectureException.cs" />
     <Compile Include="Expressions\ExpressionInfo.cs" />
     <Compile Include="Expressions\SubExpressionInfo.cs" />
     <Compile Include="Extensions\DateTimeFormatInfoExtensions.cs" />
@@ -107,7 +108,7 @@
     <Compile Include="Extensions\PatternOptionExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Helpers\ExpressionHelper.cs" />
-    <Compile Include="Internationalization\LocalizableAttribute.cs" />
+    <Compile Include="Attributes\LocalizableAttribute.cs" />
     <Compile Include="Internationalization\TranslatorFormatter.cs" />
     <Compile Include="JsonNet\MultipleContractResolver.cs" />
     <Compile Include="JsonNet\ContractResolvers.cs" />
@@ -126,7 +127,6 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="Principal\GenericCustomPrincipal.cs" />
     <Compile Include="Providers\EventAggregatorProvider.cs" />
     <Compile Include="Publishers\UnhandledExceptionPublisher.cs" />
     <Compile Include="NinjectRegistration.cs" />
@@ -134,16 +134,12 @@
     <Compile Include="Security\PasswordHasher.cs" />
     <Compile Include="Specifications\IMultipleContractResolver.cs" />
     <Compile Include="Specifications\ICryptography.cs" />
-    <Compile Include="Specifications\IUser.cs" />
-    <Compile Include="Specifications\IRole.cs" />
     <Compile Include="Specifications\ITask.cs" />
-    <Compile Include="StartupTasks\AddListenersTask.cs" />
     <Compile Include="Settings.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Settings.tt</DependentUpon>
     </Compile>
-    <Compile Include="Specifications\IUserCache.cs" />
     <Compile Include="Writers\StringWriterWithEncoding.cs" />
   </ItemGroup>
   <ItemGroup>

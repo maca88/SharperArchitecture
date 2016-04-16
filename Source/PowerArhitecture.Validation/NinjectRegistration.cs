@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using PowerArhitecture.Validation.Factories;
 using PowerArhitecture.Validation.Specifications;
-using Castle.DynamicProxy.Internal;
 using FluentValidation;
 using Ninject.Modules;
 

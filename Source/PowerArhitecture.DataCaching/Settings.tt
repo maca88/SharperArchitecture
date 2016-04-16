@@ -1,5 +1,0 @@
-﻿<#@ template language="C#" debug="true" hostSpecific="true"#>
-<#@ include file="..\PowerArhitecture.Common\Settings.ttinclude"#>
-<#
-Run("DataCaching", "PowerArhitecture.DataCaching", "Settings", "PowerArhitecture.DataCaching");
-#>

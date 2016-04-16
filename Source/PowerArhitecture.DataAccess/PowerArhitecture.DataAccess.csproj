@@ -36,17 +36,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Bootstrapper.2.0.3.13\lib\Net40\Bootstrapper.dll</HintPath>
     </Reference>
-    <Reference Include="Castle.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Castle.Core.3.3.1\lib\net45\Castle.Core.dll</HintPath>
-    </Reference>
     <Reference Include="FluentNHibernate, Version=1.4.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\FluentNHibernate.1.4.0.0\lib\net35\FluentNHibernate.dll</HintPath>
+      <HintPath>..\packages\FluentNHibernate.2.0.1.0\lib\net40\FluentNHibernate.dll</HintPath>
     </Reference>
-    <Reference Include="FluentValidation, Version=5.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="FluentValidation, Version=5.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\FluentValidation.5.4.0.0\lib\Net40\FluentValidation.dll</HintPath>
+      <HintPath>..\packages\FluentValidation.5.6.2.0\lib\Net45\FluentValidation.dll</HintPath>
     </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -56,24 +52,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\Bar\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NHibernate">
-      <HintPath>..\packages\NHibernate.4.0.1.4000\lib\net40\NHibernate.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate.Caches.SysCache, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=6876f2ea66c9f443, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHibernate.Caches.SysCache.4.0.0.4000\lib\net40\NHibernate.Caches.SysCache.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate.Envers, Version=2.0.0.500, Culture=neutral, PublicKeyToken=e2c5b946037fb7f8, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NHibernate.Envers.2.0.0\lib\Net40\NHibernate.Envers.dll</HintPath>
+    <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernateX.1.2.0.4000\lib\net45\NHibernate.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Ninject">
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
@@ -86,17 +71,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Ninject.Extensions.Conventions.3.2.0.0\lib\net45-full\Ninject.Extensions.Conventions.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.Extensions.Factory, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Factory.3.2.1.0\lib\net45-full\Ninject.Extensions.Factory.dll</HintPath>
-    </Reference>
     <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
+      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
+      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.2.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
     </Reference>
     <Reference Include="Ninject.Extensions.NamedScope, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -108,6 +89,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Interactive.Async, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ix-Async.1.2.5\lib\net45\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -117,10 +102,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
     <Compile Include="Attributes\RepositoryAttribute.cs" />
+    <Compile Include="Attributes\NamedSessionFactoryAttribute.cs" />
+    <Compile Include="Comparers\EntityEqualComparer.cs" />
+    <Compile Include="Configurations\ConventionsConfiguration.cs" />
+    <Compile Include="Configurations\DatabaseConfigurationKeys.cs" />
+    <Compile Include="Configurations\DatabaseConfiguration.cs" />
+    <Compile Include="Configurations\FluentConventionsConfiguration.cs" />
+    <Compile Include="Configurations\FluentDatabaseConfiguration.cs" />
+    <Compile Include="Configurations\FluentHiLoIdConfiguration.cs" />
+    <Compile Include="Configurations\HiLoIdConfiguration.cs" />
+    <Compile Include="Conventions\ForeignKeyColumnNameConvention.cs" />
     <Compile Include="Conventions\ForeignKeyNameConvenction.cs" />
     <Compile Include="Conventions\FormulaAttributeConvention.cs" />
     <Compile Include="Conventions\IndexedAttributeConvention.cs" />
+    <Compile Include="Conventions\FetchModeAttributeConvention.cs" />
     <Compile Include="Conventions\LengthAttributeConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlDataTypesConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlIdDescendingConvention.cs" />
@@ -131,6 +128,7 @@
     <Compile Include="Conventions\LazyLoadAttributeConvention.cs" />
     <Compile Include="Conventions\LazyLoadingConvention.cs" />
     <Compile Include="Conventions\ManyToManyConvention.cs" />
+    <Compile Include="Conventions\Mssql\MssqlIndexNamingConvention.cs" />
     <Compile Include="Conventions\NotNullAttributeConvention.cs" />
     <Compile Include="Conventions\NotNullConvention.cs" />
     <Compile Include="Conventions\PropertyConvention.cs" />
@@ -138,53 +136,60 @@
     <Compile Include="Conventions\TableAttributeConvention.cs" />
     <Compile Include="Conventions\UniqueAttributeConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlUniqueMultipleNullsConvention.cs" />
+    <Compile Include="Conventions\VersionedEntityConvention.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="Enums\FlushMode.cs" />
     <Compile Include="Enums\LockMode.cs" />
     <Compile Include="Enums\Order.cs" />
     <Compile Include="Enums\SessionListenerType.cs" />
     <Compile Include="EventListeners\EntityPreUpdateInsertEventListener.cs" />
     <Compile Include="EventListeners\NhConfigurationEventListener.cs" />
-    <Compile Include="Events\EntityPreCollectionUpdatingEvent.cs" />
-    <Compile Include="Events\EntityPreDeletingEvent.cs" />
-    <Compile Include="Events\EntityPreInsertingEvent.cs" />
-    <Compile Include="Events\EntityPreUpdatingEvent.cs" />
-    <Compile Include="Events\EnverConfigurationEvent.cs" />
+    <Compile Include="EventListeners\TransactionEventListener.cs" />
+    <Compile Include="Events\EntitySavingEvent.cs" />
+    <Compile Include="Events\EntityUpdatingEvent.cs" />
     <Compile Include="Events\HibernateMappingsBuiltEvent.cs" />
-    <Compile Include="Events\SessionDisposingEvent.cs" />
     <Compile Include="EventListeners\SessionEventListener.cs" />
-    <Compile Include="Events\TransactionBeganEvent.cs" />
     <Compile Include="Events\TransactionCommittedEvent.cs" />
     <Compile Include="Events\NhConfigurationEvent.cs" />
     <Compile Include="Events\PopulateDbEvent.cs" />
-    <Compile Include="Events\SessionCreatedEvent.cs" />
-    <Compile Include="Events\SessionDisposedEvent.cs" />
-    <Compile Include="Events\SessionFactoryInitializedEvent.cs" />
     <Compile Include="Events\TransactionCommittingEvent.cs" />
     <Compile Include="Extensions\AutoMappingAlterationCollectionExtensions.cs" />
     <Compile Include="Extensions\AutoPersistenceModelModelExtensions.cs" />
     <Compile Include="Extensions\ConfigurationExtensions.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
+    <Compile Include="Extensions\FluentNHibernateInspectorExtensions.cs" />
     <Compile Include="Extensions\LockModeExtensions.cs" />
     <Compile Include="Extensions\NhConfigurationExtensions.cs" />
+    <Compile Include="Extensions\NinjectModuleExtensions.cs" />
     <Compile Include="Extensions\QueryOverExtensions.cs" />
     <Compile Include="Extensions\SessionExtensions.cs" />
     <Compile Include="Factories\RepositoryFactory.cs" />
     <Compile Include="Attributes\NhEventListenerAttribute.cs" />
-    <Compile Include="NHEventListeners\NhPreInsertUpdateEventListener.cs" />
+    <Compile Include="Factories\UnitOfWorkFactory.cs" />
+    <Compile Include="Interceptors\NhibernateInterceptor.cs" />
+    <Compile Include="MappingSteps\PACollectionStep.cs" />
+    <Compile Include="MappingSteps\PAHasManyStep.cs" />
+    <Compile Include="MappingSteps\PAPropertyStep.cs" />
+    <Compile Include="NHEventListeners\AuditEntityEventListener.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NHEventListeners\NhSaveEventListener.cs" />
     <Compile Include="NHEventListeners\NhSaveOrUpdateEventListener.cs" />
     <Compile Include="NHEventListeners\NhUpdateEventListener.cs" />
     <Compile Include="NHEventListeners\RootAggregatePreUpdateInsertEventListener.cs" />
     <Compile Include="NHEventListeners\ValidatePreInsertUpdateDeleteEventListener.cs" />
+    <Compile Include="Parameters\NamedSessionFactoryParameter.cs" />
+    <Compile Include="Providers\AuditUserProvider.cs" />
     <Compile Include="ResolutionScopes.cs" />
     <Compile Include="SessionProperties.cs" />
-    <Compile Include="Specifications\IAggregateChild.cs" />
-    <Compile Include="Specifications\IAggregateRoot.cs" />
-    <Compile Include="Specifications\IUnitOfWorkResolution.cs" />
+    <Compile Include="Specifications\IAuditUserProvider.cs" />
+    <Compile Include="Specifications\IFluentConventionsConfiguration.cs" />
+    <Compile Include="Specifications\IFluentDatabaseConfiguration.cs" />
+    <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
+    <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
+    <Compile Include="Visitors\NHibernateMappingVisitor.cs" />
     <Compile Include="Wrappers\CustomAutoPersistenceModel.cs" />
-    <Compile Include="Wrappers\TransactionWrapper.cs" />
     <Compile Include="Specifications\ISessionManager.cs" />
-    <Compile Include="Wrappers\SessionFactoryWrapper.cs" />
     <Compile Include="Managers\SessionManager.cs" />
     <Compile Include="MappingSteps\CustomHasManyToManyStep.cs" />
     <Compile Include="NinjectRegistration.cs" />
@@ -193,11 +198,6 @@
     <Compile Include="Providers\SessionProvider.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="SessionFactoryInfo.cs" />
-    <Compile Include="Settings.cs">
-      <DependentUpon>Settings.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Specifications\ICreateSchemaConvention.cs" />
     <Compile Include="Specifications\ISchemaConvention.cs" />
     <Compile Include="Specifications\IRepository.cs" />
@@ -206,19 +206,13 @@
     <Compile Include="Specifications\IUpdateSchemaConvention.cs" />
     <Compile Include="Specifications\IUnitOfWork.cs" />
     <Compile Include="Specifications\IUnitOfWorkFactory.cs" />
-    <Compile Include="StartupTasks\InitNHibernateEngine.cs" />
     <Compile Include="Tools\SchemaExportExt.cs" />
     <Compile Include="Tools\SchemaUpdateExt.cs" />
     <Compile Include="UnitOfWork.cs" />
-    <Compile Include="Wrappers\SessionWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <None Include="Settings.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Settings.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">

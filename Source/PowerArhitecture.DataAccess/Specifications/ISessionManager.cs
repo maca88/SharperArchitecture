@@ -10,7 +10,9 @@ namespace PowerArhitecture.DataAccess.Specifications
     {
         IEnumerable<ISession> GetAll();
 
-        IEnumerable<ISession> GetAll(Thread thread);
+        SessionManager.SessionInfo Add(ISession session);
+
+        bool Remove(ISession session);
 
         SessionManager.SessionInfo GetSessionInfo(ISession session);
 

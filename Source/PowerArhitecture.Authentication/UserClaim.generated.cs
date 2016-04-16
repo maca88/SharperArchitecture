@@ -12,12 +12,7 @@ namespace PowerArhitecture.Authentication.Entities
 	public partial class UserClaim
 	{
 
-		#region User
-
-        [ReadOnly(true)]
-        public virtual long? UserId { get; set; }
-
-		#endregion
+		
 
 	}
 }

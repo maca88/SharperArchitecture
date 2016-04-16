@@ -22,7 +22,7 @@ namespace PowerArhitecture.CodeList.EventListeners
             Type type = classMapBase.Type;
 
 
-            foreach (var reference in classMapBase.References.Where(o => typeof(ICodeList).IsAssignableFrom(o.Member.PropertyType)))
+            foreach (var reference in classMapBase.References.Where(o => CanManipulateIdentifier(o.Member.PropertyType)))
             {
                 var refColumn = Apply(reference);
                 var synteticColumn = classMapBase.Properties.SelectMany(o => o.Columns).FirstOrDefault(o => o.Name == refColumn.Name);
@@ -33,7 +33,7 @@ namespace PowerArhitecture.CodeList.EventListeners
                 }
             }
 
-            foreach (var collection in classMapBase.Collections.Where(o => typeof(ICodeList).IsAssignableFrom(o.ContainingEntityType)))
+            foreach (var collection in classMapBase.Collections.Where(o => CanManipulateIdentifier(o.ContainingEntityType)))
             {
                 Apply(collection);
             }
@@ -50,12 +50,14 @@ namespace PowerArhitecture.CodeList.EventListeners
 
             if (!typeof(ICodeList).IsAssignableFrom(type)) return;
 
-            var codeListAttr = type.GetCustomAttribute<GenerateCodeListAttribute>(false);
-            var length = (codeListAttr != null) ? codeListAttr.CodeLength : 20;
-
+            var codeListAttr = type.GetCustomAttribute<CodeListAttribute>(false) ?? new CodeListAttribute();
+            
+            
             var classMap = classMapBase as ClassMapping;
             if (classMap == null) return;
-            var tableName = classMap.TableName.Trim(new char[] { '`' });
+
+            //Add Table prefix
+            var tableName = classMap.TableName.Trim(new [] { '`' });
             if (tableName.EndsWith("CodeList"))
             {
                 tableName = tableName.Substring(0, tableName.IndexOf("CodeList", StringComparison.InvariantCulture));
@@ -65,26 +67,39 @@ namespace PowerArhitecture.CodeList.EventListeners
             {
                 tableName = "CodeList" + tableName;
             }
+            if (codeListAttr.AddTablePrefix)
+            {
+                classMap.Set(o => o.TableName, Layer.UserSupplied, tableName);
+            }
+
+            //Set View
+            if (!string.IsNullOrEmpty(codeListAttr.ViewName))
+            {
+                classMap.Set(o => o.Mutable, Layer.UserSupplied, false);
+                classMap.Set(o => o.TableName, Layer.UserSupplied, codeListAttr.ViewName);
+            }
+
+            //Change Id to Code
             var id = classMap.Id as IdMapping;
-            if (id != null)
+            if (id != null && codeListAttr.ManipulateIdentifier)
             {
                 var idCol = id.Columns.First();
                 idCol.Set(o => o.Name, Layer.UserSupplied, "Code");
-                idCol.Set(o => o.Length, Layer.UserSupplied, length);
+                idCol.Set(o => o.Length, Layer.UserSupplied, codeListAttr.CodeLength);
+                //We need to update the formula for the Code property
+                var codeProp = classMap.Properties.First(o => o.Name == "Code");
+                codeProp.Set(o => o.Formula, Layer.UserSupplied, "(Code)");
             }
 
-            if (codeListAttr != null && !string.IsNullOrEmpty(codeListAttr.ViewName))
-            {
-                tableName = codeListAttr.ViewName;
-                classMap.Set(o => o.Mutable, Layer.UserSupplied, false);
-            }
-
-            classMap.Set(o => o.TableName, Layer.UserSupplied, tableName);
+            if (codeListAttr.NameLength <= 0) return;
+            var nameProp = classMap.Properties.First(o => o.Name == "Name");
+            var nameCol = nameProp.Columns.First();
+            nameCol.Set(o => o.Length, Layer.UserSupplied, codeListAttr.NameLength);
         }
 
         public void Apply(IComponentMapping componentMap)
         {
-            foreach (var reference in componentMap.References.Where(o => typeof(ICodeList).IsAssignableFrom(o.Member.PropertyType)))
+            foreach (var reference in componentMap.References.Where(o => CanManipulateIdentifier(o.Member.PropertyType)))
             {
                 var refColumn = Apply(reference);
                 var synteticColumn = componentMap.Properties.SelectMany(o => o.Columns).FirstOrDefault(o => o.Name == refColumn.Name);
@@ -93,7 +108,7 @@ namespace PowerArhitecture.CodeList.EventListeners
                 synteticColumn.Set(o => o.NotNull, Layer.UserSupplied, refColumn.NotNull);
             }
 
-            foreach (var collection in componentMap.Collections.Where(o => typeof(ICodeList).IsAssignableFrom(o.ContainingEntityType)))
+            foreach (var collection in componentMap.Collections.Where(o => CanManipulateIdentifier(o.ContainingEntityType)))
             {
                 Apply(collection);
             }
@@ -107,7 +122,7 @@ namespace PowerArhitecture.CodeList.EventListeners
         public ColumnMapping Apply(CollectionMapping colectionMap)
         {
             var keyName = GetKeyName(null, colectionMap.ContainingEntityType);
-            var codeListAttr = colectionMap.ContainingEntityType.GetCustomAttribute<GenerateCodeListAttribute>(false);
+            var codeListAttr = colectionMap.ContainingEntityType.GetCustomAttribute<CodeListAttribute>(false);
             var length = (codeListAttr != null) ? codeListAttr.CodeLength : 20;
             var col = colectionMap.Key.Columns.First();
             col.Set(o => o.Name, Layer.UserSupplied, keyName);
@@ -117,7 +132,7 @@ namespace PowerArhitecture.CodeList.EventListeners
 
         public ColumnMapping Apply(ManyToOneMapping manyToOneMap)
         {
-            var codeListAttr = manyToOneMap.Member.PropertyType.GetCustomAttribute<GenerateCodeListAttribute>(false);
+            var codeListAttr = manyToOneMap.Member.PropertyType.GetCustomAttribute<CodeListAttribute>(false);
             var length = (codeListAttr != null) ? codeListAttr.CodeLength : 20;
             var keyName = GetKeyName(manyToOneMap.Member, manyToOneMap.Class.GetUnderlyingSystemType());
             var col = manyToOneMap.Columns.First();
@@ -139,6 +154,14 @@ namespace PowerArhitecture.CodeList.EventListeners
             {
                 Apply(classMap);
             }
+        }
+
+
+        private bool CanManipulateIdentifier(Type type)
+        {
+            if (!typeof (ICodeList).IsAssignableFrom(type)) return false;
+            var attr = type.GetCustomAttribute<CodeListAttribute>(false);
+            return attr == null || attr.ManipulateIdentifier;
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using PowerArhitecture.Validation.Specifications;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;

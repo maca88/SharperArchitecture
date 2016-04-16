@@ -7,8 +7,8 @@ using FluentNHibernate.Automapping;
 namespace PowerArhitecture.Tests.CodeList.Entities
 {
     [Serializable]
-    [GenerateCodeList]
-    public partial class CLCarCodeList : CodeListLoc<CLCarCodeList, CLCarCodeListLocalization>
+    [CodeList]
+    public partial class CLCarCodeList : CodeListLocWithUser<string, CLCarCodeList, CLCarCodeListLocalization>
     {
     }
 

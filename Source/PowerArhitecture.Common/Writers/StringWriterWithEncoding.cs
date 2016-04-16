@@ -13,7 +13,7 @@ namespace PowerArhitecture.Common.Writers
 
         public StringWriterWithEncoding(Encoding encoding)
         {
-            this._encoding = encoding;
+            _encoding = encoding;
         }
 
         public override Encoding Encoding

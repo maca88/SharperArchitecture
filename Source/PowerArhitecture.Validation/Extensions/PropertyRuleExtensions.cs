@@ -15,6 +15,9 @@ namespace PowerArhitecture.Validation.Extensions
         public static void SetL10NMessage(this PropertyRule propRule, bool includePropName = false)
         {
             var propVal = propRule.CurrentValidator;
+            var delegVal = propVal as DelegatingValidator;
+            if (delegVal != null)
+                propVal = delegVal.InnerValidator; //Get the actual validator
             var propValType = propVal.GetType();
             var messageId = propRule.GetMessageId(includePropName);
             var propName = propRule.DisplayName.GetString() ?? propRule.PropertyName;

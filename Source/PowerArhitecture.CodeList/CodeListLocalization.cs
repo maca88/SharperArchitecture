@@ -8,7 +8,7 @@ namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract partial class CodeListLocalization<TCodeList, TCodeListNames> : Entity, ICodeListLocalization<TCodeList, TCodeListNames>
+    public abstract class CodeListLocalization<TCodeList, TCodeListNames> : Entity, ICodeListLocalization<TCodeList, TCodeListNames>
         where TCodeList : class, ICodeListLoc<TCodeList, TCodeListNames>
         where TCodeListNames : class, ICodeListLocalization<TCodeList, TCodeListNames>
     {

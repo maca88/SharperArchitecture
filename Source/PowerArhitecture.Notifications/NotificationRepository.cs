@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Helpers;
@@ -11,39 +12,84 @@ using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Notifications.Entities;
 using PowerArhitecture.Validation.Specifications;
 using NHibernate;
+using NHibernate.Linq;
 using Ninject.Extensions.Logging;
+using PowerArhitecture.Domain;
+using PowerArhitecture.Notifications.Specifications;
 
 namespace PowerArhitecture.Notifications
 {
-    public class NotificationRepository : Repository<Notification>, INotificationRepository
+    public abstract class NotificationRepository<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient> 
+        : Repository<TNotification>, INotificationRepository<TRecipient, TNotification>
+        where TNotification : Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+        where TNotificationSearchPattern : NotificationSearchPattern<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
     {
-        private readonly IUserCache _userCache;
+        //Create a fake notification instance as the instance contains the recipient compare expression
+        private readonly TNotification _notification = new TNotification();
 
-        public NotificationRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener,IUserCache userCache) 
-            : base(session, logger, sessionEventListener)
+        protected NotificationRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
+            : base(session, logger, sessionEventProvider)
         {
-            _userCache = userCache;
         }
 
-        public ICollection<Notification> GetUnReadNotifications()
+        /// <summary>
+        /// Query unread notifications for the specified user
+        /// </summary>
+        /// <param name="recipient"></param>
+        /// <returns></returns>
+        public virtual IQueryable<TNotification> QueryUnReadNotifications(TRecipient recipient)
         {
-            var currentUser = _userCache.GetCurrentUser();
-            if(currentUser == null)
-                return new List<Notification>();
-            return Session.QueryOver<Notification>()
-                          .Inner.JoinQueryOver<NotificationRecipient>(o => o.Recipients)
-                          .Where(o => o.ReadDate == null)
-                          .Where(o => o.Recipient.Id == currentUser.Id)
-                          .List();
+            return Session.Query<TNotificationRecipient>()
+                .Where(o => o.ReadDate == null)
+                .Where(_notification.GetCompareRecipientExpression(recipient))
+                .Select(o => o.Notification);
         }
 
+        public virtual IEnumerable<TNotification> GetUnReadNotifications(TRecipient recipient)
+        {
+            return QueryUnReadNotifications(recipient).ToList();
+        }
 
+        public virtual IEnumerable<TNotification> MarkAllNotificationsAsReaded(TRecipient recipient)
+        {
+            var results = new List<TNotification>();
+            var notificationRecipients = Session.Query<TNotificationRecipient>()
+                .Fetch(o => o.Notification)
+                .Where(_notification.GetCompareRecipientExpression(recipient))
+                .ToList();
+            if (!notificationRecipients.Any()) return results;
+            foreach (var notificationRecipient in notificationRecipients)
+            {
+                notificationRecipient.ReadDate = DateTime.UtcNow;
+                results.Add(notificationRecipient.Notification);
+            }
+            return results;
+        }
 
+        public virtual TNotification MarkNotificationAsReaded(long notificationId, TRecipient recipient)
+        {
+            var notification = Session.Query<TNotification>()
+                .FetchMany(o => o.Recipients).ThenFetch(o => o.Recipient)
+                .FirstOrDefault(o => o.Id == notificationId);
+            if (notification == null) return null;
+            var notifrecipient = notification.Recipients.FirstOrDefault(_notification.GetCompareRecipientExpression(recipient).Compile());
+            if (notifrecipient == null) return null;
+            notifrecipient.ReadDate = DateTime.UtcNow;
+            return notification;
+        }
 
     }
 
-    public interface INotificationRepository : IRepository<Notification>
+    public interface INotificationRepository<in TRecipient, TNotification> : IRepository<TNotification>
+        where TNotification : class, INotification, IEntity<long>, new()
     {
-        ICollection<Notification> GetUnReadNotifications();
+        IEnumerable<TNotification> GetUnReadNotifications(TRecipient recipient);
+
+        IQueryable<TNotification> QueryUnReadNotifications(TRecipient recipient);
+
+        TNotification MarkNotificationAsReaded(long notificationId, TRecipient recipient);
+
+        IEnumerable<TNotification> MarkAllNotificationsAsReaded(TRecipient recipient);
     }
 }

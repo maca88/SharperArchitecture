@@ -2,6 +2,7 @@
 
 namespace PowerArhitecture.DataAccess.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class NhEventListenerAttribute : Attribute
     {
         public NhEventListenerAttribute()
@@ -12,7 +13,5 @@ namespace PowerArhitecture.DataAccess.Attributes
         public int Order { get; set; }
 
         public Type ReplaceListener { get; set; }
-
-
     }
 }

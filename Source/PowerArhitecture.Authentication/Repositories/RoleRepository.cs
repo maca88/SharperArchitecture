@@ -10,41 +10,44 @@ using PowerArhitecture.Validation.Specifications;
 using Microsoft.AspNet.Identity;
 using NHibernate;
 using Ninject.Extensions.Logging;
+using PowerArhitecture.Domain;
+using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
 namespace PowerArhitecture.Authentication.Repositories
 {
-    public class RoleRepository : Repository<Role>, IRoleRepository
+    public class RoleRepository<TRole> : Repository<TRole>, IRoleRepository<TRole>
+         where TRole : class, IRole, IEntity<long>, new()
     {
-        public RoleRepository(ISession session, ILogger logger, ISessionEventListener sessionEventListener) 
-            : base(session, logger, sessionEventListener)
+        public RoleRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
+            : base(session, logger, sessionEventProvider)
         {
         }
 
-        public Task CreateAsync(Role role)
-        {
-            Save(role);
-            return Task.FromResult(1);
-        }
-
-        public Task UpdateAsync(Role role)
+        public Task CreateAsync(TRole role)
         {
             Save(role);
             return Task.FromResult(1);
         }
 
-        public Task DeleteAsync(Role role)
+        public Task UpdateAsync(TRole role)
+        {
+            Save(role);
+            return Task.FromResult(1);
+        }
+
+        public Task DeleteAsync(TRole role)
         {
             Delete(role);
             return Task.FromResult(1);
         }
 
-        public Task<Role> FindByIdAsync(long roleId)
+        public Task<TRole> FindByIdAsync(long roleId)
         {
             var role = Get(roleId);
             return Task.FromResult(role);
         }
 
-        public Task<Role> FindByNameAsync(string roleName)
+        public Task<TRole> FindByNameAsync(string roleName)
         {
             var roles = Query().FirstOrDefault(o => o.Name == roleName);
             return Task.FromResult(roles);
@@ -55,7 +58,8 @@ namespace PowerArhitecture.Authentication.Repositories
         }
     }
 
-    public interface IRoleRepository : IRoleStore<Role, long>, IRepository<Role>
+    public interface IRoleRepository<TRole> : IRoleStore<TRole, long>, IRepository<TRole>
+        where TRole : class, IRole, IEntity<long>, new()
     {
         
     }

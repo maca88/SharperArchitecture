@@ -10,6 +10,7 @@ using System.Web.Http.OData.Query;
 using Breeze.ContextProvider.NH;
 using Breeze.WebApi2;
 using Newtonsoft.Json;
+using NHibernate;
 
 namespace PowerArhitecture.Breeze
 {
@@ -27,8 +28,19 @@ namespace PowerArhitecture.Breeze
             var jsonFormatter = settings.Formatters.JsonFormatter;
             if (jsonFormatter == null) return;
             var serializeSettings = jsonFormatter.SerializerSettings ?? new JsonSerializerSettings();
-            serializeSettings.Converters.Add(new NHibernateProxyJsonConverter());
+            if (!serializeSettings.Converters.Any(o => o is NHibernateProxyJsonConverter))
+                serializeSettings.Converters.Add(new NHibernateProxyJsonConverter());
             serializeSettings.ContractResolver = NHibernateContractResolver.Instance;
+            /* Error handling is not needed anymore. NHibernateContractResolver will take care of non initialized properties*/
+            //FIX: Still errors occurs
+            serializeSettings.Error = (sender, args) =>
+            {
+                // When the NHibernate session is closed, NH proxies throw LazyInitializationException when
+                // the serializer tries to access them.  We want to ignore those exceptions.
+                var error = args.ErrorContext.Error;
+                if (error is LazyInitializationException || error is ObjectDisposedException)
+                    args.ErrorContext.Handled = true;
+            };
         }
 
         protected override IFilterProvider GetQueryableFilterProvider(BreezeQueryableAttribute defaultFilter)

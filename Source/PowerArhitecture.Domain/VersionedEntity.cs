@@ -1,16 +1,16 @@
-using System;
-using System.ComponentModel;
-using PowerArhitecture.Common.Attributes;
-using PowerArhitecture.Common.Specifications;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using PowerArhitecture.Domain.Attributes;
 using PowerArhitecture.Domain.Specifications;
-using PowerArhitecture.Validation.Attributes;
 
 namespace PowerArhitecture.Domain
 {
     [Serializable]
     [Ignore]
-    public class VersionedEntity : VersionedEntity<long, IUser>
+    public abstract class VersionedEntity : VersionedEntity<long>
     {
         public override bool IsTransient()
         {
@@ -20,25 +20,12 @@ namespace PowerArhitecture.Domain
 
     [Serializable]
     [Ignore]
-    public partial class VersionedEntity<TType, TUser> : Entity<TType>, IVersionedEntity<TUser>
+    public abstract class VersionedEntity<TId> :  Entity<TId>, IVersionedEntity<TId>
     {
         public virtual int Version { get; protected set; }
 
         public virtual DateTime CreatedDate { get; protected set; }
 
-        [NotNull]
-        public virtual TUser CreatedBy { get; protected set; }
-
-        public virtual DateTime LastModifiedDate { get; protected set; }
-
-        [NotNull]
-        public virtual TUser LastModifiedBy { get; protected set; }
-
-        [ReadOnly(true)]
-        public virtual object CreatedById { get; protected set; }
-
-        [ReadOnly(true)]
-        public virtual object LastModifiedById { get; protected set; }
-
+        public virtual DateTime? LastModifiedDate { get; protected set; }
     }
 }

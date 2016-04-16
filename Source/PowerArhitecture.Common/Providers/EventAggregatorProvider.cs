@@ -32,7 +32,7 @@ namespace PowerArhitecture.Common.Providers
                     .OrderByDescending(o =>
                     {
                         var attr = o.GetCustomAttribute<PriorityAttribute>();
-                        return attr != null ? attr.Priority : 0;
+                        return attr?.Priority ?? 0;
                     }))
             {
                 //Bind all listener that are not already binded

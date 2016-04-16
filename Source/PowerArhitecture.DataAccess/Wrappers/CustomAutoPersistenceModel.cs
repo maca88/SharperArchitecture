@@ -17,7 +17,7 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public CustomAutoPersistenceModel(IEventAggregator eventAggregator, IAutomappingConfiguration cfg) : base(cfg)
         {
-            this._eventAggregator = eventAggregator;
+            _eventAggregator = eventAggregator;
         }
 
         public override IEnumerable<HibernateMapping> BuildMappings()

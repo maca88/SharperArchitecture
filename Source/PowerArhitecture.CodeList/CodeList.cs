@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.CodeList.Specifications;
-using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 
@@ -12,9 +11,9 @@ namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract class CodeList : VersionedEntity<string, IUser>, ICodeList, ICodeListNoLoc
+    public abstract class CodeList : VersionedEntity<string>, ICodeListNoLoc
     {
-        [Ignore]
+        [Formula("Id")]
         public virtual string Code { get { return Id; } set { Id = value; } }
 
         private bool _active = true;
@@ -23,10 +22,10 @@ namespace PowerArhitecture.CodeList
 
         public virtual string Name { get; set; }
 
-        //Id can be changed via Code so we have to check CreatedBy and LastModifiedBy
+        //Id can be changed via Code so we have to check CreatedDate and LastModifiedDate
         public override bool IsTransient()
         {
-            return CreatedBy == null || LastModifiedBy == null;
+            return CreatedDate == DateTime.MinValue || LastModifiedDate == DateTime.MinValue;
         }
     }
 }

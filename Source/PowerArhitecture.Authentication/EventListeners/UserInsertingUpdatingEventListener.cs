@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using NHibernate.Event;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Events;
@@ -15,24 +16,10 @@ using NHibernate.Persister.Entity;
 
 namespace PowerArhitecture.Authentication.EventListeners
 {
-    public class UserInsertingUpdatingEventListener : IListener<EntityPreInsertingEvent>, IListener<EntityPreUpdatingEvent>
+    public class UserInsertingUpdatingEventListener :
+        IPreInsertEventListener,
+        IPreUpdateEventListener
     {
-        public void Handle(EntityPreInsertingEvent e)
-        {
-            var @event = e.Message;
-            var user = @event.Entity as IUser;
-            if (user == null) return;
-            Set(@event.Persister, @event.State, GenerateSecurityStamp());
-        }
-
-        public void Handle(EntityPreUpdatingEvent e)
-        {
-            var @event = e.Message;
-            var user = @event.Entity as IUser;
-            if (user == null) return;
-            Set(@event.Persister, @event.State, GenerateSecurityStamp());
-        }
-
         private string GenerateSecurityStamp()
         {
             return Guid.NewGuid().ToString();
@@ -44,6 +31,22 @@ namespace PowerArhitecture.Authentication.EventListeners
             if (index == -1)
                 return;
             state[index] = value;
+        }
+
+        public bool OnPreInsert(PreInsertEvent @event)
+        {
+            var user = @event.Entity as IUser;
+            if (user == null) return false;
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
+            return false;
+        }
+
+        public bool OnPreUpdate(PreUpdateEvent @event)
+        {
+            var user = @event.Entity as IUser;
+            if (user == null) return false;
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
+            return false;
         }
     }
 }

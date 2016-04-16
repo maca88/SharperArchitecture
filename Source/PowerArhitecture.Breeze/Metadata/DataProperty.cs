@@ -35,7 +35,7 @@ namespace PowerArhitecture.Breeze.Metadata
         {
         }
 
-        public PropertyInfo PropertyInfo { get; private set; }
+        public PropertyInfo PropertyInfo { get; internal set; }
 
         #region DataType
 

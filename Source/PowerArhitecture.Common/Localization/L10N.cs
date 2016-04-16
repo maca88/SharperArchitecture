@@ -25,24 +25,5 @@ namespace PowerArhitecture.Common.Localization
         {
             return I18N.Translators.Select(o => CultureInfo.GetCultureInfo(o.Key)).ToList();
         }
-        /*
-        public static Dictionary<string, Dictionary<string, string>> GetAllTranstations(string culture = null)
-        {
-            var result = new Dictionary<string, Dictionary<string, string>>();
-            result.Add(DefaultCulture.Name, new Dictionary<string, string>());
-
-            foreach (var translation in Translator.Default.TranslationList.OfType<GettextTranslation>())
-            {
-                foreach (var getTextKey in translation.GetGettextKeys())
-                {
-                    getTextKey.
-                }
-                translation.GetGettextKeys()
-            }
-
-            I18N.Translators
-        }*/
-
-
     }
 }

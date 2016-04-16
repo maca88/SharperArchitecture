@@ -37,25 +37,39 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Iesi.Collections.4.0.0.4000\lib\net40\Iesi.Collections.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq, Version=4.2.1502.911, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Moq.4.2.1502.0911\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NHibernateX.1.2.0.4000\lib\net45\NHibernate.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Ninject">
       <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.MockingKernel">
-      <HintPath>..\..\packages\Ninject.MockingKernel.3.2.0.0\lib\net45-full\Ninject.MockingKernel.dll</HintPath>
+    <Reference Include="Ninject.MockingKernel, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Ninject.MockingKernel.3.2.2.0\lib\net45-full\Ninject.MockingKernel.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.MockingKernel.Moq">
-      <HintPath>..\..\packages\Ninject.MockingKernel.Moq.3.2.0.0\lib\net45-full\Ninject.MockingKernel.Moq.dll</HintPath>
+    <Reference Include="Ninject.MockingKernel.Moq, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Ninject.MockingKernel.Moq.3.2.2.0\lib\net45-full\Ninject.MockingKernel.Moq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Interactive.Async, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ix-Async.1.2.5\lib\net45\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -101,10 +115,6 @@
     <ProjectReference Include="..\..\PowerArhitecture.DataAccess\PowerArhitecture.DataAccess.csproj">
       <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
       <Name>PowerArhitecture.DataAccess</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\PowerArhitecture.DataCaching\PowerArhitecture.DataCaching.csproj">
-      <Project>{3e7de745-c0f3-48ca-8636-b515cac259a8}</Project>
-      <Name>PowerArhitecture.DataCaching</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\PowerArhitecture.Domain\PowerArhitecture.Domain.csproj">
       <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>

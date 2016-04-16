@@ -19,23 +19,26 @@ namespace PowerArhitecture.Common.Internationalization
             Translator.Default.FormatCallback = TranslatorFormatter.Custom;
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             
-            var defTranslPath = Path.Combine(baseDir,AppConfiguration.GetSetting<string>(CommonSettingKeys.DefaultTranslationsPath));
+            //Using GetFullPath so we can combine absolute and relative paths
+            var defTranslPath = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonSettingKeys.DefaultTranslationsPath)));
             if(!File.Exists(defTranslPath))
                 throw new FileNotFoundException(string.Format("Default translation file not found. Path: {0}", defTranslPath));
             Translator.Default.RegisterTranslation(defTranslPath);
 
             
             var translPattern = AppConfiguration.GetSetting<string>(CommonSettingKeys.TranslationsByCulturePattern);
+            var directoryPath = Path.GetDirectoryName(defTranslPath) ?? baseDir;
             foreach(var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                if(!File.Exists(Path.Combine(baseDir, string.Format(translPattern, (culture.Name)))))
+                if (!File.Exists(Path.Combine(directoryPath, string.Format(translPattern, (culture.Name)))))
                     continue;
                 var translator = new Translator
                 {
                     Parent = Translator.Default,
+                    FormatCallback = TranslatorFormatter.Custom
                 };
                 Translators.Add(culture.Name, translator);
-                translator.RegisterTranslationsByCulture(translPattern, culture, baseDir);
+                translator.RegisterTranslationsByCulture(translPattern, culture, directoryPath);
             }
         }
 
@@ -72,7 +75,7 @@ namespace PowerArhitecture.Common.Internationalization
             var result = Translators.ContainsKey(culture.Name) 
                 ? Translators[culture.Name].Translate(id, args)
                 : Translator.Default.Translate(id, args);
-            return string.IsNullOrEmpty(result) ? id : result;
+            return string.IsNullOrEmpty(result) ? TranslatorFormatter.Custom(id, args) : result;
         }
 
         #endregion

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Ninject.Syntax;
 using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.Domain;
 
@@ -22,19 +24,39 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         TModel Merge<TModel>(TModel model) where TModel : IEntity;
 
-        IEnumerable<TModel> DeepCopy<TModel>(IEnumerable<TModel> list) where TModel : IEntity;
-
-        TModel DeepCopy<TModel>(TModel model) where TModel : IEntity;
-
         TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>;
 
+        Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>;
+
         TModel Get<TModel>(long id) where TModel : IEntity<long>;
+
+        Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>;
 
         void Refresh<TModel>(TModel model) where TModel : IEntity;
 
         IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
 
         void Flush();
+
+        Task FlushAsync();
+
+        void Commit();
+
+        Task CommitAsync();
+
+        /// <summary>
+        /// Use this in a catch block for rollback transaction and disposing session
+        /// </summary>
+        void Rollback();
+
+        /// <summary>
+        /// Use this if you want instantiate a class that has a Repository or Session as dependency
+        /// </summary>
+        IResolutionRoot ResolutionRoot { get; }
+
+        void SetFlushMode(FlushMode mode);
+
+        IUnitOfWorkImplementor GetUnitOfWorkImplementation();
 
     }
 }

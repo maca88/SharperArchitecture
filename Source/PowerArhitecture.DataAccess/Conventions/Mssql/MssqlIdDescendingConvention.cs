@@ -2,8 +2,8 @@
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Settings;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 
@@ -11,7 +11,7 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
 {
     public class MssqlIdDescendingConvention : ISchemaConvention
     {
-        private readonly ConventionsSettings _settings;
+        private readonly ConventionsConfiguration _configuration;
         private readonly HashSet<string> _validDialects = new HashSet<string>
             {
                 typeof (MsSql2012Dialect).FullName,
@@ -19,14 +19,18 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
                 typeof (MsSql2005Dialect).FullName
             };
 
-        public MssqlIdDescendingConvention(ConventionsSettings settings)
+        public MssqlIdDescendingConvention(ConventionsConfiguration configuration)
         {
-            _settings = settings;
+            _configuration = configuration;
         }
 
         public bool CanApply(Dialect dialect)
         {
-            return _settings.IdDescending && _validDialects.Contains(dialect.GetType().FullName);
+            return _configuration.IdDescending && _validDialects.Contains(dialect.GetType().FullName);
+        }
+
+        public void Setup(Configuration configuration)
+        {
         }
 
         public void ApplyBeforeExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
