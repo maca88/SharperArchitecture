@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Breeze.ContextProvider.NH.Configuration;
+using Breeze.ContextProvider.NH;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PowerArhitecture.Breeze.Specification;

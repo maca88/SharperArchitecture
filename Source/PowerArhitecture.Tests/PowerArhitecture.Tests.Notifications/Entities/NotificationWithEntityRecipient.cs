@@ -9,7 +9,7 @@ using PowerArhitecture.Notifications.Entities;
 namespace PowerArhitecture.Tests.Notifications.Entities
 {
     public class NotificationWithEntityRecipient 
-        : Notification<User, NotificationWithEntityRecipient, NotificationSearchPatternWithEntityRecipient, NotificationRecipientWithEntityRecipient>
+        : Notification<User, NotificationWithEntityRecipient, NotificationRecipientWithEntityRecipient>
     {
         public override Expression<Func<NotificationRecipientWithEntityRecipient, bool>> GetCompareRecipientExpression(User recipient)
         {

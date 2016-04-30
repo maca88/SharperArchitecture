@@ -8,7 +8,7 @@ using FluentNHibernate.Automapping;
 namespace PowerArhitecture.Notifications.Entities
 {
 	[GeneratedCode("T4Template", "1.0")]
-    public partial class NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>
+    public partial class NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>
 	{
 
 		#region Notification

@@ -63,7 +63,7 @@ namespace PowerArhitecture.DataAccess.Providers
             }
 
             var sessionFactory = Database.CreateSessionFactory(_eventAggregator, dbConfiguration, name);
-
+            _eventAggregator.SendMessage(new SessionFactoryCreatedEvent(sessionFactory));
             Factories[name ?? DefaultName] = sessionFactory;
 
             Type = sessionFactory.GetType();

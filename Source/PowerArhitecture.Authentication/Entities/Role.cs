@@ -1,6 +1,7 @@
 ﻿using System;
 using PowerArhitecture.Common.Attributes;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using FluentNHibernate.Automapping;
 using PowerArhitecture.Authentication.Specifications;
@@ -13,12 +14,14 @@ namespace PowerArhitecture.Authentication.Entities
 {
     [Ignore]
     [Serializable]
-    public abstract class Role<TUser, TUserRole, TRole,  TRolePermission, TPermissionPattern> : VersionedEntityWithUser<TUser>, IRole
-        where TPermissionPattern : PermissionPattern<TUser, TRole>, new()
-        where TRolePermission : RolePermission<TUser, TRole>, new() 
-        where TUser : IUser, IEntity, new()
-        where TRole : Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern>, new()
-        where TUserRole : UserRole<TUser, TRole>, new()
+    public abstract partial class Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole> : VersionedEntityWithUser<TUser>, IRole
+        where TUser : User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TUserRole : UserRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRole : Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRolePermission : RolePermission<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TPermissionPattern : PermissionPattern<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganization : Organization<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganizationRole : OrganizationRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
     {
         [Length(50)]
         [Unique]
@@ -26,12 +29,12 @@ namespace PowerArhitecture.Authentication.Entities
 
         public virtual string Description { get; set; }
 
-        public void AddUser(IUser user)
+        public virtual void AddUser(IUser user)
         {
-            AddUserRole(new TUserRole{User = (TUser)user});
+            AddUserRole(new TUserRole { User = (TUser)user });
         }
 
-        public void RemoveUser(IUser user)
+        public virtual void RemoveUser(IUser user)
         {
             var ur = UserRoles.FirstOrDefault(o => o.UserId == user.Id);
             if (ur != null)
@@ -58,9 +61,9 @@ namespace PowerArhitecture.Authentication.Entities
             this.RemoveOneToMany(o => o.UserRoles, userRole, o => o.Role);
         }
 
-		#endregion
+        #endregion
 
-		#region RolePermissions
+        #region RolePermissions
 
         private ISet<TRolePermission> _rolePermissions;
 
@@ -80,9 +83,9 @@ namespace PowerArhitecture.Authentication.Entities
         //    this.RemoveOneToMany(o => o.RolePermissions, rolePermission, o => o.Role);
         //}
 
-		#endregion
+        #endregion
 
-		#region PermissionPatterns
+        #region PermissionPatterns
 
         private ISet<TPermissionPattern> _permissionPatterns;
 
@@ -102,6 +105,52 @@ namespace PowerArhitecture.Authentication.Entities
         //    this.RemoveOneToMany(o => o.PermissionPatterns, permissionPattern, o => o.Role);
         //}
 
-		#endregion
+        #endregion
+
+        #region LastModifiedBy
+
+        [ReadOnly(true)]
+        public virtual long? LastModifiedById
+        {
+            get
+            {
+                if (_lastModifiedByIdSet) return _lastModifiedById;
+                return LastModifiedBy == null ? default(long?) : LastModifiedBy.Id;
+            }
+            set
+            {
+                _lastModifiedByIdSet = true;
+                _lastModifiedById = value;
+            }
+        }
+
+        private long? _lastModifiedById;
+
+        private bool _lastModifiedByIdSet;
+
+        #endregion
+
+        #region CreatedBy
+
+        [ReadOnly(true)]
+        public virtual long? CreatedById
+        {
+            get
+            {
+                if (_createdByIdSet) return _createdById;
+                return CreatedBy == null ? default(long?) : CreatedBy.Id;
+            }
+            set
+            {
+                _createdByIdSet = true;
+                _createdById = value;
+            }
+        }
+
+        private long? _createdById;
+
+        private bool _createdByIdSet;
+
+        #endregion
     }
 }

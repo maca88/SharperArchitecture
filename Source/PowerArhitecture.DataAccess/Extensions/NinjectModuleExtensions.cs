@@ -84,20 +84,17 @@ namespace PowerArhitecture.DataAccess.Extensions
             var syntaxBinding = bindingBuilder
                 .ToProvider<SessionProvider>()
                 .WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
-                .InRequestScope()
-                .OnDeactivation(SessionDeactivated);
+                .InRequestScope();
 
             var syntaxBinding2 = bindingBuilder2
                 .ToProvider<SessionProvider>()
                 .WhenRequestScopeNotExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
-                .InCallScope()
-                .OnDeactivation(SessionDeactivated);
+                .InCallScope();
 
             var syntaxBinding3 = bindingBuilder3
                 .ToProvider<SessionProvider>()
                 .WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryNameForContext(name))
-                .InNamedScope(ResolutionScopes.UnitOfWork)
-                .OnDeactivation(SessionDeactivated);
+                .InNamedScope(ResolutionScopes.UnitOfWork);
 
             if (name == null)
             {
@@ -109,11 +106,6 @@ namespace PowerArhitecture.DataAccess.Extensions
             syntaxBinding.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
             syntaxBinding2.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
             syntaxBinding3.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
-        }
-
-        private static void SessionDeactivated(IContext context, ISession session)
-        {
-            context.Kernel.Get<ISessionManager>().Remove(session);
         }
 
         private static void RegisterSessionFactory(this IKernel kernel, string name = null)

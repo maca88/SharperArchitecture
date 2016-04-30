@@ -29,8 +29,6 @@ namespace PowerArhitecture.Authentication.EventListeners
         public void Handle(PopulateDbEvent e)
         {
             var unitOfWork = e.Message;
-            var unitOfWorkImpl = unitOfWork.GetUnitOfWorkImplementation();
-
             var systemUser = (IEntity)Activator.CreateInstance(_userType);
 
             _userType.GetProperty("TimeZoneId").SetValue(systemUser, TimeZoneInfo.Utc.Id);
@@ -38,17 +36,6 @@ namespace PowerArhitecture.Authentication.EventListeners
             _userType.GetProperty("PasswordHash").SetValue(systemUser, _passwordHasher.HashPassword(_authSettings.SystemUserPassword));
 
             unitOfWork.Save(systemUser);
-
-            var copySystemUser = (IUser)unitOfWorkImpl.Session.DeepClone(systemUser);
-            Thread.CurrentPrincipal = copySystemUser;
-            if (HttpContext.Current != null)
-                HttpContext.Current.User = copySystemUser;
-
-
-            //session.Flush();
-            //PrincipalHelper.SetSystemUser(session.DeepCopy(systemUser));
-            //PrincipalHelper.SetCurrentUser(PrincipalHelper.GetSystemUser());
-
         }
     }
 }

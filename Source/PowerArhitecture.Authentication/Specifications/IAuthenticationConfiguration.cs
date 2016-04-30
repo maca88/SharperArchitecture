@@ -11,7 +11,7 @@ namespace PowerArhitecture.Authentication.Specifications
         string SystemUserPassword { get; }
         string SystemUserName { get; }
         string UserClass { get; }
-        string AdditionalUserIncludes { get; }
+        bool Caching { get; set; }
         Type GetUserType();
 
     }

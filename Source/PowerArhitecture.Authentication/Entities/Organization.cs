@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,14 @@ namespace PowerArhitecture.Authentication.Entities
 {
     [Ignore]
     [Serializable]
-    public abstract class Organization<TUser, TRole, TOrganization, TOrganizationRole> : VersionedEntityWithUser<TUser>, IOrganization<TUser>
-        where TOrganization : Organization<TUser, TRole, TOrganization, TOrganizationRole>, new()
-        where TOrganizationRole : OrganizationRole<TUser, TRole, TOrganization>, new()
-        where TRole : IRole, IEntity, new()
-        where TUser : IUser, IEntity, new()
+    public abstract partial class Organization<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole> : VersionedEntityWithUser<TUser>, IOrganization<TUser>
+        where TUser : User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TUserRole : UserRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRole : Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRolePermission : RolePermission<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TPermissionPattern : PermissionPattern<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganization : Organization<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganizationRole : OrganizationRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
     {
         #region OrganizationRoles
 
@@ -39,6 +43,52 @@ namespace PowerArhitecture.Authentication.Entities
         {
             this.RemoveOneToMany(o => o.OrganizationRoles, organizationRole, o => o.Organization);
         }
+
+        #endregion
+
+        #region LastModifiedBy
+
+        [ReadOnly(true)]
+        public virtual long? LastModifiedById
+        {
+            get
+            {
+                if (_lastModifiedByIdSet) return _lastModifiedById;
+                return LastModifiedBy == null ? default(long?) : LastModifiedBy.Id;
+            }
+            set
+            {
+                _lastModifiedByIdSet = true;
+                _lastModifiedById = value;
+            }
+        }
+
+        private long? _lastModifiedById;
+
+        private bool _lastModifiedByIdSet;
+
+        #endregion
+
+        #region CreatedBy
+
+        [ReadOnly(true)]
+        public virtual long? CreatedById
+        {
+            get
+            {
+                if (_createdByIdSet) return _createdById;
+                return CreatedBy == null ? default(long?) : CreatedBy.Id;
+            }
+            set
+            {
+                _createdByIdSet = true;
+                _createdById = value;
+            }
+        }
+
+        private long? _createdById;
+
+        private bool _createdByIdSet;
 
         #endregion
     }

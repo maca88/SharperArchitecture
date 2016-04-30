@@ -12,38 +12,38 @@ using NHibernate;
 namespace PowerArhitecture.DataAccess.EventListeners
 {
     public class SessionEventProvider : ISessionEventProvider,
-        IListener<TransactionCommittedEvent>,
-        IListener<TransactionCommittingEvent>
+        IListenerAsync<TransactionCommittedEvent>,
+        IListenerAsync<TransactionCommittingEvent>
     {
-        private readonly ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>> _dict = 
-            new ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>>();
+        private readonly ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Func<ISession, Task>>>> _dict = 
+            new ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Func<ISession, Task>>>>();
 
-        public void Handle(TransactionCommittedEvent e)
+        public Task Handle(TransactionCommittedEvent e)
         {
-            HandleEvent(SessionListenerType.AfterCommit, e.Message);
+            return HandleEvent(SessionListenerType.AfterCommit, e.Message);
         }
 
-        public void Handle(TransactionCommittingEvent e)
+        public Task Handle(TransactionCommittingEvent e)
         {
-            HandleEvent(SessionListenerType.BeforeCommit, e.Message);
+            return HandleEvent(SessionListenerType.BeforeCommit, e.Message);
         }
 
-        public void AddAListener(SessionListenerType type, ISession session, Action action)
+        public void AddAListener(SessionListenerType type, ISession session, Func<Task> action)
         {
             AddAListener(type, session, s => action());
         }
 
-        public void AddAListener(SessionListenerType type, ISession session, Action<ISession> action)
+        public void AddAListener(SessionListenerType type, ISession session, Func<ISession, Task> action)
         {
             if (!_dict.ContainsKey(type))
-                _dict.GetOrAdd(type, o => new ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>());
+                _dict.GetOrAdd(type, o => new ConcurrentDictionary<ISession, SynchronizedCollection<Func<ISession, Task>>>());
 
             if (!_dict[type].ContainsKey(session))
-                _dict[type].GetOrAdd(session, o => new SynchronizedCollection<Action<ISession>>());
+                _dict[type].GetOrAdd(session, o => new SynchronizedCollection<Func<ISession, Task>>());
             _dict[type][session].Add(action);
         }
 
-        private void HandleEvent(SessionListenerType type, ISession session)
+        private async Task HandleEvent(SessionListenerType type, ISession session)
         {
             if (!_dict.ContainsKey(type) || !_dict[type].ContainsKey(session))
             {
@@ -52,10 +52,10 @@ namespace PowerArhitecture.DataAccess.EventListeners
 
             foreach (var action in _dict[type][session])
             {
-                action(session);
+                await action(session).ConfigureAwait(false);
             }
             _dict[type][session].Clear();
-            SynchronizedCollection<Action<ISession>> ss;
+            SynchronizedCollection<Func<ISession, Task>> ss;
             if(!_dict[type].TryRemove(session, out ss))
                 throw new Exception("TryRemove session failed");
         }

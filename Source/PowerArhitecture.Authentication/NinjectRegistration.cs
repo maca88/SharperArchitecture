@@ -2,9 +2,6 @@
 using System.Linq;
 using System.Web;
 using PowerArhitecture.Authentication.Configurations;
-using PowerArhitecture.Authentication.Entities;
-using PowerArhitecture.Authentication.HttpModule;
-using PowerArhitecture.Authentication.Repositories;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Authentication.Validators;
 using PowerArhitecture.Common.Configuration;
@@ -20,8 +17,6 @@ namespace PowerArhitecture.Authentication
     {
         public override void Load()
         {
-            Bind<IHttpModule>().To<PrincipalHttpModule>();
-
             Bind<IPasswordValidator>().To<Validators.PasswordValidator>();
             Bind(typeof (IClaimsIdentityFactory<>)).To(typeof (ClaimsIdentityFactory<>));
 
@@ -38,13 +33,8 @@ namespace PowerArhitecture.Authentication
             //        });
             //} 
 
-            
-            Bind<IUserProvider>().To<UserProvider>().InSingletonScope();
-
-            Bind<IUser>().ToMethod(context => context.Kernel.Get<IUserProvider>().GetCurrentUser());
-
             if (!Kernel.GetBindings(typeof(IAuthenticationConfiguration)).Any())
-                Bind<IAuthenticationConfiguration>().To<AuthenticationConfiguration>().InSingletonScope();
+                Bind<IAuthenticationConfiguration, AuthenticationConfiguration>().To<AuthenticationConfiguration>().InSingletonScope();
         }
     }
 }

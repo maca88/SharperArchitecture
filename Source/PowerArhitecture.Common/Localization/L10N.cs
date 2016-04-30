@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Internationalization;
-using PowerArhitecture.Common.Settings;
 using SecondLanguage;
 
 namespace PowerArhitecture.Common.Localization
@@ -15,7 +14,7 @@ namespace PowerArhitecture.Common.Localization
     {
         static L10N()
         {
-            var defaultCulture = AppConfiguration.GetSetting<string>(CommonSettingKeys.DefaultCulture);
+            var defaultCulture = AppConfiguration.GetSetting<string>(CommonConfigurationKeys.DefaultCulture);
             DefaultCulture = CultureInfo.GetCultureInfo(defaultCulture);
         }
 

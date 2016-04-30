@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentNHibernate.Automapping;
 using FluentNHibernate.Cfg;
+using NHibernate.Cfg;
 using PowerArhitecture.DataAccess.Configurations;
 
 namespace PowerArhitecture.DataAccess.Specifications
@@ -24,6 +25,7 @@ namespace PowerArhitecture.DataAccess.Specifications
         IFluentDatabaseConfiguration HbmMappingsPath(string path);
         IFluentDatabaseConfiguration Conventions(Action<IFluentConventionsConfiguration> action);
         IFluentDatabaseConfiguration FluentNHibernate(Action<FluentConfiguration> action);
+        IFluentDatabaseConfiguration ConfigurationCompletedAction(Action<Configuration> action);
         DatabaseConfiguration Build();
     }
 }

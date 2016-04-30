@@ -29,7 +29,7 @@ namespace PowerArhitecture.DataAccess.Conventions
         public void Apply(IManyToOneInstance instance)
         {
             if (
-                !instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<,>)) ||
+                !instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>)) ||
                 !new List<string>{ "CreatedBy", "LastModifiedBy" }.Contains(instance.Property.Name)
             )
             {

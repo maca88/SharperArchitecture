@@ -5,6 +5,7 @@ using System.Linq.Dynamic;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
 using System.Web.Http.OData.Query;
@@ -16,7 +17,7 @@ using PowerArhitecture.Domain;
 namespace PowerArhitecture.Breeze
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-    public class PABreezeNHQueryableAttribute : BreezeQueryableAttribute
+    public class PABreezeNHQueryableAttribute : BreezeNHQueryableAttribute
     {
         private static readonly MethodInfo DistinctMethodInfo;
 
@@ -40,23 +41,43 @@ namespace PowerArhitecture.Breeze
             return new PANHQueryHelper(GetODataQuerySettings());
         }
 
-        public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
-        {
-            base.OnActionExecuted(actionExecutedContext);
+        //TODO: TEST AND REMOVE
+        //public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
+        //{
+        //    base.OnActionExecuted(actionExecutedContext);
 
-            var request = actionExecutedContext.Request;
-            var returnType = actionExecutedContext.ActionContext.ActionDescriptor.ReturnType;
-            if(typeof(IQueryable).IsAssignableFrom(returnType))
-                return;
+        //    var request = actionExecutedContext.Request;
+        //    var returnType = actionExecutedContext.ActionContext.ActionDescriptor.ReturnType;
+        //    if(typeof(IQueryable).IsAssignableFrom(returnType))
+        //        return;
+        //    // FIX this: session factory may not be set in the nh resolver
+        //    var controller = actionExecutedContext.ActionContext.ControllerContext.Controller as PABreezeController;
+        //    if (!typeof (IEntity).IsAssignableFrom(returnType) || controller == null) return;
+        //    var queryHelper = GetQueryHelper(request);
+        //    var queryResult = (IQueryable)PABreezeController.SessionQueryMethod.MakeGenericMethod(returnType)
+        //        .Invoke(null, new object[] { controller.Session });
+        //    queryHelper.ConfigureFormatter(actionExecutedContext.Request, queryResult);
+        //    queryHelper.Close(queryResult);
+        //}
 
-            var controller = actionExecutedContext.ActionContext.ControllerContext.Controller as PABreezeController;
-            if (!typeof (IEntity).IsAssignableFrom(returnType) || controller == null) return;
-            var queryHelper = GetQueryHelper(request);
-            var queryResult = (IQueryable)PABreezeController.SessionQueryMethod.MakeGenericMethod(returnType)
-                .Invoke(null, new object[] { controller.Session });
-            queryHelper.ConfigureFormatter(actionExecutedContext.Request, queryResult);
-            queryHelper.Close(queryResult);
-        }
+        //public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        //{
+        //    await  base.OnActionExecutedAsync(actionExecutedContext, cancellationToken);
+
+        //    var request = actionExecutedContext.Request;
+        //    var returnType = actionExecutedContext.ActionContext.ActionDescriptor.ReturnType;
+        //    if (typeof(IQueryable).IsAssignableFrom(returnType))
+        //        return;
+
+        //    var controller = actionExecutedContext.ActionContext.ControllerContext.Controller as PABreezeController;
+        //    if (!typeof(IEntity).IsAssignableFrom(returnType) || controller == null) return;
+        //    var queryHelper = (NHQueryHelper)GetQueryHelper(request);
+        //    var queryResult = (IQueryable)PABreezeController.SessionQueryMethod.MakeGenericMethod(returnType)
+        //        .Invoke(null, new object[] { controller.Session });
+        //    await queryHelper.ConfigureFormatterAsync(actionExecutedContext.Request, queryResult);
+        //    queryHelper.Close(queryResult);
+
+        //}
 
         /// <summary>
         /// All standard OData web api support is handled here (except select and expand).

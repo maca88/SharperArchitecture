@@ -44,10 +44,9 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task CommitAsync();
 
-        /// <summary>
-        /// Use this in a catch block for rollback transaction and disposing session
-        /// </summary>
         void Rollback();
+
+        Task RollbackAsync();
 
         /// <summary>
         /// Use this if you want instantiate a class that has a Repository or Session as dependency

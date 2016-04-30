@@ -97,6 +97,12 @@ namespace PowerArhitecture.DataAccess.Configurations
             return this;
         }
 
+        public IFluentDatabaseConfiguration ConfigurationCompletedAction(Action<Configuration> action)
+        {
+            _configuration.ConfigurationCompletedAction = action;
+            return this;
+        }
+
         public DatabaseConfiguration Build()
         {
             return _configuration;

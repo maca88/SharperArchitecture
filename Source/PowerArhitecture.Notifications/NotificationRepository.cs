@@ -19,11 +19,10 @@ using PowerArhitecture.Notifications.Specifications;
 
 namespace PowerArhitecture.Notifications
 {
-    public abstract class NotificationRepository<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient> 
+    public abstract class NotificationRepository<TRecipient, TNotification, TNotificationRecipient> 
         : Repository<TNotification>, INotificationRepository<TRecipient, TNotification>
-        where TNotification : Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
-        where TNotificationSearchPattern : NotificationSearchPattern<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
-        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+        where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>, new()
     {
         //Create a fake notification instance as the instance contains the recipient compare expression
         private readonly TNotification _notification = new TNotification();

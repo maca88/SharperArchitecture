@@ -39,23 +39,22 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         /// http://ayende.com/blog/3987/nhibernate-ipreupdateeventlistener-ipreinserteventlistener
         /// </summary>
         /// <param name="event"></param>
-        /// <param name="async"></param>
         /// <returns></returns>
-        protected async override Task<object> EntityIsTransient(SaveOrUpdateEvent @event, bool async) //override this for fixing not-null transient property
+        protected override async Task<object> EntityIsTransient(SaveOrUpdateEvent @event) //override this for fixing not-null transient property
         {
             //If entry is set then entity will be deleted otherwise will be inserted
             if (@event.Entry == null)
             {
                 //We have to set only for transient entites here just for fixing not-null transient property exception from NH
                 //for persistent entites we will update the audit properties in the preupdate listener (here we dont know if the entity is dirty)
-                SetAuditProperties(@event.Entity, @event.Session);
-                EventAggregator.SendMessage(new EntitySavingEvent(@event));
+                await SetAuditProperties(@event.Entity, @event.Session).ConfigureAwait(false);
+                await EventAggregator.SendMessageAsync(new EntitySavingEvent(@event)).ConfigureAwait(false);
             }
-            return await base.EntityIsTransient(@event, async);
+            return await base.EntityIsTransient(@event);
         }
 
         //This method can be called multiple times for a transient entity (because of cascades) so we will update the audit values only if they are not set
-        private void SetAuditProperties(object obj, ISession session)
+        private async Task SetAuditProperties(object obj, ISession session)
         {
             var entity = obj as IVersionedEntity;
             if (entity == null) return;
@@ -73,52 +72,11 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 return;
 
             var userType = genType.GetGenericArguments()[0];
-            var currentUser = _auditUserProvider.GetCurrentUser(session, userType);
+            var currentUser = await _auditUserProvider.GetCurrentUser(session, userType).ConfigureAwait(false);
             if (obj.GetMemberValue("CreatedBy") == null)
                 obj.SetMemberValue("CreatedBy", currentUser);
             if (obj.GetMemberValue("LastModifiedBy") == null && requiredLastModifiedProp)
                 obj.SetMemberValue("LastModifiedBy", currentUser);
         }
-
-        protected override object EntityIsPersistent(SaveOrUpdateEvent @event)
-        {
-            //SetAuditProperties(@event.Entity, @event.Session, false);
-            EventAggregator.SendMessage(new EntityUpdatingEvent(@event));
-            return base.EntityIsPersistent(@event);
-        }
-        /*
-        protected override void EntityIsDetached(SaveOrUpdateEvent @event)
-        {
-            //if (HasDirtyProperties(@event))
-            SetAuditProperties(@event.Entity, @event.Session);
-            base.EntityIsDetached(@event);
-        }
-         
-        private static bool HasDirtyProperties(SaveOrUpdateEvent @event)
-        {
-            ISessionImplementor session = @event.Session;
-            var entry = @event.Entry;
-            var entity = @event.Entity;
-            if (entry == null || !entry.RequiresDirtyCheck(entity) || !entry.ExistsInDatabase || entry.LoadedState == null)
-            {
-                return false;
-            }
-            var persister = entry.Persister;
-
-            var currentState = persister.GetPropertyValues(entity, session.EntityMode);
-
-            var loadedState = entry.LoadedState;
-
-            return persister.EntityMetamodel.Properties
-                            .Where(
-                                (property, i) =>
-                                !LazyPropertyInitializer.UnfetchedProperty.Equals(currentState[i]) &&
-                                property.Type.IsDirty(loadedState[i], currentState[i], session))
-                            .Any();
-        }
-         
-         */
-
-
     }
 }

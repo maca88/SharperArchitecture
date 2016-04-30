@@ -22,16 +22,15 @@ namespace PowerArhitecture.Authentication.Entities
     [Serializable]
     [Ignore]
     [IgnoreValidationAttributes(Properties = new[] { "CreatedBy", "LastModifiedBy" })] //Overridden in class PrincipalConvention //TODO: generate metadata for entities
-    public abstract class User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole> 
+    public abstract partial class User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>
         : VersionedEntityWithUser<TUser>, IUser, IIdentity
-        where TUser : User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
-        where TUserRole : UserRole<TUser, TRole>, new()
-        where TRole : Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern>, new()
-        where TPermissionPattern : PermissionPattern<TUser, TRole>, new()
-        where TRolePermission : RolePermission<TUser,TRole>, new()
-
-        where TOrganization : Organization<TUser, TRole, TOrganization, TOrganizationRole>, new()
-        where TOrganizationRole : OrganizationRole<TUser, TRole, TOrganization>, new()
+        where TUser : User<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TUserRole : UserRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRole : Role<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, IEntity, new()
+        where TRolePermission : RolePermission<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TPermissionPattern : PermissionPattern<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganization : Organization<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
+        where TOrganizationRole : OrganizationRole<TUser, TUserRole, TRole, TRolePermission, TPermissionPattern, TOrganization, TOrganizationRole>, new()
     {
         public virtual bool IsInRole(string role)
         {
@@ -62,18 +61,6 @@ namespace PowerArhitecture.Authentication.Entities
             }
         }
 
-        public virtual ISet<UserClaim> Claims
-        {
-            get { return _claims ?? (_claims = new HashSet<UserClaim>()); }
-            set { _claims = value; }
-        }
-
-        public virtual ISet<UserLogin> Logins
-        {
-            get { return _logins ?? (_logins = new HashSet<UserLogin>()); }
-            set { _logins = value; }
-        }
-
         public virtual string AuthenticationType { get { return ""; } }
 
         public virtual bool IsAuthenticated { get { return !IsTransient(); } }
@@ -95,7 +82,7 @@ namespace PowerArhitecture.Authentication.Entities
         {
             get
             {
-                return string.IsNullOrEmpty(TimeZoneId) 
+                return string.IsNullOrEmpty(TimeZoneId)
                     ? TimeZoneInfo.Utc
                     : TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
             }
@@ -122,7 +109,54 @@ namespace PowerArhitecture.Authentication.Entities
             get { return AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserName) == Name; }
         }
 
-        public virtual string Name { get { return UserName; } }
+        [Formula("UserName")]
+        public virtual string Name { get { return UserName; } set {} }
+
+        #region LastModifiedBy
+
+        [ReadOnly(true)]
+        public virtual long? LastModifiedById
+        {
+            get
+            {
+                if (_lastModifiedByIdSet) return _lastModifiedById;
+                return LastModifiedBy == null ? default(long?) : LastModifiedBy.Id;
+            }
+            set
+            {
+                _lastModifiedByIdSet = true;
+                _lastModifiedById = value;
+            }
+        }
+
+        private long? _lastModifiedById;
+
+        private bool _lastModifiedByIdSet;
+
+        #endregion
+
+        #region CreatedBy
+
+        [ReadOnly(true)]
+        public virtual long? CreatedById
+        {
+            get
+            {
+                if (_createdByIdSet) return _createdById;
+                return CreatedBy == null ? default(long?) : CreatedBy.Id;
+            }
+            set
+            {
+                _createdByIdSet = true;
+                _createdById = value;
+            }
+        }
+
+        private long? _createdById;
+
+        private bool _createdByIdSet;
+
+        #endregion
 
         #region UserRoles
 
@@ -149,7 +183,23 @@ namespace PowerArhitecture.Authentication.Entities
         #region Organization
 
         [ReadOnly(true)]
-        public virtual long? OrganizationId { get; set; }
+        public virtual long? OrganizationId
+        {
+            get
+            {
+                if (_organizationIdSet) return _organizationId;
+                return Organization == null ? default(long?) : Organization.Id;
+            }
+            set
+            {
+                _organizationIdSet = true;
+                _organizationId = value;
+            }
+        }
+
+        private long? _organizationId;
+
+        private bool _organizationIdSet;
 
         public virtual TOrganization Organization { get; set; }
 
@@ -157,7 +207,11 @@ namespace PowerArhitecture.Authentication.Entities
 
         #region Claims
 
-        private ISet<UserClaim> _claims;
+        public virtual ISet<UserClaim> Claims
+        {
+            get { return _claims ?? (_claims = new HashSet<UserClaim>()); }
+            set { _claims = value; }
+        }
 
         public virtual void AddClaim(UserClaim claim)
         {
@@ -169,7 +223,7 @@ namespace PowerArhitecture.Authentication.Entities
             this.RemoveOneToMany(o => o.Claims, claim, o => (TUser)o.User);
         }
 
-        public IEnumerable<UserClaim> GetAllClaims()
+        public virtual IEnumerable<UserClaim> GetAllClaims()
         {
             return Claims;
         }
@@ -178,14 +232,18 @@ namespace PowerArhitecture.Authentication.Entities
 
         #region Logins
 
-        private ISet<UserLogin> _logins;
+        public virtual ISet<UserLogin> Logins
+        {
+            get { return _logins ?? (_logins = new HashSet<UserLogin>()); }
+            set { _logins = value; }
+        }
 
         public virtual void AddLogin(UserLogin login)
         {
             this.AddOneToMany(o => o.Logins, login, o => (TUser)o.User, o => o.RemoveLogin);
         }
 
-        public IEnumerable<UserLogin> GetAllLogins()
+        public virtual IEnumerable<UserLogin> GetAllLogins()
         {
             return Logins;
         }
@@ -198,8 +256,6 @@ namespace PowerArhitecture.Authentication.Entities
         #endregion
 
         #region Settings
-
-        private ISet<UserSetting> _settings;
 
         public virtual ISet<UserSetting> Settings
         {
@@ -214,8 +270,8 @@ namespace PowerArhitecture.Authentication.Entities
 
         public virtual T GetSetting<T>(string name)
         {
-            return ContainsSetting(name) 
-                ? JsonConvert.DeserializeObject<T>(Settings.First(o => o.Name == name).Value) 
+            return ContainsSetting(name)
+                ? JsonConvert.DeserializeObject<T>(Settings.First(o => o.Name == name).Value)
                 : default(T);
         }
 
@@ -243,19 +299,19 @@ namespace PowerArhitecture.Authentication.Entities
 
         #endregion
 
-        public void AddToRole(IRole role)
+        public virtual void AddToRole(IRole role)
         {
             AddToRole((TRole)role);
         }
 
-        public IEnumerable<IRole> GetRoles()
+        public virtual IEnumerable<IRole> GetRoles()
         {
             return UserRoles.Select(o => o.Role);
         }
 
         public virtual void AddToRole(TRole item)
         {
-            AddUserRole(new TUserRole {Role = item});
+            AddUserRole(new TUserRole { Role = item });
         }
 
         public virtual void RemoveFromRole(TRole role)

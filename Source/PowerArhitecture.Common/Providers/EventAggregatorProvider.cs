@@ -28,7 +28,8 @@ namespace PowerArhitecture.Common.Providers
         {
             foreach (var listenerType in AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(assembly => assembly.GetTypes()
-                    .Where(o => !o.IsInterface && !o.IsAbstract && o.IsAssignableToGenericType(typeof(IListener<>)) && o != typeof(DelegateListener<>)))
+                    .Where(o => !o.IsInterface && !o.IsAbstract && (o.IsAssignableToGenericType(typeof(IListener<>)) || o.IsAssignableToGenericType(typeof(IListenerAsync<>))) 
+                        && o != typeof(DelegateListener<>) && o != typeof(DelegateListenerAsync<>)))
                     .OrderByDescending(o =>
                     {
                         var attr = o.GetCustomAttribute<PriorityAttribute>();

@@ -12,6 +12,7 @@ using FluentValidation;
 using FluentValidation.Internal;
 using NHibernate;
 using NHibernate.Event;
+using NHibernate.Util;
 using Ninject;
 using Ninject.Extensions.Logging;
 using Ninject.Parameters;
@@ -27,42 +28,37 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListenerType(typeof(IDeleteEventListener), Order = int.MinValue)]
     public class ValidatePreInsertUpdateDeleteEventListener :
         //Reset cache
-        IFlushEventListener,
-        IAutoFlushEventListener,
-        ISaveOrUpdateEventListener,
-        IDeleteEventListener,
+        IListenerAsync<SessionFlushingEvent>,
+        IListenerAsync<EntityDeletingEvent>,
+        IListenerAsync<EntitySavingOrUpdatingEvent>,
 
         //Validation events
-        IListener<EntitySavingEvent>,
+        IListenerAsync<EntitySavingEvent>,
         IPreCollectionUpdateEventListener,
         IPreUpdateEventListener,
         IPreDeleteEventListener
     {
         private readonly ILogger _logger;
-        private readonly Lazy<ISessionManager> _lazySessionManager;
         private readonly HashSet<IAutoValidated> _validatedEntities = new HashSet<IAutoValidated>(); 
 
-        public ValidatePreInsertUpdateDeleteEventListener(ILogger logger, Lazy<ISessionManager> sessionManager)
+        public ValidatePreInsertUpdateDeleteEventListener(ILogger logger)
         {
             _logger = logger;
-            _lazySessionManager = sessionManager;
         }
 
-        protected ISessionManager SessionManager { get { return _lazySessionManager.Value; } }
-
-        private void Validate(object entity, ISession session, EntityMode mode, string ruleSet)
+        private Task Validate(object entity, ISession session, EntityMode mode, string ruleSet)
         {
-            Validate(entity, session, mode, new [] { ruleSet });
+            return Validate(entity, session, mode, new [] { ruleSet });
         }
 
-        private void Validate(object item, ISession session, EntityMode mode, string[] ruleSets)
+        private async Task Validate(object item, ISession session, EntityMode mode, string[] ruleSets)
         {
             if (item == null || mode != EntityMode.Poco)
                 return;
             //Example 1: UnitOfWork inside a HttpRequest that have a Session
             //Example 2: UnitOfWork outside HttpRequest (SessionProvider will return always a new session) 
-            var sessionInfo = _lazySessionManager.Value.GetSessionInfo(session);
-            if (sessionInfo == null)
+            var sessionContext = session.GetSessionImplementation().CustomContext as SessionContext;
+            if (sessionContext == null)
             {
                 _logger.Warn("Skip validation for type '{0}' as session is not managed", item.GetType());
                 return; //Unmanaged session
@@ -98,18 +94,17 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             //so that autoflush mode will not flush before querying in the validator (i.e. check if user exists)
             //FlushMode is set to Never to ensure that validation process will not trigger any update/insert statements
             var childSession = session.GetSession(EntityMode.Poco);
-            var props = sessionInfo.SessionProperties;
             childSession.FlushMode = FlushMode.Never;
-            if (props.SessionResolutionRoot == null) //When session is manually created, skip validation
+            if (sessionContext.ResolutionRoot == null) //When session is manually created, skip validation
             {
                 _logger.Warn("Skip validation for type '{0}' as session was manually created", item.GetType());
                 return;
             }
             var type = entity.GetTypeUnproxied();
-            var validator = (IValidator)props.SessionResolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type),
+            var validator = (IValidator)sessionContext.ResolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type),
                 new TypeMatchingConstructorArgument(typeof(ISession), (context, target) => childSession, true));
 
-            var validationResult = validator.Validate(GetValidationContext(type, entity, ruleSets));
+            var validationResult = await validator.ValidateAsync(GetValidationContext(type, entity, ruleSets)).ConfigureAwait(false);
             if (!validationResult.IsValid)
             {
                 _validatedEntities.Clear();
@@ -143,59 +138,50 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         }
 
         //Validation for inserting has to be before the Id is set by NHibernate
-        public void Handle(EntitySavingEvent message)
+        public Task Handle(EntitySavingEvent message)
         {
             var @event = message.Message;
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
+            return Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 
-        public void OnPreUpdateCollection(PreCollectionUpdateEvent @event)
+        public async Task OnPreUpdateCollection(PreCollectionUpdateEvent @event)
         {
             var owner = @event.AffectedOwnerOrNull;
             if (!ReferenceEquals(null, owner))
             {
-                Validate(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+                await Validate(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate).ConfigureAwait(false);
             }
         }
 
-        public bool OnPreUpdate(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdate(PreUpdateEvent @event)
         {
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+            await Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate).ConfigureAwait(false);
             return false;
         }
 
-        public bool OnPreDelete(PreDeleteEvent @event)
+        public async Task<bool> OnPreDelete(PreDeleteEvent @event)
         {
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.Delete);
+            await Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.Delete).ConfigureAwait(false);
             return false;
         }
 
-        public async Task OnFlush(FlushEvent @event, bool async)
+
+        public Task Handle(SessionFlushingEvent message)
         {
             _validatedEntities.Clear();
-            await Task.Yield();
+            return TaskHelper.CompletedTask;
         }
 
-        public async Task OnAutoFlush(AutoFlushEvent @event, bool async)
+        public Task Handle(EntityDeletingEvent message)
         {
             _validatedEntities.Clear();
-            await Task.Yield();
+            return TaskHelper.CompletedTask;
         }
 
-        public async Task OnSaveOrUpdate(SaveOrUpdateEvent @event, bool async)
+        public Task Handle(EntitySavingOrUpdatingEvent message)
         {
             _validatedEntities.Clear();
-            await Task.Yield();
-        }
-
-        public void OnDelete(DeleteEvent @event)
-        {
-            _validatedEntities.Clear();
-        }
-
-        public void OnDelete(DeleteEvent @event, ISet<object> transientEntities)
-        {
-            _validatedEntities.Clear();
+            return TaskHelper.CompletedTask;
         }
     }
 }

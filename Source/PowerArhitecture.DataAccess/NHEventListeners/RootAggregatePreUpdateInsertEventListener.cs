@@ -13,19 +13,19 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 {
     public class RootAggregatePreUpdateInsertEventListener : IPreUpdateEventListener, IPreInsertEventListener
     {
-        public bool OnPreUpdate(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdate(PreUpdateEvent @event)
         {
-            LockRoot(@event.Entity, @event.Session);
+            await LockRoot(@event.Entity, @event.Session).ConfigureAwait(false);
             return false;
         }
 
-        public bool OnPreInsert(PreInsertEvent @event)
+        public async Task<bool> OnPreInsert(PreInsertEvent @event)
         {
-            LockRoot(@event.Entity, @event.Session);
+            await LockRoot(@event.Entity, @event.Session).ConfigureAwait(false);
             return false;
         }
 
-        private void LockRoot(object entity, IEventSource session)
+        private async Task LockRoot(object entity, IEventSource session)
         {
             var currentChild = entity as IAggregateChild;
             if (currentChild == null) return;
@@ -37,7 +37,8 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 var rootEntry = session.PersistenceContext.GetEntry(root);
                 if (rootEntry == null || !LockMode.Force.Equals(rootEntry.LockMode))
                 {
-                    session.Lock(root, LockMode.Force);
+                    //await session.LockAsync(root, LockMode.Force);
+                    await Task.Yield();
                 }
                 currentChild = root as IAggregateChild;
             }

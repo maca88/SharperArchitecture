@@ -60,7 +60,7 @@ namespace PowerArhitecture.Common.Events
 #if WINDOWS_PHONE
     public interface IListener<TMessage>
 #else
-    public interface IListener<in TMessage>
+    public interface IListener<TMessage>
 #endif
     {
         /// <summary>
@@ -69,7 +69,7 @@ namespace PowerArhitecture.Common.Events
         void Handle(TMessage message);
     }
 
-#if !SYNC_ONY
+#if ASYNC
     /// <summary>
     /// Specifies a class that would like to receive particular messages.
     /// </summary>
@@ -108,7 +108,7 @@ namespace PowerArhitecture.Common.Events
         /// <param name="holdStrongReference">determines if the EventAggregator should hold a weak or strong reference to the listener object. If null it will use the Config level option unless overriden by the parameter.</param>
         /// <returns>Returns the current IEventSubscriptionManager to allow for easy fluent additions.</returns>
         IEventSubscriptionManager AddListener<T>(IListener<T> listener, bool? holdStrongReference = null);
-#if !SYNC_ONY
+#if ASYNC
         /// <summary>
         /// Adds the given listener object to the EventAggregator.
         /// </summary>
@@ -135,7 +135,7 @@ namespace PowerArhitecture.Common.Events
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         void SendMessage<TMessage>(Action<Action> marshal = null)
             where TMessage : new();
-#if !SYNC_ONY
+#if ASYNC
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         Task SendMessageAsync<TMessage>(TMessage message, Func<Func<Task>, Task> marshal = null);
 
@@ -194,7 +194,7 @@ namespace PowerArhitecture.Common.Events
         {
             SendMessage(new TMessage(), marshal);
         }
-#if !SYNC_ONY
+#if ASYNC
         /// <summary>
         /// This will send the message to each IListener that is subscribing to TMessage.
         /// </summary>
@@ -202,12 +202,12 @@ namespace PowerArhitecture.Common.Events
         /// <param name="message">The message instance</param>
         /// <param name="marshal">You can optionally override how the message publication action is marshalled</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
-        public async Task SendMessageAsync<TMessage>(TMessage message, Func<Func<Task>, Task> marshal = null)
+        public Task SendMessageAsync<TMessage>(TMessage message, Func<Func<Task>, Task> marshal = null)
         {
             if (marshal == null)
                 marshal = _config.DefaultThreadAsyncMarshaler;
 
-            await CallAsync<IListenerAsync<TMessage>>(message, marshal);
+            return CallAsync<IListenerAsync<TMessage>>(message, marshal);
         }
 
         /// <summary>
@@ -218,9 +218,9 @@ namespace PowerArhitecture.Common.Events
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design",
              "CA1004:GenericMethodsShouldProvideTypeParameter")]
-        public async Task SendMessageAsync<TMessage>(Func<Func<Task>, Task> marshal = null) where TMessage : new()
+        public Task SendMessageAsync<TMessage>(Func<Func<Task>, Task> marshal = null) where TMessage : new()
         {
-            await SendMessageAsync(new TMessage(), marshal);
+            return SendMessageAsync(new TMessage(), marshal);
         }
 #endif
         private void Call<TListener>(object message, Action<Action> marshaller)
@@ -245,7 +245,7 @@ namespace PowerArhitecture.Common.Events
                 _config.OnMessageNotPublishedBecauseZeroListeners(message);
             }
         }
-#if !SYNC_ONY
+#if ASYNC
         private async Task CallAsync<TListener>(object message, Func<Func<Task>, Task> marshaller)
             where TListener : class
         {
@@ -254,11 +254,11 @@ namespace PowerArhitecture.Common.Events
             {
                 foreach (ListenerWrapper o in _listeners.Where(o => o.Handles<TListener>() || o.HandlesMessage(message)))
                 {
-                    bool wasThisOneCalled = await o.TryHandleAsync<TListener>(message);
+                    bool wasThisOneCalled = await o.TryHandleAsync<TListener>(message).ConfigureAwait(false);
                     if (wasThisOneCalled)
                         listenerCalledCount++;
                 }
-            });
+            }).ConfigureAwait(false);
 
             var wasAnyListenerCalled = listenerCalledCount > 0;
 
@@ -292,7 +292,7 @@ namespace PowerArhitecture.Common.Events
 
             return this;
         }
-#if !SYNC_ONY
+#if ASYNC
         public IEventSubscriptionManager AddListener<T>(IListenerAsync<T> listener, bool? holdStrongReference = null)
         {
             AddListener((object)listener, holdStrongReference);
@@ -365,7 +365,7 @@ namespace PowerArhitecture.Common.Events
 
                     var listenerWrapper = new ListenerWrapper(listener, RemoveListenerWrapper, holdStrongReference, supportMessageInheritance);
                     if (listenerWrapper.Count == 0)
-#if !SYNC_ONY
+#if ASYNC
                         throw new ArgumentException("IListener<T> or IListenerAsync<T> is not implemented", "listener");
 #else
                         throw new ArgumentException("IListener<T> is not implemented", "listener");
@@ -432,8 +432,8 @@ namespace PowerArhitecture.Common.Events
 
                 var listenerInterfaces = TypeHelper.GetBaseInterfaceType(listener.GetType())
                                                    .Where(w => TypeHelper.DirectlyClosesGeneric(w, typeof(IListener<>))
-#if !SYNC_ONY
-                                                   || TypeHelper.DirectlyClosesGeneric(w, typeof(IListenerAsync<>))
+#if ASYNC
+                                                   || TypeHelper.DirectlyClosesGeneric(w, typeof (IListenerAsync<>))
 #endif
                                                    );
 
@@ -478,7 +478,7 @@ namespace PowerArhitecture.Common.Events
                     wasHandled |= handler.TryHandle<TListener>(target, message);
                 }
             }
-#if !SYNC_ONY
+#if ASYNC
             public async Task<bool> TryHandleAsync<TListener>(object message)
                 where TListener : class
             {
@@ -492,7 +492,7 @@ namespace PowerArhitecture.Common.Events
 
                 foreach (var handler in _handlers)
                 {
-                    wasHandled |= await handler.TryHandleAsync<TListener>(target, message);
+                    wasHandled |= await handler.TryHandleAsync<TListener>(target, message).ConfigureAwait(false);
                 }
                 return wasHandled;
             }
@@ -511,7 +511,8 @@ namespace PowerArhitecture.Common.Events
             private readonly bool _supportMessageInheritance;
             private readonly Dictionary<Type, bool> supportedMessageTypes = new Dictionary<Type, bool>();
 
-            public HandleMethodWrapper(MethodInfo handlerMethod, Type listenerInterface, Type messageType, bool supportMessageInheritance)
+            public HandleMethodWrapper(MethodInfo handlerMethod, Type listenerInterface, Type messageType,
+                bool supportMessageInheritance)
             {
                 _handlerMethod = handlerMethod;
                 _listenerInterface = listenerInterface;
@@ -552,65 +553,61 @@ namespace PowerArhitecture.Common.Events
                 }
 
                 if (!Handles<TListener>() && !HandlesMessage(message)) return false;
-#if !SYNC_ONY
-                var isAsync = TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>));
-                try
+#if !ASYNC && !UNWRAP_EX
+                _handlerMethod.Invoke(target, new[] { message });
+#elif ASYNC && !UNWRAP_EX
+                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>)))
                 {
-                    if (isAsync)
-                    {
-                        ((dynamic)_handlerMethod.Invoke(target, new[] { message })).Wait();
-                    }
-                    else
-                    {
-                        _handlerMethod.Invoke(target, new[] { message });
-                    }
+                    ((Task)_handlerMethod.Invoke(target, new[] {message})).ConfigureAwait(false).GetAwaiter().GetResult();
                 }
-#else
-                try
+                else
                 {
-                     _handlerMethod.Invoke(target, new[] {message});
+                    _handlerMethod.Invoke(target, new[] {message});
                 }
+#elif ASYNC
+                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>)))
+                {
+                    ((Task)_handlerMethod.Invoke(target, new[] { message })).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+                else
+                {
+                    try
+                    {
+                        _handlerMethod.Invoke(target, new[] {message});
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+#if NET_CLIENT
+                        PreserveStackTrace(ex.InnerException ?? ex);
 #endif
-#if !SYNC_ONY
 #if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
-                catch (AggregateException ex)
-                {
-                    if (ex.InnerException is TargetInvocationException)
-                    {
-                        throw ex.InnerException.InnerException;
+                        throw ex.InnerException ?? ex;
+#else
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+#endif
                     }
-                    throw ex.InnerException;
                 }
 #else
-                catch (AggregateException ex)
+                try
                 {
-                    ExceptionDispatchInfo exDispachInfo;
-                    if (ex.InnerException is TargetInvocationException)
-                    {
-                        exDispachInfo = ExceptionDispatchInfo.Capture(ex.InnerException.InnerException ?? ex);
-                    }
-                    else
-                    {
-                        exDispachInfo = ExceptionDispatchInfo.Capture(ex.InnerException ?? ex);
-                    }
-                    exDispachInfo.Throw();
+                    _handlerMethod.Invoke(target, new[] {message});
                 }
-#endif
-#endif
                 catch (TargetInvocationException ex)
                 {
+#if NET_CLIENT
+                    PreserveStackTrace(ex.InnerException ?? ex);
+#endif
 #if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
                     throw ex.InnerException ?? ex;
 #else
-                    var exDispachInfo = ExceptionDispatchInfo.Capture(ex.InnerException ?? ex);
-                    exDispachInfo.Throw();
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
 #endif
                 }
-
+#endif
                 return true;
             }
 
-#if !SYNC_ONY
+#if ASYNC
             public async Task<bool> TryHandleAsync<TListener>(object target, object message)
                 where TListener : class
             {
@@ -619,28 +616,42 @@ namespace PowerArhitecture.Common.Events
                     return false;
                 }
                 if (!Handles<TListener>() && !HandlesMessage(message)) return false;
-                var isAsync = TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>));
-                try
+                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof (IListenerAsync<>)))
                 {
-                    if (isAsync)
-                    {
-                        await (dynamic)_handlerMethod.Invoke(target, new[] { message });
-                    }
-                    else
-                    {
-                        _handlerMethod.Invoke(target, new[] { message });
-                    }
+                    await ((Task) _handlerMethod.Invoke(target, new[] {message})).ConfigureAwait(false);
                 }
-                catch (TargetInvocationException ex)
+                else
                 {
-#if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
-                    throw ex.InnerException ?? ex;
+#if !UNWRAP_EX
+                    _handlerMethod.Invoke(target, new[] {message});
 #else
-                    var exDispachInfo = ExceptionDispatchInfo.Capture(ex.InnerException ?? ex);
-                    exDispachInfo.Throw();
+                    try
+                    {
+                        _handlerMethod.Invoke(target, new[] {message});
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+#if NET_CLIENT
+                        PreserveStackTrace(ex.InnerException ?? ex);
+#endif
+#if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
+                        throw ex.InnerException ?? ex;
+#else
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+#endif
+                    }
 #endif
                 }
                 return true;
+            }
+#endif
+
+#if NET_CLIENT
+            private static void PreserveStackTrace(Exception exception)
+            {
+                var preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
+                  BindingFlags.Instance | BindingFlags.NonPublic);
+                preserveStackTrace.Invoke(exception, null);
             }
 #endif
         }
@@ -780,8 +791,8 @@ namespace PowerArhitecture.Common.Events
                 get { return _defaultThreadMarshaler; }
                 set { _defaultThreadMarshaler = value; }
             }
-#if !SYNC_ONY
-            private Func<Func<Task>, Task> _defaultThreadAsyncMarshaler = async action => await action();
+#if ASYNC
+            private Func<Func<Task>, Task> _defaultThreadAsyncMarshaler = action => action();
 
             public Func<Func<Task>, Task> DefaultThreadAsyncMarshaler
             {
@@ -802,7 +813,6 @@ namespace PowerArhitecture.Common.Events
             public bool SupportMessageInheritance { get; set; }
         }
     }
-
 
 }
 

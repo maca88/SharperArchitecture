@@ -17,7 +17,7 @@ namespace PowerArhitecture.Common.Events
 
             return delegateListener;
         }
-#if !SYNC_ONY
+#if ASYNC
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public static IDisposable AddListenerAction<T>(this IEventSubscriptionManager eventAggregator, Func<T, Task> listener)
         {
@@ -32,7 +32,7 @@ namespace PowerArhitecture.Common.Events
 #endif
     }
 
-#if !SYNC_ONY
+#if ASYNC
     public class DelegateListenerAsync<T> : IListenerAsync<T>, IDisposable
     {
         private readonly Func<T, Task> _listener;

@@ -21,9 +21,7 @@ namespace PowerArhitecture.Authentication.Configurations
 
         public virtual string UserClass { get; set; }
 
-        public virtual string AdditionalUserIncludes { get; set; }
-
-        public virtual bool EnableCache { get; set; }
+        public virtual bool Caching { get; set; }
 
         public Type GetUserType()
         {
@@ -35,7 +33,7 @@ namespace PowerArhitecture.Authentication.Configurations
             SystemUserPassword = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserPassword);
             SystemUserName = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserName);
             UserClass = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.UserClass);
-            AdditionalUserIncludes = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.AdditionalUserIncludes);
+            Caching = AppConfiguration.GetSetting<bool>(AuthenticationConfigurationKeys.Caching);
         }
     }
 }

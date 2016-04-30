@@ -13,8 +13,6 @@ namespace PowerArhitecture.Notifications.Specifications
 
         NotificationType Type { get; set; }
 
-        IEnumerable<INotificationSearchPattern> GetSearchPatterns();
-
     }
 
     public interface INotificationInternal : INotification

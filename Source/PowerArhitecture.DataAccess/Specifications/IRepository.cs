@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
+using System.Threading.Tasks;
 using NHibernate;
 using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.Domain;
@@ -13,13 +15,24 @@ namespace PowerArhitecture.DataAccess.Specifications
     {
         T Load<T>(object id);
 
+        Task<T> LoadAsync<T>(object id);
+
         T Get<T>(object id);
 
+        Task<T> GetAsync<T>(object id);
+
         void Save(object model);
+
+        Task SaveAsync(object model);
 
         //T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity;
 
         IQueryable<T> Query<T>() where T : IEntity;
+
+        /// <summary>
+        /// Retrive the current principal from the custom session context
+        /// </summary>
+        IPrincipal User { get; }
     } 
 
     public interface IRepository<TModel> : IRepository<TModel, long> where TModel : class, IEntity<long>, new() {}
@@ -30,21 +43,33 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         TModel Get(TId id);
 
+        Task<TModel> GetAsync(TId id);
+
         TModel Load(TId id);
 
-        void AddAListener(Action action, SessionListenerType listenerType);
+        Task<TModel> LoadAsync(TId id);
 
-        void AddAListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType);
+        void AddAListener(Func<Task> action, SessionListenerType listenerType);
+
+        void AddAListener(Func<IRepository<TModel, TId>, Task> action, SessionListenerType listenerType);
 
         //ValidationResult Validate(TModel model);
 
         void Save(TModel model);
 
+        Task SaveAsync(TModel model);
+
         void Update(TModel model);
+
+        Task UpdateAsync(TModel model);
 
         void Delete(TModel model);
 
+        Task DeleteAsync(TModel model);
+
         void Delete(TId id);
+
+        Task DeleteAsync(TId id);
 
         //TModel DeepCopy(TModel model, DeepCopyOptions opts = null);
 

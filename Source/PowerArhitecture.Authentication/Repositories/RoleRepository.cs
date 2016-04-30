@@ -9,6 +9,7 @@ using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Validation.Specifications;
 using Microsoft.AspNet.Identity;
 using NHibernate;
+using NHibernate.Linq;
 using Ninject.Extensions.Logging;
 using PowerArhitecture.Domain;
 using IRole = PowerArhitecture.Authentication.Specifications.IRole;
@@ -25,32 +26,17 @@ namespace PowerArhitecture.Authentication.Repositories
 
         public Task CreateAsync(TRole role)
         {
-            Save(role);
-            return Task.FromResult(1);
-        }
-
-        public Task UpdateAsync(TRole role)
-        {
-            Save(role);
-            return Task.FromResult(1);
-        }
-
-        public Task DeleteAsync(TRole role)
-        {
-            Delete(role);
-            return Task.FromResult(1);
+            return SaveAsync(role);
         }
 
         public Task<TRole> FindByIdAsync(long roleId)
         {
-            var role = Get(roleId);
-            return Task.FromResult(role);
+            return GetAsync(roleId);
         }
 
         public Task<TRole> FindByNameAsync(string roleName)
         {
-            var roles = Query().FirstOrDefault(o => o.Name == roleName);
-            return Task.FromResult(roles);
+            return Query().FirstOrDefaultAsync(o => o.Name == roleName);
         }
 
         public void Dispose()

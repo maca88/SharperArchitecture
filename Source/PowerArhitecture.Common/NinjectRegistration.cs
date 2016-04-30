@@ -13,12 +13,11 @@ using PowerArhitecture.Common.Publishers;
 using PowerArhitecture.Common.Specifications;
 using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Ninject.Extensions.Conventions;
 using Ninject;
 using Ninject.Modules;
 using Ninject.Parameters;
-using Ninject.Syntax;
+using PowerArhitecture.Common.Configuration;
 
 namespace PowerArhitecture.Common
 {
@@ -30,7 +29,7 @@ namespace PowerArhitecture.Common
         {
             NinjectGetAllMethodInfo = typeof (ResolutionExtensions)
                 .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .First(o => o.Name == "GetAll" && o.IsGenericMethod && o.GetParameters().Count() == 2);
+                .First(o => o.Name == "GetAll" && o.IsGenericMethod && o.GetParameters().Length == 2);
         }
 
         public override void Load()
@@ -63,14 +62,12 @@ namespace PowerArhitecture.Common
             //Convenction for listeners
             Kernel.Bind(o => o
                 .From(AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => a.GetTypes().Any(t => t.IsAssignableToGenericType(typeof(IListener<>)))))
+                    .Where(a => a.GetTypes().Any(t => t.IsAssignableToGenericType(typeof(IListener<>)) || t.IsAssignableToGenericType(typeof(IListenerAsync<>)))))
                 .IncludingNonePublicTypes()
-                .Select(t => !t.IsInterface && !t.IsAbstract && t.IsAssignableToGenericType(typeof(IListener<>)) && 
-                    t != typeof(DelegateListener<>) && !Kernel.GetBindings(t).Any())
+                .Select(t => !t.IsInterface && !t.IsAbstract && (t.IsAssignableToGenericType(typeof(IListener<>)) || t.IsAssignableToGenericType(typeof(IListenerAsync<>))) && 
+                    t != typeof(DelegateListener<>) && t != typeof(DelegateListenerAsync<>) && !Kernel.GetBindings(t).Any())
                 .BindSelection((type, types) => new List<Type> {type}.Union(types))
                 .Configure(syntax => syntax.InSingletonScope()));
-
-            Bind<IPrincipal>().ToMethod(o => Thread.CurrentPrincipal);
 
             //Bind(typeof(Lazy<IUserCache>)).ToMethod(ctx => new Lazy<IUserCache>(() => Kernel.Get<IUserCache>())); //DONE
 
@@ -87,6 +84,7 @@ namespace PowerArhitecture.Common
             Bind<JsonSerializerSettings>().ToConstant(serializerSettings);
             Bind<JsonSerializer>().ToConstant(jsonNetSerializer);
 
+            Bind<ICommonConfiguration>().To<CommonConfiguration>().InSingletonScope();
         }
 
         protected Lazy<T> GetLazyProvider<T>(IKernel kernel)

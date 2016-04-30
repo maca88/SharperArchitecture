@@ -8,24 +8,8 @@ using FluentNHibernate.Automapping;
 namespace PowerArhitecture.Notifications.Entities
 {
 	[GeneratedCode("T4Template", "1.0")]
-    public partial class Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>
+    public partial class Notification<TRecipient, TNotification, TNotificationRecipient>
 	{
-
-		#region RecipientSearchPatterns
-
-        private ISet<TNotificationSearchPattern> _recipientSearchPatterns;
-
-        public virtual void AddRecipientSearchPattern(TNotificationSearchPattern recipientSearchPattern)
-        {
-            this.AddOneToMany(o => o.RecipientSearchPatterns, recipientSearchPattern, o => o.Notification, o=> o.RemoveRecipientSearchPattern);
-        }
-
-        public virtual void RemoveRecipientSearchPattern(TNotificationSearchPattern recipientSearchPattern)
-        {
-            this.RemoveOneToMany(o => o.RecipientSearchPatterns, recipientSearchPattern, o => o.Notification);
-        }
-
-		#endregion
 
 		#region Recipients
 

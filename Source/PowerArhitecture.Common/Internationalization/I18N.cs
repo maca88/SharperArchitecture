@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq.Dynamic;
 using PowerArhitecture.Common.Configuration;
-using PowerArhitecture.Common.Settings;
 using SecondLanguage;
 
 namespace PowerArhitecture.Common.Internationalization
@@ -20,13 +18,13 @@ namespace PowerArhitecture.Common.Internationalization
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             
             //Using GetFullPath so we can combine absolute and relative paths
-            var defTranslPath = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonSettingKeys.DefaultTranslationsPath)));
+            var defTranslPath = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonConfigurationKeys.DefaultTranslationsPath)));
             if(!File.Exists(defTranslPath))
                 throw new FileNotFoundException(string.Format("Default translation file not found. Path: {0}", defTranslPath));
             Translator.Default.RegisterTranslation(defTranslPath);
 
             
-            var translPattern = AppConfiguration.GetSetting<string>(CommonSettingKeys.TranslationsByCulturePattern);
+            var translPattern = AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsByCulturePattern);
             var directoryPath = Path.GetDirectoryName(defTranslPath) ?? baseDir;
             foreach(var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {

@@ -96,6 +96,7 @@ namespace PowerArhitecture.DataAccess
                             _eventAggregator.SendMessage(new NhConfigurationEvent(configuration));
 
                         configuration.SetInterceptor(new NhibernateInterceptor());
+                        dbConfiguration.ConfigurationCompletedAction?.Invoke(configuration);
 
                         //ConfigureEnvers(configuration, entityAssemblies);
                         RecreateOrUpdateSchema(autoPestModel, configuration, dbConfiguration);
@@ -108,6 +109,7 @@ namespace PowerArhitecture.DataAccess
                                 Directory.CreateDirectory(hbmMappingsPath);
                             autoPestModel.WriteMappingsTo(hbmMappingsPath);
                         }
+                        
                     });
                 
                 var sessionFactory = fluentConfig.BuildSessionFactory();

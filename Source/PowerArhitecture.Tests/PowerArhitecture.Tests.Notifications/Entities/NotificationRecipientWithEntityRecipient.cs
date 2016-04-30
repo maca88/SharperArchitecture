@@ -8,7 +8,7 @@ using PowerArhitecture.Notifications.Entities;
 namespace PowerArhitecture.Tests.Notifications.Entities
 {
     public class NotificationRecipientWithEntityRecipient
-        : NotificationRecipient<User, NotificationWithEntityRecipient, NotificationSearchPatternWithEntityRecipient, NotificationRecipientWithEntityRecipient>
+        : NotificationRecipient<User, NotificationWithEntityRecipient, NotificationRecipientWithEntityRecipient>
     {
     }
 }

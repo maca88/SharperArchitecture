@@ -11,7 +11,7 @@ using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.Authentication.Convention
 {
-    public class PrincipalConvention : IReferenceConvention, IPropertyConvention
+    public class PrincipalConvention : IReferenceConvention, IPropertyConvention, IClassConvention
     {
         private readonly Type _userType;
 
@@ -45,6 +45,10 @@ namespace PowerArhitecture.Authentication.Convention
             {
                 instance.Nullable();
             }
+        }
+
+        public void Apply(IClassInstance instance)
+        {
         }
     }
 }

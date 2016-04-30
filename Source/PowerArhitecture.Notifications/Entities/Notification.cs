@@ -17,22 +17,15 @@ namespace PowerArhitecture.Notifications.Entities
 {
     [Ignore]
     [Serializable]
-    public abstract partial class Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient> : VersionedEntity, INotificationInternal, INotification<TRecipient> 
-        where TNotification : Notification<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
-        where TNotificationSearchPattern : NotificationSearchPattern<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
-        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationSearchPattern, TNotificationRecipient>, new()
+    public abstract partial class Notification<TRecipient, TNotification, TNotificationRecipient> : VersionedEntity, INotificationInternal, INotification<TRecipient> 
+        where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>, new()
     {
         
         [Length(int.MaxValue)]
         public virtual string Message { get; set; }
 
         public virtual NotificationType Type { get; set; }
-        
-        public virtual ISet<TNotificationSearchPattern> RecipientSearchPatterns
-        {
-            get { return _recipientSearchPatterns ?? (_recipientSearchPatterns = new HashSet<TNotificationSearchPattern>()); }
-            set { _recipientSearchPatterns = value; }
-        }
 
         public virtual TNotificationRecipient GetNotificationRecipient(TRecipient recipient)
         {
@@ -48,11 +41,6 @@ namespace PowerArhitecture.Notifications.Entities
         {
             get { return _recipients ?? (_recipients = new HashSet<TNotificationRecipient>()); }
             set { _recipients = value; }
-        }
-
-        public virtual IEnumerable<INotificationSearchPattern> GetSearchPatterns()
-        {
-            return RecipientSearchPatterns;
         }
 
         public virtual void AddRecipient(object recipient)

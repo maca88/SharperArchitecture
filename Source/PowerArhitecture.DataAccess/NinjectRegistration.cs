@@ -10,7 +10,6 @@ using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.DataAccess.Factories;
-using PowerArhitecture.DataAccess.Managers;
 using PowerArhitecture.DataAccess.NHEventListeners;
 using PowerArhitecture.DataAccess.Providers;
 using PowerArhitecture.DataAccess.Specifications;
@@ -83,10 +82,8 @@ namespace PowerArhitecture.DataAccess
             Bind<ISaveOrUpdateEventListener>().To<NhUpdateEventListener>().InSingletonScope();
             Bind<ISaveOrUpdateEventListener>().To<NhSaveEventListener>().InSingletonScope();
 
-            Bind<ISessionManager>().To<SessionManager>().InSingletonScope();
-
-            var interfaces = typeof (ValidatePreInsertUpdateDeleteEventListener).GetInterfaces();
-            Bind(interfaces).To(typeof (ValidatePreInsertUpdateDeleteEventListener)).InSingletonScope();
+            //var interfaces = typeof (ValidatePreInsertUpdateDeleteEventListener).GetInterfaces();
+            //Bind(interfaces).To(typeof (ValidatePreInsertUpdateDeleteEventListener)).InSingletonScope();
 
             Bind<IPreInsertEventListener, IPreUpdateEventListener>()
                 .To<EntityPreUpdateInsertEventListener>()

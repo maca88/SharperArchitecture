@@ -4,9 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using PowerArhitecture.DataAccess.Managers;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using NHibernate;
 using NHibernate.Linq;
@@ -149,6 +147,11 @@ namespace PowerArhitecture.DataAccess
         public void Rollback()
         {
             _session.RollbackTransaction();
+        }
+
+        public Task RollbackAsync()
+        {
+            return _session.RollbackTransactionAsync();
         }
 
         public IResolutionRoot ResolutionRoot

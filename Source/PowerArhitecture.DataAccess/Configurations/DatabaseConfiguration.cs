@@ -33,6 +33,7 @@ namespace PowerArhitecture.DataAccess.Configurations
         public virtual string HbmMappingsPath { get; set; }
         public virtual Action<FluentConfiguration> FluentConfigurationAction { get; set; }
         public virtual Configuration NHibernateConfiguration { get; private set; }
+        public virtual Action<Configuration> ConfigurationCompletedAction { get; set; }
 
         private void FillFromConfig()
         {

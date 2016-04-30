@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
@@ -25,14 +26,13 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             _auditUserProvider = auditUserProvider;
         }
 
-        public bool OnPreUpdate(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdate(PreUpdateEvent @event)
         {
-            EditEntity(@event.Entity, @event.Persister, @event.Session, @event.State);
+            await EditEntity(@event.Entity, @event.Persister, @event.Session, @event.State).ConfigureAwait(false);
             return false;
         }
 
-
-        private void EditEntity(object obj, IEntityPersister persister, ISession session, object[] state)
+        private async Task EditEntity(object obj, IEntityPersister persister, ISession session, object[] state)
         {
             var entity = obj as IEntity;
             if(entity == null) return;
@@ -48,7 +48,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 return;
 
             var userType = genType.GetGenericArguments()[0]; //The first 
-            var currentUser = _auditUserProvider.GetCurrentUser(session, userType);
+            var currentUser = await _auditUserProvider.GetCurrentUser(session, userType).ConfigureAwait(false);
             Set(entity, persister, state, "LastModifiedBy", currentUser);
         }
 

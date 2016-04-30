@@ -12,7 +12,7 @@ using PowerArhitecture.Tests.Notifications.Entities;
 namespace PowerArhitecture.Tests.Notifications.Repositories
 {
     public class NotificationWithEntityRecipientRepository
-        : NotificationRepository<User, NotificationWithEntityRecipient, NotificationSearchPatternWithEntityRecipient, NotificationRecipientWithEntityRecipient>
+        : NotificationRepository<User, NotificationWithEntityRecipient, NotificationRecipientWithEntityRecipient>
     {
         public NotificationWithEntityRecipientRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
             : base(session, logger, sessionEventProvider)

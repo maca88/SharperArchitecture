@@ -25,14 +25,23 @@ namespace PowerArhitecture.Breeze
         private readonly IValidatorFactoryExtended _validatorFactory;
         private readonly object _lock = new object();
 
+        public readonly static HashSet<string> NullableProperties = new HashSet<string>();
+
         public BreezeMetadataConfigurator(IValidatorFactoryExtended validatorFactory)
         {
             _validatorFactory = validatorFactory;
         }
 
+        public static void AddNullableProperties(IEnumerable<string> propNames)
+        {
+            foreach (var propName in propNames)
+            {
+                NullableProperties.Add(propName);
+            }
+        }
+
         private void SetFluentValidators(DataProperty dataProp, StructuralType structuralType)
         {
-            var nullableProps = new HashSet<string> {"LastModifiedById", "CreatedById", "LastModifiedDate", "CreatedDate"};
             var toReplace = new HashSet<string> {"required", "maxLength"};
             var entityType = structuralType as EntityType;
             foreach (var validator in dataProp.Validators.Where(o => toReplace.Contains(o.Name)).ToList())
@@ -40,12 +49,12 @@ namespace PowerArhitecture.Breeze
                 dataProp.Validators.Remove(validator);
                 Validator newValidator = null;
                 var name = validator.Name;
-                /*
-                if (name == "required" && nullableProps.Contains(dataProp.NameOnServer))
+                
+                if (name == "required" && NullableProperties.Contains(dataProp.NameOnServer))
                 {
                     dataProp.IsNullable = true;
                     continue;
-                }*/
+                }
                     
                 switch (name)
                 {

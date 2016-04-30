@@ -39,15 +39,23 @@ namespace NHibernate
 
         public static void RollbackTransaction(this ISession session)
         {
-            if (session.Transaction == null || session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return;
             session.Transaction.Rollback();
             session.Transaction.Dispose();
         }
 
+        public static async Task RollbackTransactionAsync(this ISession session)
+        {
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+                return;
+            await session.Transaction.RollbackAsync().ConfigureAwait(false);
+            session.Transaction.Dispose();
+        }
+
         public static void RollbackTransaction(this IStatelessSession session)
         {
-            if (session.Transaction == null || session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return;
             session.Transaction.Rollback();
             session.Transaction.Dispose();
@@ -55,7 +63,7 @@ namespace NHibernate
 
         public static bool CommitTransaction(this ISession session)
         {
-            if (session.Transaction == null || session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
             try
             {
@@ -70,23 +78,23 @@ namespace NHibernate
         }
         public static async Task<bool> CommitTransactionAsync(this ISession session)
         {
-            if (session.Transaction == null || session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
             try
             {
-                await session.Transaction.CommitAsync();
+                await session.Transaction.CommitAsync().ConfigureAwait(false);
                 return true;
             }
             catch (Exception)
             {
-                RollbackTransaction(session);
+                await RollbackTransactionAsync(session).ConfigureAwait(false);
                 throw;
             }
         }
 
         public static bool CommitTransaction(this IStatelessSession session)
         {
-            if (session.Transaction == null || session.Transaction.WasRolledBack || !session.Transaction.IsActive)
+            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
             try
             {

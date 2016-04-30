@@ -40,10 +40,11 @@ namespace PowerArhitecture.DataAccess.Providers
 
         protected ConcurrentDictionary<string, object> UserNameIds = new ConcurrentDictionary<string, object>(); 
 
-        public virtual object GetCurrentUser(ISession session, Type userType)
+        public virtual async Task<object> GetCurrentUser(ISession session, Type userType)
         {
-            var principal = GetCurrentPrincipal();
-            var userName = GetCurrentUserName(principal);
+            var sessionContext = session.GetSessionImplementation().CustomContext as SessionContext;
+            var principal = sessionContext?.CurrentPrincipal;
+            var userName = principal?.Identity?.Name;
 
             if (string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(DefaultUserName))
                 userName = DefaultUserName;
@@ -52,11 +53,9 @@ namespace PowerArhitecture.DataAccess.Providers
             {
                 return userName;
             }
-
-            var entity = principal as IEntity;
-            if (entity != null)
+            if (principal == null)
             {
-                return GetEntity(session, userType, entity);
+                return null;
             }
 
             var genPrincipal = principal as GenericPrincipal;
@@ -73,7 +72,7 @@ namespace PowerArhitecture.DataAccess.Providers
                         try
                         {
                             var id = objId.ConvertTo(userMetaData.IdentifierType.ReturnedClass);
-                            return GetEntityById(session, userMetaData, userType, id);
+                            return await GetEntityById(session, userMetaData, userType, id).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -94,7 +93,7 @@ namespace PowerArhitecture.DataAccess.Providers
                 {
                     if(DefaultUserId == null)
                         return null;
-                    return GetEntityById(session, userMetaData, userType, DefaultUserId);
+                    return await GetEntityById(session, userMetaData, userType, DefaultUserId).ConfigureAwait(false);
                 }
 
                 if (CacheUserIds)
@@ -102,7 +101,7 @@ namespace PowerArhitecture.DataAccess.Providers
                     object userId;
                     if (UserNameIds.TryGetValue(userName, out userId))
                     {
-                        return GetEntityById(session, userMetaData, userType, userId);
+                        return await GetEntityById(session, userMetaData, userType, userId).ConfigureAwait(false);
                     }
                 }
 
@@ -117,17 +116,17 @@ namespace PowerArhitecture.DataAccess.Providers
                             userMetaData.NaturalIdentifierProperties.Length == 1 &&
                             userMetaData.NaturalIdentifierProperties.Contains(i))
                         {
-                            user = (IEntity) session.CreateCriteria(userType)
+                            user = (IEntity) await session.CreateCriteria(userType)
                                 .Add(Restrictions.NaturalId().Set(UserNamePropertyName, userName))
                                 .SetCacheable(true)
-                                .UniqueResult();
+                                .UniqueResultAsync().ConfigureAwait(false);
                         }
                         else
                         {
-                            user = (IEntity)session.CreateCriteria(userType)
+                            user = (IEntity)await session.CreateCriteria(userType)
                                 .Add(Restrictions.Eq(UserNamePropertyName, userName))
                                 .SetCacheable(true)
-                                .UniqueResult();
+                                .UniqueResultAsync().ConfigureAwait(false);
                         }
                         if (CacheUserIds)
                         {
@@ -177,15 +176,15 @@ namespace PowerArhitecture.DataAccess.Providers
         /// <param name="userType"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        protected virtual object GetEntityById(ISession session, IClassMetadata metadata, Type userType, object id)
+        protected virtual Task<object> GetEntityById(ISession session, IClassMetadata metadata, Type userType, object id)
         {
             var sessionImpl = session.GetSessionImplementation();
             var persister = sessionImpl.Factory.GetEntityPersister(metadata.EntityName);
             var key = sessionImpl.GenerateEntityKey(id, persister);
             var entity = sessionImpl.PersistenceContext.GetEntity(key);
             if (entity != null)
-                return entity;
-            return session.Load(userType, id);
+                return Task.FromResult(entity);
+            return session.LoadAsync(userType, id);
         }
 
         /// <summary>
@@ -196,15 +195,6 @@ namespace PowerArhitecture.DataAccess.Providers
         protected virtual string GetCurrentUserName(IPrincipal principal)
         {
             return principal.Identity.Name;
-        }
-
-        /// <summary>
-        /// Get user principal using the current thread
-        /// </summary>
-        /// <returns></returns>
-        protected virtual IPrincipal GetCurrentPrincipal()
-        {
-            return Thread.CurrentPrincipal;
         }
 
         /// <summary>

@@ -23,13 +23,11 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         {
         }
 
-        protected override async Task<object> PerformSaveOrUpdate(SaveOrUpdateEvent @event, bool async)
+        protected override async Task<object> PerformSaveOrUpdate(SaveOrUpdateEvent @event)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
             EntityEntry entry = @event.Session.PersistenceContext.GetEntry(@event.Entity);
-            if (async)
-                await Task.Yield();
             if (entry != null)
             {
                 if (entry.Status == Status.Deleted)
@@ -43,14 +41,14 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             }
             else
             {
-                EntityIsDetached(@event);
+                await EntityIsDetached(@event).ConfigureAwait(false);
                 return null;
             }
         }
 
-        protected override async Task<object> SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent @event, bool async)
+        protected override Task<object> SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent @event)
         {
-            return await SaveWithGeneratedId(@event.Entity, @event.EntityName, null, @event.Session, true, async);
+            return SaveWithGeneratedId(@event.Entity, @event.EntityName, null, @event.Session, true);
         }
 
         /// <summary> 

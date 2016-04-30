@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Web;
 using Ninject.Syntax;
 using PowerArhitecture.Common.Extensions;
 using PowerArhitecture.DataAccess.Specifications;
 using NHibernate;
+using NHibernate.Event;
 using Ninject;
 using Ninject.Activation;
 using Ninject.Extensions.ContextPreservation;
@@ -23,16 +25,14 @@ namespace PowerArhitecture.DataAccess.Providers
     {
         private readonly ILogger _logger;
         private readonly ISessionFactory _defaultSessionFactory;
-        private readonly ISessionManager _sessionManager;
         private readonly IResolutionRoot _resolutionRoot;
         private readonly IEventAggregator _eventAggregator;
 
-        public SessionProvider(ILogger logger, ISessionFactory defaultSessionFactory, ISessionManager sessionManager, IResolutionRoot resolutionRoot, 
+        public SessionProvider(ILogger logger, ISessionFactory defaultSessionFactory, IResolutionRoot resolutionRoot, 
             IEventAggregator eventAggregator)
         {
             _logger = logger;
             _defaultSessionFactory = defaultSessionFactory;
-            _sessionManager = sessionManager;
             _resolutionRoot = resolutionRoot;
             _eventAggregator = eventAggregator;
         }
@@ -58,22 +58,24 @@ namespace PowerArhitecture.DataAccess.Providers
             {
                 sessionFactory = _resolutionRoot.Get<ISessionFactory>(new NamedSessionFactoryParameter(sfName));
             }
-
-            var session = sessionFactory.OpenSession();
+            var sessionContext = new SessionContext
+            {
+                IsManaged = true,
+                ResolutionRoot = context.GetContextPreservingResolutionRoot(),
+                CurrentPrincipal = Thread.CurrentPrincipal,
+                CurrentCultureInfo = Thread.CurrentThread.CurrentCulture
+            };
+            var session = (ISession)new SessionWrapper((IEventSource)sessionFactory.OpenSession(sessionContext), _eventAggregator);
             Type = session.GetType();
             session.FlushMode = FlushMode.Commit; //HACK ... TODO: update to 4.1
 
-            var sessionInfo = _sessionManager.Add(session);
-            var sessionProps = sessionInfo.SessionProperties;
-            sessionProps.SessionResolutionRoot = context.GetContextPreservingResolutionRoot();
-
             if (context.IsAnyAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork))
             {
-                sessionProps.IsManaged = true;
+                sessionContext.IsManaged = true;
             }
             else if(context.ExistsRequestScope())
             {
-                sessionProps.IsManaged = true;
+                sessionContext.IsManaged = true;
                 //TODO: check for transaction attribute, forward as ninject parameter
                 session.BeginTransaction();
                 session.Transaction.RegisterSynchronization(new TransactionEventListener(session, _eventAggregator));

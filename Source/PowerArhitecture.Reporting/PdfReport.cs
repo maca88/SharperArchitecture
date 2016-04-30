@@ -80,17 +80,17 @@ namespace PowerArhitecture.Reporting
 
                     AddHtmlContent(document, writer, parameters, Settings.EndContentHtml);
                 }
-                catch (DocumentException docEx)
+                catch (DocumentException)
                 {
                     throw;
                     //handle pdf document exception if any
                 }
-                catch (IOException ioEx)
+                catch (IOException)
                 {
                     throw;
                     // handle IO exception
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                     // handle other exception if occurs

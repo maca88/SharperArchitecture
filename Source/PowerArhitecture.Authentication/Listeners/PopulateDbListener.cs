@@ -17,40 +17,26 @@ namespace PowerArhitecture.Authentication.Listeners
     [Priority(1000)]
     public class PopulateDbListener : IListener<PopulateDbEvent>
     {
-        private readonly IAuthenticationSettings _authSettings;
+        private readonly IAuthenticationConfiguration _authConfiguration;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IAuthenticationCache _authCache;
-        private readonly Type _userType = typeof(User);
 
-        public PopulateDbListener(IAuthenticationSettings authSettings, IPasswordHasher passwordHasher, IAuthenticationCache authCache)
+        public PopulateDbListener(IAuthenticationConfiguration authConfiguration, IPasswordHasher passwordHasher)
         {
-            _authCache = authCache;
-            _authSettings = authSettings;
+            _authConfiguration = authConfiguration;
             _passwordHasher = passwordHasher;
-            if (!string.IsNullOrEmpty(authSettings.UserClass))
-                _userType = Type.GetType(authSettings.UserClass, true);
         }
 
         public void Handle(PopulateDbEvent e)
         {
             var session = e.Message;
+            var userType = _authConfiguration.GetUserType();
+            var systemUser = (IEntity)Activator.CreateInstance(userType);
 
-            var systemUser = (IEntity)Activator.CreateInstance(_userType);
-
-            _userType.GetProperty("TimeZoneId").SetValue(systemUser, TimeZoneInfo.Utc.Id);
-            _userType.GetProperty("UserName").SetValue(systemUser, _authSettings.SystemUserName);
-            _userType.GetProperty("PasswordHash").SetValue(systemUser, _passwordHasher.HashPassword(_authSettings.SystemUserPassword));
+            userType.GetProperty("TimeZoneId").SetValue(systemUser, TimeZoneInfo.Utc.Id);
+            userType.GetProperty("UserName").SetValue(systemUser, _authConfiguration.SystemUserName);
+            userType.GetProperty("PasswordHash").SetValue(systemUser, _passwordHasher.HashPassword(_authConfiguration.SystemUserPassword));
 
             session.Save(systemUser);
-
-            var copySystemUser = (Common.Specifications.IUser)session.DeepCopy(systemUser);
-
-            _authCache.InsertOrUpdateUser(copySystemUser);
-            Thread.CurrentPrincipal = copySystemUser;
-            if (HttpContext.Current != null)
-                HttpContext.Current.User = copySystemUser;
-
-
             //session.Flush();
             //PrincipalHelper.SetSystemUser(session.DeepCopy(systemUser));
             //PrincipalHelper.SetCurrentUser(PrincipalHelper.GetSystemUser());

@@ -1,44 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Breeze.ContextProvider;
 using Breeze.ContextProvider.NH;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NHibernate;
 using NHibernate.Cfg;
+using NHibernate.Util;
+using Ninject;
+using Ninject.Syntax;
+using PowerArhitecture.Breeze.Specification;
+using PowerArhitecture.Domain;
+using PowerArhitecture.Validation;
 
 namespace PowerArhitecture.Breeze
 {
-    public interface IBreezeRepository : IDisposable
-    {
-        object[] GetKeyValues(object entity);
-
-        NhQueryableInclude<T> GetQuery<T>(bool cacheable = false);
-
-        string Metadata();
-
-        IKeyGenerator KeyGenerator { get; set; }
-
-        SaveOptions SaveOptions { get; set; }
-
-        SaveResult SaveChanges(JObject saveBundle, TransactionSettings transactionSettings = null);
-
-        SaveResult SaveChanges(JObject saveBundle, Func<List<EntityInfo>, List<EntityInfo>> beforeEntitySaveFunc);
-    }
-    /*
-    public interface IBreezeRepository<T, TId> : IRepository<T, TId>, IBreezeRepository
-        where T : class, IEntity<TId>, new()
-    {
-    }
-    */
     public class BreezeRepository : NHContext, IBreezeRepository
     {
         private readonly BreezeMetadataConfigurator _metadataConfigurator;
-        private Func<List<EntityInfo>, List<EntityInfo>> _beforeEntitySaveFunc;
+        private readonly IResolutionRoot _resolutionRoot;
+        private readonly List<IBreezeInterceptor> _interceptors = new List<IBreezeInterceptor>();
 
-        public BreezeRepository(ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
+        public BreezeRepository(IResolutionRoot resolutionRoot, ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
         {
             _metadataConfigurator = metadataConfigurator;
+            _resolutionRoot = resolutionRoot;
         }
 
         protected override void CloseDbConnection()
@@ -48,8 +36,6 @@ namespace PowerArhitecture.Breeze
         protected override string BuildJsonMetadata()
         {
             var meta = GetMetadata();
-            
-            //new EntityErrorsException()
             _metadataConfigurator.Configure(meta, Session.SessionFactory);
             var json = JsonConvert.SerializeObject(meta, Formatting.Indented);
             return json;
@@ -59,103 +45,105 @@ namespace PowerArhitecture.Breeze
         {
         }
 
-        protected override void OpenDbConnection()
+        protected override Task BeforeSaveAsync(SaveWorkState saveWorkState)
         {
+            _interceptors.Clear();
+            var genInterceptorType = typeof(IBreezeInterceptor<>);
+            foreach (var type in saveWorkState.SaveMap.Keys)
+            {
+                var interceptorType = genInterceptorType.MakeGenericType(type);
+                var interceptor = _resolutionRoot.TryGet(interceptorType) as IBreezeInterceptor;
+                if (interceptor == null) continue;
+                _interceptors.Add(interceptor);
+            }
+            return TaskHelper.CompletedTask;
         }
 
-        public SaveResult SaveChanges(JObject saveBundle, Func<List<EntityInfo>, List<EntityInfo>> beforeEntitySaveFunc)
+        protected override Task AfterSaveAsync(SaveWorkState saveWorkState)
         {
-            _beforeEntitySaveFunc = beforeEntitySaveFunc;
-            var result = SaveChanges(saveBundle);
-            _beforeEntitySaveFunc = null;
-            return result;
+            foreach (var interceptor in _interceptors.OfType<IDisposable>())
+            {
+                interceptor.Dispose();
+            }
+            _interceptors.Clear();
+            return TaskHelper.CompletedTask;
         }
 
-        public override List<EntityInfo> BeforeSaveEntityGraph(List<EntityInfo> entitiesToPersist)
+        public override async Task<List<EntityInfo>> BeforeSaveEntityGraphAsync(List<EntityInfo> entitiesToPersist)
         {
-            return _beforeEntitySaveFunc != null ? _beforeEntitySaveFunc(entitiesToPersist) : entitiesToPersist;
+            foreach (var interceptor in _interceptors)
+            {
+                await interceptor.BeforeSave(entitiesToPersist);
+            }
+            return entitiesToPersist;
+        }
+
+        protected override async Task BeforeFlushAsync(List<EntityInfo> entitiesToPersist)
+        {
+            foreach (var interceptor in _interceptors)
+            {
+                await interceptor.BeforeFlush(entitiesToPersist);
+            }
+        }
+
+        protected override async Task AfterFlushAsync(List<EntityInfo> entitiesToPersist)
+        {
+            foreach (var interceptor in _interceptors)
+            {
+                await interceptor.AfterFlush(entitiesToPersist);
+            }
+        }
+
+        public Task<SaveResult> SaveChangesAsync(JObject saveBundle, Func<List<EntityInfo>, Task> beforeSaveFunc = null)
+        {
+            return SaveChangesAsync(saveBundle, null, beforeSaveFunc);
+        }
+
+        protected override bool HandleSaveException(Exception e, SaveWorkState saveWorkState)
+        {
+            var ve = e as PAValidationException;
+            if (ve == null)
+                return false;
+            var entityErrors = new List<EntityError>();
+            var saveMap = saveWorkState.SaveMap;
+            foreach (var vf in ve.Errors)
+            {
+                object[] keyValues = null;
+                var entity = ve.GetEntity(vf) as IEntity;
+                Type entityType = null;
+                if (entity != null)
+                {
+                    entityType = entity.GetTypeUnproxied();
+                    if (saveMap.ContainsKey(entityType))
+                    {
+                        var entityInfo = saveMap[entityType].FirstOrDefault(o => o.Entity == entity);
+                        if (entityInfo != null)
+                        {
+                            keyValues = entityInfo.OriginalValuesMap.ContainsKey("id")
+                                ? new[] { entityInfo.OriginalValuesMap["id"] }
+                                : new[] { entity.GetId() };
+                        }
+                    }
+                    if (keyValues == null)
+                        keyValues = new[] { entity.GetId() };
+                }
+                entityErrors.Add(new EntityError
+                {
+                    EntityTypeName = entityType != null
+                        ? entityType.Name
+                        : ve.EntityType.Name,
+                    ErrorMessage = vf.ErrorMessage,
+                    ErrorName = "FluentValidationException",
+                    KeyValues = keyValues,
+                    PropertyName = vf.PropertyName != null
+                        ? vf.PropertyName.Split('.').Last()
+                        : null
+                });
+            }
+            saveWorkState.EntityErrors = entityErrors;
+            saveWorkState.KeyMappings = UpdateAutoGeneratedKeys(saveWorkState.EntitiesWithAutoGeneratedKeys);
+
+            return true;
         }
     }
-    /*//Problem : IRepository<T, TId> repository, ISession session can have two different session if used outside HttpContext and UnitOfWork
-    public class BreezeRepository<T, TId> : BreezeRepository, IBreezeRepository<T, TId>
-        where T : class, IEntity<TId>, new()
-    {
-        private readonly IRepository<T, TId> _repository;
-
-
-        public BreezeRepository(IRepository<T, TId> repository, ISession session, Configuration configuration) : base(session, configuration)
-        {
-            _repository = repository;
-        }
-
-        public QueryGetEntitiesBuilder<T> GetEntitiesQuery(LockMode lockMode = LockMode.None)
-        {
-            return _repository.GetEntitiesQuery(lockMode);
-        }
-
-        public QueryGetEntitiesBuilder<TEntity> GetEntitiesQuery<TEntity>(LockMode lockMode = LockMode.None) where TEntity : class, IEntity, new()
-        {
-            return _repository.GetEntitiesQuery<TEntity>(lockMode);
-        }
-
-        public QueryGetEntityBuilder<T, TId> GetEntityQuery(TId id, LockMode lockMode = LockMode.None)
-        {
-            return _repository.GetEntityQuery(id, lockMode);
-        }
-
-        public IQueryable<T> GetLinqQuery()
-        {
-            return _repository.GetLinqQuery();
-        }
-
-        public T Get(TId id)
-        {
-            return _repository.Get(id);
-        }
-
-        public T Load(TId id)
-        {
-            return _repository.Load(id);
-        }
-
-        public void AddAListener(Action action, SessionListenerType listenerType)
-        {
-            _repository.AddAListener(action, listenerType);
-        }
-
-        public void AddAListener(Action<IRepository<T, TId>> action, SessionListenerType listenerType)
-        {
-            _repository.AddAListener(action, listenerType);
-        }
-
-        public void Save(T model)
-        {
-            _repository.Save(model);
-        }
-
-        public void Update(T model)
-        {
-            _repository.Update(model);
-        }
-
-        public void Delete(T model)
-        {
-            _repository.Delete(model);
-        }
-
-        public void Delete(TId id)
-        {
-            _repository.Delete(id);
-        }
-
-        public T DeepCopy(T model)
-        {
-            return _repository.DeepCopy(model);
-        }
-
-        public IEnumerable<PropertyInfo> GetMappedProperties()
-        {
-            return _repository.GetMappedProperties();
-        }
-    }*/
 }

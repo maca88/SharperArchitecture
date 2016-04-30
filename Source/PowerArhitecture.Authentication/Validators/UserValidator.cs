@@ -11,6 +11,7 @@ using PowerArhitecture.Validation;
 using FluentValidation.Results;
 using Microsoft.AspNet.Identity;
 using FluentValidation;
+using NHibernate.Linq;
 using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 
 namespace PowerArhitecture.Authentication.Validators
@@ -25,7 +26,7 @@ namespace PowerArhitecture.Authentication.Validators
             _repository = repository;
             RuleSet(ValidationRuleSet.Delete, () => Custom(AssertNonSystemUser));
             RuleSet(ValidationRuleSet.Update, () => Custom(ValidateUserName));
-            RuleSet(ValidationRuleSet.Insert, () => Custom(CheckDuplicates));
+            RuleSet(ValidationRuleSet.Insert, () => CustomAsync(CheckDuplicates));
         }
 
         private ValidationFailure AssertNonSystemUser(TUser user)
@@ -46,9 +47,9 @@ namespace PowerArhitecture.Authentication.Validators
             return ValidationSuccess;
         }
 
-        private ValidationFailure CheckDuplicates(TUser user)
+        private async Task<ValidationFailure> CheckDuplicates(TUser user)
         {
-            return _repository.Query().Any(o => o.UserName == user.UserName)
+            return await _repository.Query().AnyAsync(o => o.UserName == user.UserName).ConfigureAwait(false)
                 ? ValidationFailure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName))
                 : null;
         }
