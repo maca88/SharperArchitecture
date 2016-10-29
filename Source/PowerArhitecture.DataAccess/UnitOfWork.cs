@@ -30,7 +30,7 @@ namespace PowerArhitecture.DataAccess
         {
             _logger = logger;
             session.BeginTransaction(isolationLevel);
-            session.Transaction.RegisterSynchronization(new TransactionEventListener(session, eventAggregator));
+            session.Transaction.RegisterSynchronization(new TransactionEventListener(session.Unwrap(), eventAggregator));
             _repositoryFactory = repositoryFactory;
             ResolutionRoot = resolutionRoot;
             _session = session;

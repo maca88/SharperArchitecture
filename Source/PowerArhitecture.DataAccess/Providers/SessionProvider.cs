@@ -64,7 +64,8 @@ namespace PowerArhitecture.DataAccess.Providers
                 ResolutionRoot = context.GetContextPreservingResolutionRoot(),
                 CurrentCultureInfo = Thread.CurrentThread.CurrentCulture
             };
-            var session = (ISession)new SessionWrapper((IEventSource)sessionFactory.OpenSession(sessionContext), _eventAggregator);
+            var eventSource = (IEventSource) sessionFactory.OpenSession(sessionContext);
+            var session = (ISession)new SessionWrapper(eventSource, _eventAggregator);
             Type = session.GetType();
             session.FlushMode = FlushMode.Commit; //HACK ... TODO: update to 4.1
 
@@ -77,7 +78,7 @@ namespace PowerArhitecture.DataAccess.Providers
                 sessionContext.IsManaged = true;
                 //TODO: check for transaction attribute, forward as ninject parameter
                 session.BeginTransaction();
-                session.Transaction.RegisterSynchronization(new TransactionEventListener(session, _eventAggregator));
+                session.Transaction.RegisterSynchronization(new TransactionEventListener(eventSource, _eventAggregator));
             }
             else //If a session is created when HttpContext is not available tell SessionManager that the session must be manually disposed
             {
