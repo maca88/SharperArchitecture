@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -46,18 +47,18 @@ namespace PowerArhitecture.DataAccess
             var cfg = dbConfiguration.NHibernateConfiguration;
             var entityAssemblies = dbConfiguration.EntityAssemblies.Any()
                 ? dbConfiguration.EntityAssemblies
-                : AppDomain.CurrentDomain.GetAssemblies()
+                : AppConfiguration.GetDomainAssemblies()
                     .Where(assembly => assembly.GetTypes().Any(o => (typeof (IEntity)).IsAssignableFrom(o))).ToList();
 
             var conventionAssemblies = dbConfiguration.ConventionAssemblies.Any()
                 ? dbConfiguration.ConventionAssemblies
-                : AppDomain.CurrentDomain.GetAssemblies()
+                : AppConfiguration.GetDomainAssemblies()
                     .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
                     .Where(assembly => assembly.GetTypes().Any(o => (typeof (IConvention)).IsAssignableFrom(o)))
                     .ToList();
 
             var automappingConfiguration = dbConfiguration.AutomappingConfiguration ?? new AutomappingConfiguration()
-                .AddStepAssemblies(AppDomain.CurrentDomain.GetAssemblies()
+                .AddStepAssemblies(AppConfiguration.GetDomainAssemblies()
                     .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
                     .Where(assembly => assembly != Assembly.GetExecutingAssembly())
                     .Where(assembly => assembly.GetTypes().Any(o => (typeof (IAutomappingStep)).IsAssignableFrom(o)))
@@ -71,8 +72,7 @@ namespace PowerArhitecture.DataAccess
             {
                 _eventAggregator = eventAggregator;
                 var fluentConfig = Fluently.Configure(cfg);
-                if (dbConfiguration.FluentConfigurationAction != null)
-                    dbConfiguration.FluentConfigurationAction(fluentConfig);
+                dbConfiguration.FluentConfigurationAction?.Invoke(fluentConfig);
                 var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
                 var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies,
                     dbConfiguration.Conventions, conventionAssemblies, dialect, eventAggregator);
@@ -84,21 +84,17 @@ namespace PowerArhitecture.DataAccess
                         {
                             m.HbmMappings.AddFromAssembly(domainAssembly);
                         }
-                        //var mappingsDirecotry = Path.Combine(hbmMappingsPath, "Mappings");
-                        //if (!Directory.Exists(mappingsDirecotry))
-                        //    Directory.CreateDirectory(mappingsDirecotry);
-                        //m.AutoMappings.ExportTo(mappingsDirecotry);
-                        //m.FluentMappings.ExportTo(mappingsDirecotry);
                     })
                     .ExposeConfiguration(configuration =>
                     {
-                        if (_eventAggregator != null)
-                            _eventAggregator.SendMessage(new NhConfigurationEvent(configuration));
+                        if (configuration.Interceptor == null)
+                        {
+                            configuration.SetInterceptor(new NhibernateInterceptor());
+                        }
 
-                        configuration.SetInterceptor(new NhibernateInterceptor());
+                        _eventAggregator?.SendMessage(new NhConfigurationEvent(configuration));
                         dbConfiguration.ConfigurationCompletedAction?.Invoke(configuration);
 
-                        //ConfigureEnvers(configuration, entityAssemblies);
                         RecreateOrUpdateSchema(autoPestModel, configuration, dbConfiguration);
                         if (dbConfiguration.ValidateSchema)
                             ValidateSchema(configuration);
@@ -243,7 +239,7 @@ namespace PowerArhitecture.DataAccess
         private static void SetupSchema(AutoPersistenceModel autoPersistenceModel, Configuration config,
             Action<IDbConnection, ICollection<ISchemaConvention>> setupAction)
         {
-            IDbConnection connection = null;
+            DbConnection connection = null;
             IConnectionProvider provider = null;
             var settings = new Dictionary<string, string>();
             var dialect = NHibernate.Dialect.Dialect.GetDialect(config.Properties);
@@ -331,8 +327,7 @@ namespace PowerArhitecture.DataAccess
                 createShema.ApplyBeforeSchemaCreate(config, dbConnection);
             }
 
-            if (beforeCreateOrUpdateAction != null)
-                beforeCreateOrUpdateAction();
+            beforeCreateOrUpdateAction?.Invoke();
 
             schema.Execute(beforeExecuteSql, afterExecuteSql, true, true, dbConnection, null); //Drop
             schema.Execute(beforeExecuteSql, afterExecuteSql, true, false, dbConnection, null); //Create
@@ -368,8 +363,7 @@ namespace PowerArhitecture.DataAccess
                 updateShema.ApplyBeforeSchemaUpdate(config, dbConnection);
             }
 
-            if (beforeCreateOrUpdateAction != null)
-                beforeCreateOrUpdateAction();
+            beforeCreateOrUpdateAction?.Invoke();
 
             schema.Execute(beforeExecuteSql, afterExecuteSql, dbConnection, true);
 
@@ -379,18 +373,6 @@ namespace PowerArhitecture.DataAccess
                 updateShema.ApplyAfterSchemaUpdate(config, dbConnection);
             }
         }
-
-        //private static void ConfigureEnvers(Configuration config, IEnumerable<Assembly> entityAssemblies)
-        //{
-        //    if (!AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.EnableEnvers)) return;
-
-        //    var enversConfig = new NHibernate.Envers.Configuration.Fluent.FluentConfiguration();
-        //    _eventAggregator.SendMessage(new EnverConfigurationEvent(enversConfig));
-        //    config.SetEnversProperty(ConfigurationKey.AuditTableSuffix, "Revision");
-        //    config.SetEnversProperty(ConfigurationKey.RevisionFieldName, "RevisionEntityId");
-        //    config.SetEnversProperty(ConfigurationKey.RevisionTypeFieldName, "RevisionType");
-        //    config.IntegrateWithEnvers();
-        //}
 
         private static void ValidateSchema(Configuration config)
         {

@@ -10,6 +10,7 @@ using PowerArhitecture.Domain.Specifications;
 using NHibernate;
 using NHibernate.Event;
 using NHibernate.Persister.Entity;
+using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
@@ -26,30 +27,64 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             _auditUserProvider = auditUserProvider;
         }
 
-        public async Task<bool> OnPreUpdate(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
         {
-            await EditEntity(@event.Entity, @event.Persister, @event.Session, @event.State).ConfigureAwait(false);
+            var userType = UpdateAuditProperties(@event.Entity, @event.Persister, @event.State);
+            if (userType != null)
+            {
+                Set(@event.Entity, @event.Persister, @event.State, "LastModifiedBy", await GetCurrentUserAsync(@event.Session, userType));
+            }
             return false;
         }
 
-        private async Task EditEntity(object obj, IEntityPersister persister, ISession session, object[] state)
+        public bool OnPreUpdate(PreUpdateEvent @event)
+        {
+            var userType = UpdateAuditProperties(@event.Entity, @event.Persister, @event.State);
+            if (userType != null)
+            {
+                Set(@event.Entity, @event.Persister, @event.State, "LastModifiedBy", GetCurrentUser(@event.Session, userType));
+            }
+            return false;
+        }
+
+        private object GetCurrentUser(ISession session, Type userType)
+        {
+            var currentUser = _auditUserProvider.GetCurrentUser(session, userType);
+            if (currentUser == null)
+            {
+                throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
+            }
+            return currentUser;
+        }
+
+        private async Task<object> GetCurrentUserAsync(ISession session, Type userType)
+        {
+            var currentUser = await _auditUserProvider.GetCurrentUserAsync(session, userType);
+            if (currentUser == null)
+            {
+                throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
+            }
+            return currentUser;
+        }
+
+        private Type UpdateAuditProperties(object obj, IEntityPersister persister, object[] state)
         {
             var entity = obj as IEntity;
-            if(entity == null) return;
+            if (entity == null)
+            {
+                return null;
+            }
             var entityType = entity.GetTypeUnproxied();
-            if (!typeof(IVersionedEntity).IsAssignableFrom(entityType)) 
-                return;
-
+            if (!typeof(IVersionedEntity).IsAssignableFrom(entityType))
+            {
+                return null;
+            }
+                
             var currentDate = DateTime.UtcNow;
             Set(entity, persister, state, "LastModifiedDate", currentDate);
 
-            var genType = entityType.GetGenericType(typeof (IVersionedEntityWithUser<>));
-            if (genType == null) 
-                return;
-
-            var userType = genType.GetGenericArguments()[0]; //The first 
-            var currentUser = await _auditUserProvider.GetCurrentUser(session, userType).ConfigureAwait(false);
-            Set(entity, persister, state, "LastModifiedBy", currentUser);
+            var genType = entityType.GetGenericType(typeof(IVersionedEntityWithUser<>));
+            return genType?.GetGenericArguments()[0];
         }
 
         /// <summary>

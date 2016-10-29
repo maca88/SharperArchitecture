@@ -95,7 +95,7 @@ namespace PowerArhitecture.Authentication.Repositories
                               .Where(o => o.LoginProvider == login.LoginProvider &&
                                           o.ProviderKey == login.ProviderKey)
                               .Select(o => o.User)
-                              .SingleOrDefaultAsync().ConfigureAwait(false);
+                              .SingleOrDefaultAsync();
         }
 
         public virtual Task<IList<Claim>> GetClaimsAsync(TUser user)
@@ -128,7 +128,7 @@ namespace PowerArhitecture.Authentication.Repositories
         public virtual async Task AddToRoleAsync(TUser user, string role)
         {
             var roleName = role.ToUpper();
-            var r = await Query<TRole>().Where(o => o.Name == roleName).SingleOrDefaultAsync().ConfigureAwait(false);
+            var r = await Query<TRole>().Where(o => o.Name == roleName).SingleOrDefaultAsync();
             if (r == null)
                 throw new InvalidOperationException(string.Format("Role '{0}' not found", role ));
             r.AddUser(user);
@@ -184,17 +184,7 @@ namespace PowerArhitecture.Authentication.Repositories
             return (TUser)await Session.CreateCriteria(typeof(TUser))
                 .Add(Restrictions.Eq("UserName", userName))
                 .SetCacheable(Configuration.Caching)
-                .UniqueResultAsync().ConfigureAwait(false);
-        }
-
-        public virtual TUser GetUser(string userName)
-        {
-            return GetUserAsync(userName).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        public virtual TUser GetCurrent()
-        {
-            return GetCurrentAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                .UniqueResultAsync();
         }
 
         public virtual async Task<TUser> GetCurrentAsync()
@@ -202,7 +192,7 @@ namespace PowerArhitecture.Authentication.Repositories
             var userName = User?.Identity?.Name;
             if (string.IsNullOrEmpty(userName))
                 return null;
-            return await GetUserAsync(userName).ConfigureAwait(false);
+            return await GetUserAsync(userName);
         }
 
         public virtual Task<TUser> GetSystemUserAsync()
@@ -220,15 +210,10 @@ namespace PowerArhitecture.Authentication.Repositories
         IUserPasswordStore<TUser, long>, IUserSecurityStampStore<TUser, long>
         where TUser : class, IUser, IEntity<long>, new()
     {
-
-        TUser GetCurrent();
-
         Task<TUser> GetCurrentAsync();
 
         Task<TUser> GetSystemUserAsync();
 
         Task<TUser> GetUserAsync(string userName);
-
-        TUser GetUser(string userName);
     }
 }

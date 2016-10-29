@@ -33,20 +33,33 @@ namespace PowerArhitecture.Authentication.EventListeners
             state[index] = value;
         }
 
-        public Task<bool> OnPreInsert(PreInsertEvent @event)
+        public Task<bool> OnPreInsertAsync(PreInsertEvent @event)
         {
-            var user = @event.Entity as IUser;
-            if (user == null) return Task.FromResult(false);
-            Set(@event.Persister, @event.State, GenerateSecurityStamp());
-            return Task.FromResult(false);
+            return Task.FromResult(OnPreInsert(@event));
         }
 
-        public Task<bool> OnPreUpdate(PreUpdateEvent @event)
+        public bool OnPreInsert(PreInsertEvent @event)
         {
             var user = @event.Entity as IUser;
-            if (user == null) return Task.FromResult(false);
+            if (user == null) return false;
             Set(@event.Persister, @event.State, GenerateSecurityStamp());
-            return Task.FromResult(false);
+            return false;
+        }
+
+        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        {
+            return Task.FromResult(OnPreUpdate(@event));
+        }
+
+        public bool OnPreUpdate(PreUpdateEvent @event)
+        {
+            var user = @event.Entity as IUser;
+            if (user == null)
+            {
+                return false;
+            }
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
+            return false;
         }
     }
 }

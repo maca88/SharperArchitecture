@@ -4,7 +4,7 @@ using FluentValidation.Validators;
 
 namespace PowerArhitecture.Validation.Extensions
 {
-    public static class IPropertyValidatorExtensions
+    public static class PropertyValidatorExtensions
     {
         public static string GetMessageId(this IPropertyValidator propVal, bool includePropName = false)
         {
@@ -42,7 +42,7 @@ namespace PowerArhitecture.Validation.Extensions
             if (propValType == typeof(EqualValidator))
             {
                 return (includePropName
-                    ? I18N.Register("'{PropertyName}' should not be equal to '{ComparisonValue}'.")
+                    ? I18N.Register("'{PropertyName}' should be equal to '{ComparisonValue}'.")
                     : I18N.Register("Should be equal to '{ComparisonValue}'."));
             }
             #endregion

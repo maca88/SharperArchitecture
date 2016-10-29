@@ -25,7 +25,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task SaveAsync(object model);
 
-        //T DeepCopy<T>(T model, DeepCopyOptions opts = null) where T : IEntity;
+        void AddListener(Action action, SessionListenerType listenerType);
 
         IQueryable<T> Query<T>() where T : IEntity;
 
@@ -49,12 +49,6 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task<TModel> LoadAsync(TId id);
 
-        void AddAListener(Func<Task> action, SessionListenerType listenerType);
-
-        void AddAListener(Func<IRepository<TModel, TId>, Task> action, SessionListenerType listenerType);
-
-        //ValidationResult Validate(TModel model);
-
         void Save(TModel model);
 
         Task SaveAsync(TModel model);
@@ -71,7 +65,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task DeleteAsync(TId id);
 
-        //TModel DeepCopy(TModel model, DeepCopyOptions opts = null);
+        void AddListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType);
 
         IEnumerable<PropertyInfo> GetMappedProperties();
     }

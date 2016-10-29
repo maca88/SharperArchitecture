@@ -28,418 +28,470 @@ namespace PowerArhitecture.DataAccess.Wrappers
 {
     public class SessionWrapper : IEventSource
     {
-        private readonly IEventSource _session;
         private readonly IEventAggregator _eventAggregator;
 
         public SessionWrapper(IEventSource session, IEventAggregator eventAggregator)
         {
-            _session = session;
+            Session = session;
             _eventAggregator = eventAggregator;
         }
 
+        internal readonly IEventSource Session;
+
         public void Initialize()
         {
-            _session.Initialize();
+            Session.Initialize();
         }
 
-        public Task InitializeCollection(IPersistentCollection collection, bool writing)
+        public Task InitializeCollectionAsync(IPersistentCollection collection, bool writing)
         {
-            return _session.InitializeCollection(collection, writing);
+            return Session.InitializeCollectionAsync(collection, writing);
+        }
+
+        public void InitializeCollection(IPersistentCollection collection, bool writing)
+        {
+            Session.InitializeCollection(collection, writing);
         }
 
         public object InternalLoad(string entityName, object id, bool eager, bool isNullable)
         {
-            return _session.InternalLoad(entityName, id, eager, isNullable);
+            return Session.InternalLoad(entityName, id, eager, isNullable);
         }
 
         public Task<object> InternalLoadAsync(string entityName, object id, bool eager, bool isNullable)
         {
-            return _session.InternalLoadAsync(entityName, id, eager, isNullable);
+            return Session.InternalLoadAsync(entityName, id, eager, isNullable);
         }
 
         public object ImmediateLoad(string entityName, object id)
         {
-            return _session.ImmediateLoad(entityName, id);
+            return Session.ImmediateLoad(entityName, id);
         }
 
         public Task<object> ImmediateLoadAsync(string entityName, object id)
         {
-            return _session.ImmediateLoadAsync(entityName, id);
+            return Session.ImmediateLoadAsync(entityName, id);
+        }
+
+        public Task<IList> ListAsync(string query, QueryParameters parameters)
+        {
+            return Session.ListAsync(query, parameters);
         }
 
         public IList List(string query, QueryParameters parameters)
         {
-            return _session.List(query, parameters);
+            return Session.List(query, parameters);
         }
 
         public IList List(IQueryExpression queryExpression, QueryParameters parameters)
         {
-            return _session.List(queryExpression, parameters);
+            return Session.List(queryExpression, parameters);
         }
 
         public Task<IList> ListAsync(IQueryExpression queryExpression, QueryParameters parameters)
         {
-            return _session.ListAsync(queryExpression, parameters);
+            return Session.ListAsync(queryExpression, parameters);
+        }
+
+        public Task ListAsync(string query, QueryParameters parameters, IList results)
+        {
+            return Session.ListAsync(query, parameters, results);
         }
 
         public IQuery CreateQuery(IQueryExpression queryExpression)
         {
-            return _session.CreateQuery(queryExpression);
+            return Session.CreateQuery(queryExpression);
         }
 
         public void List(string query, QueryParameters parameters, IList results)
         {
-            _session.List(query, parameters, results);
+            Session.List(query, parameters, results);
         }
 
         public void List(IQueryExpression queryExpression, QueryParameters queryParameters, IList results)
         {
-            _session.List(queryExpression, queryParameters, results);
+            Session.List(queryExpression, queryParameters, results);
         }
 
         public Task ListAsync(IQueryExpression queryExpression, QueryParameters queryParameters, IList results)
         {
-            return _session.ListAsync(queryExpression, queryParameters, results);
+            return Session.ListAsync(queryExpression, queryParameters, results);
+        }
+
+        public Task<IList<T>> ListAsync<T>(string query, QueryParameters queryParameters)
+        {
+            return Session.ListAsync<T>(query, queryParameters);
         }
 
         public IList<T> List<T>(string query, QueryParameters queryParameters)
         {
-            return _session.List<T>(query, queryParameters);
+            return Session.List<T>(query, queryParameters);
         }
 
         public IList<T> List<T>(IQueryExpression queryExpression, QueryParameters queryParameters)
         {
-            return _session.List<T>(queryExpression, queryParameters);
+            return Session.List<T>(queryExpression, queryParameters);
         }
 
         public Task<IList<T>> ListAsync<T>(IQueryExpression queryExpression, QueryParameters queryParameters)
         {
-            return _session.ListAsync<T>(queryExpression, queryParameters);
+            return Session.ListAsync<T>(queryExpression, queryParameters);
         }
 
         public IList<T> List<T>(CriteriaImpl criteria)
         {
-            return _session.List<T>(criteria);
+            return Session.List<T>(criteria);
         }
 
         public Task<IList<T>> ListAsync<T>(CriteriaImpl criteria)
         {
-            return _session.ListAsync<T>(criteria);
+            return Session.ListAsync<T>(criteria);
         }
 
         public void List(CriteriaImpl criteria, IList results)
         {
-            _session.List(criteria, results);
+            Session.List(criteria, results);
         }
 
         public Task ListAsync(CriteriaImpl criteria, IList results)
         {
-            return _session.ListAsync(criteria, results);
+            return Session.ListAsync(criteria, results);
         }
 
         public IList List(CriteriaImpl criteria)
         {
-            return _session.List(criteria);
+            return Session.List(criteria);
         }
 
         public Task<IList> ListAsync(CriteriaImpl criteria)
         {
-            return _session.ListAsync(criteria);
+            return Session.ListAsync(criteria);
+        }
+
+        public Task<IEnumerable> EnumerableAsync(string query, QueryParameters parameters)
+        {
+            return Session.EnumerableAsync(query, parameters);
         }
 
         public IEnumerable Enumerable(string query, QueryParameters parameters)
         {
-            return _session.Enumerable(query, parameters);
+            return Session.Enumerable(query, parameters);
         }
 
         public IEnumerable Enumerable(IQueryExpression query, QueryParameters parameters)
         {
-            return _session.Enumerable(query, parameters);
+            return Session.Enumerable(query, parameters);
         }
 
         public Task<IEnumerable> EnumerableAsync(IQueryExpression query, QueryParameters parameters)
         {
-            return _session.EnumerableAsync(query, parameters);
+            return Session.EnumerableAsync(query, parameters);
+        }
+
+        public Task<IEnumerable<T>> EnumerableAsync<T>(string query, QueryParameters queryParameters)
+        {
+            return Session.EnumerableAsync<T>(query, queryParameters);
         }
 
         public IEnumerable<T> Enumerable<T>(string query, QueryParameters queryParameters)
         {
-            return _session.Enumerable<T>(query, queryParameters);
+            return Session.Enumerable<T>(query, queryParameters);
         }
 
         public IEnumerable<T> Enumerable<T>(IQueryExpression query, QueryParameters queryParameters)
         {
-            return _session.Enumerable<T>(query, queryParameters);
+            return Session.Enumerable<T>(query, queryParameters);
         }
 
         public Task<IEnumerable<T>> EnumerableAsync<T>(IQueryExpression query, QueryParameters queryParameters)
         {
-            return _session.EnumerableAsync<T>(query, queryParameters);
+            return Session.EnumerableAsync<T>(query, queryParameters);
         }
 
         public IList ListFilter(object collection, string filter, QueryParameters parameters)
         {
-            return _session.ListFilter(collection, filter, parameters);
+            return Session.ListFilter(collection, filter, parameters);
         }
 
         public Task<IList> ListFilterAsync(object collection, string filter, QueryParameters parameters)
         {
-            return _session.ListFilterAsync(collection, filter, parameters);
+            return Session.ListFilterAsync(collection, filter, parameters);
         }
 
         public IList<T> ListFilter<T>(object collection, string filter, QueryParameters parameters)
         {
-            return _session.ListFilter<T>(collection, filter, parameters);
+            return Session.ListFilter<T>(collection, filter, parameters);
         }
 
         public Task<IList<T>> ListFilterAsync<T>(object collection, string filter, QueryParameters parameters)
         {
-            return _session.ListFilterAsync<T>(collection, filter, parameters);
+            return Session.ListFilterAsync<T>(collection, filter, parameters);
         }
 
         public IEnumerable EnumerableFilter(object collection, string filter, QueryParameters parameters)
         {
-            return _session.EnumerableFilter(collection, filter, parameters);
+            return Session.EnumerableFilter(collection, filter, parameters);
         }
 
         public Task<IEnumerable> EnumerableFilterAsync(object collection, string filter, QueryParameters parameters)
         {
-            return _session.EnumerableFilterAsync(collection, filter, parameters);
+            return Session.EnumerableFilterAsync(collection, filter, parameters);
         }
 
         public IEnumerable<T> EnumerableFilter<T>(object collection, string filter, QueryParameters parameters)
         {
-            return _session.EnumerableFilter<T>(collection, filter, parameters);
+            return Session.EnumerableFilter<T>(collection, filter, parameters);
         }
 
-        public Task<IEnumerable<T>> EnumerableFilterAsync<T>(object collection, string filter, QueryParameters parameters)
+        public Task<IEnumerable<T>> EnumerableFilterAsync<T>(object collection, string filter,
+            QueryParameters parameters)
         {
-            return _session.EnumerableFilterAsync<T>(collection, filter, parameters);
+            return Session.EnumerableFilterAsync<T>(collection, filter, parameters);
         }
 
         public IEntityPersister GetEntityPersister(string entityName, object obj)
         {
-            return _session.GetEntityPersister(entityName, obj);
+            return Session.GetEntityPersister(entityName, obj);
         }
 
         public void AfterTransactionBegin(ITransaction tx)
         {
-            _session.AfterTransactionBegin(tx);
+            Session.AfterTransactionBegin(tx);
         }
 
-        public Task BeforeTransactionCompletion(ITransaction tx)
+        public void BeforeTransactionCompletion(ITransaction tx)
         {
-            return _session.BeforeTransactionCompletion(tx);
+            Session.BeforeTransactionCompletion(tx);
         }
 
-        public Task AfterTransactionCompletion(bool successful, ITransaction tx)
+        public void AfterTransactionCompletion(bool successful, ITransaction tx)
         {
-            return _session.AfterTransactionCompletion(successful, tx);
+            Session.AfterTransactionCompletion(successful, tx);
         }
 
         public object GetContextEntityIdentifier(object obj)
         {
-            return _session.GetContextEntityIdentifier(obj);
+            return Session.GetContextEntityIdentifier(obj);
         }
 
         public object Instantiate(string entityName, object id)
         {
-            return _session.Instantiate(entityName, id);
+            return Session.Instantiate(entityName, id);
         }
 
         public IList List(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
         {
-            return _session.List(spec, queryParameters);
+            return Session.List(spec, queryParameters);
         }
 
         public Task<IList> ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
         {
-            return _session.ListAsync(spec, queryParameters);
+            return Session.ListAsync(spec, queryParameters);
         }
 
         public void List(NativeSQLQuerySpecification spec, QueryParameters queryParameters, IList results)
         {
-            _session.List(spec, queryParameters, results);
+            Session.List(spec, queryParameters, results);
         }
 
         public Task ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters, IList results)
         {
-            return _session.ListAsync(spec, queryParameters, results);
+            return Session.ListAsync(spec, queryParameters, results);
         }
 
         public IList<T> List<T>(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
         {
-            return _session.List<T>(spec, queryParameters);
+            return Session.List<T>(spec, queryParameters);
         }
 
         public Task<IList<T>> ListAsync<T>(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
         {
-            return _session.ListAsync<T>(spec, queryParameters);
+            return Session.ListAsync<T>(spec, queryParameters);
         }
 
         public void ListCustomQuery(ICustomQuery customQuery, QueryParameters queryParameters, IList results)
         {
-            _session.ListCustomQuery(customQuery, queryParameters, results);
+            Session.ListCustomQuery(customQuery, queryParameters, results);
         }
 
         public Task ListCustomQueryAsync(ICustomQuery customQuery, QueryParameters queryParameters, IList results)
         {
-            return _session.ListCustomQueryAsync(customQuery, queryParameters, results);
+            return Session.ListCustomQueryAsync(customQuery, queryParameters, results);
         }
 
         public IList<T> ListCustomQuery<T>(ICustomQuery customQuery, QueryParameters queryParameters)
         {
-            return _session.ListCustomQuery<T>(customQuery, queryParameters);
+            return Session.ListCustomQuery<T>(customQuery, queryParameters);
         }
 
         public Task<IList<T>> ListCustomQueryAsync<T>(ICustomQuery customQuery, QueryParameters queryParameters)
         {
-            return _session.ListCustomQueryAsync<T>(customQuery, queryParameters);
+            return Session.ListCustomQueryAsync<T>(customQuery, queryParameters);
+        }
+
+        public Task<IQueryTranslator[]> GetQueriesAsync(string query, bool scalar)
+        {
+            return Session.GetQueriesAsync(query, scalar);
         }
 
         public object GetFilterParameterValue(string filterParameterName)
         {
-            return _session.GetFilterParameterValue(filterParameterName);
+            return Session.GetFilterParameterValue(filterParameterName);
         }
 
         public IType GetFilterParameterType(string filterParameterName)
         {
-            return _session.GetFilterParameterType(filterParameterName);
+            return Session.GetFilterParameterType(filterParameterName);
         }
 
         public IQuery GetNamedSQLQuery(string name)
         {
-            return _session.GetNamedSQLQuery(name);
+            return Session.GetNamedSQLQuery(name);
         }
 
         public IQueryTranslator[] GetQueries(string query, bool scalar)
         {
-            return _session.GetQueries(query, scalar);
+            return Session.GetQueries(query, scalar);
         }
 
-        public Task<IQueryTranslator[]> GetQueries(IQueryExpression query, bool scalar)
+        public IQueryTranslator[] GetQueries(IQueryExpression query, bool scalar)
         {
-            return _session.GetQueries(query, scalar);
+            return Session.GetQueries(query, scalar);
+        }
+
+        public Task<IQueryTranslator[]> GetQueriesAsync(IQueryExpression query, bool scalar)
+        {
+            return Session.GetQueriesAsync(query, scalar);
+        }
+
+        public Task<object> GetEntityUsingInterceptorAsync(EntityKey key)
+        {
+            return Session.GetEntityUsingInterceptorAsync(key);
         }
 
         public object GetEntityUsingInterceptor(EntityKey key)
         {
-            return _session.GetEntityUsingInterceptor(key);
+            return Session.GetEntityUsingInterceptor(key);
         }
 
         public string BestGuessEntityName(object entity)
         {
-            return _session.BestGuessEntityName(entity);
+            return Session.BestGuessEntityName(entity);
+        }
+
+        public Task<string> BestGuessEntityNameAsync(object entity)
+        {
+            return Session.BestGuessEntityNameAsync(entity);
         }
 
         public string GuessEntityName(object entity)
         {
-            return _session.GuessEntityName(entity);
-        }
-
-        public Task<DbConnection> GetConnection()
-        {
-            return _session.GetConnection();
+            return Session.GuessEntityName(entity);
         }
 
         public Task<IQuery> CreateFilterAsync(object collection, string queryString)
         {
-            return _session.CreateFilterAsync(collection, queryString);
+            return Session.CreateFilterAsync(collection, queryString);
         }
 
         IQuery ISession.GetNamedQuery(string queryName)
         {
-            return ((ISession) _session).GetNamedQuery(queryName);
+            return ((ISession) Session).GetNamedQuery(queryName);
         }
 
         public ISQLQuery CreateSQLQuery(string queryString)
         {
-            return _session.CreateSQLQuery(queryString);
+            return Session.CreateSQLQuery(queryString);
         }
 
         public void Clear()
         {
-            _session.Clear();
+            Session.Clear();
         }
 
         public object Get(Type clazz, object id)
         {
-            return _session.Get(clazz, id);
+            return Session.Get(clazz, id);
         }
 
         public Task<object> GetAsync(Type clazz, object id)
         {
-            return _session.GetAsync(clazz, id);
+            return Session.GetAsync(clazz, id);
         }
 
         public object Get(Type clazz, object id, LockMode lockMode)
         {
-            return _session.Get(clazz, id, lockMode);
+            return Session.Get(clazz, id, lockMode);
         }
 
         public Task<object> GetAsync(Type clazz, object id, LockMode lockMode)
         {
-            return _session.GetAsync(clazz, id, lockMode);
+            return Session.GetAsync(clazz, id, lockMode);
         }
 
         public object Get(string entityName, object id)
         {
-            return _session.Get(entityName, id);
+            return Session.Get(entityName, id);
         }
 
         public Task<object> GetAsync(string entityName, object id)
         {
-            return _session.GetAsync(entityName, id);
+            return Session.GetAsync(entityName, id);
         }
 
         public T Get<T>(object id)
         {
-            return _session.Get<T>(id);
+            return Session.Get<T>(id);
         }
 
         public Task<T> GetAsync<T>(object id)
         {
-            return _session.GetAsync<T>(id);
+            return Session.GetAsync<T>(id);
         }
 
         public T Get<T>(object id, LockMode lockMode)
         {
-            return _session.Get<T>(id, lockMode);
+            return Session.Get<T>(id, lockMode);
         }
 
         public Task<T> GetAsync<T>(object id, LockMode lockMode)
         {
-            return _session.GetAsync<T>(id, lockMode);
+            return Session.GetAsync<T>(id, lockMode);
         }
 
         public string GetEntityName(object obj)
         {
-            return _session.GetEntityName(obj);
+            return Session.GetEntityName(obj);
+        }
+
+        public Task<string> GetEntityNameAsync(object obj)
+        {
+            return Session.GetEntityNameAsync(obj);
         }
 
         public IFilter EnableFilter(string filterName)
         {
-            return _session.EnableFilter(filterName);
+            return Session.EnableFilter(filterName);
         }
 
         public IFilter GetEnabledFilter(string filterName)
         {
-            return _session.GetEnabledFilter(filterName);
+            return Session.GetEnabledFilter(filterName);
         }
 
         public void DisableFilter(string filterName)
         {
-            _session.DisableFilter(filterName);
+            Session.DisableFilter(filterName);
         }
 
         public IMultiQuery CreateMultiQuery()
         {
-            return _session.CreateMultiQuery();
+            return Session.CreateMultiQuery();
         }
 
         public ISession SetBatchSize(int batchSize)
         {
-            return _session.SetBatchSize(batchSize);
+            return Session.SetBatchSize(batchSize);
         }
 
         public ISessionImplementor GetSessionImplementation()
@@ -449,837 +501,801 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public IMultiCriteria CreateMultiCriteria()
         {
-            return _session.CreateMultiCriteria();
+            return Session.CreateMultiCriteria();
         }
 
         public ISession GetSession(EntityMode entityMode)
         {
-            return _session.GetSession(entityMode);
+            return Session.GetSession(entityMode);
         }
 
-        public EntityMode ActiveEntityMode
-        {
-            get { return _session.ActiveEntityMode; }
-        }
+        public EntityMode ActiveEntityMode => Session.ActiveEntityMode;
 
         FlushMode ISession.FlushMode
         {
-            get { return ((ISession)_session).FlushMode; }
-            set { ((ISession)_session).FlushMode = value; }
+            get { return ((ISession) Session).FlushMode; }
+            set { ((ISession) Session).FlushMode = value; }
         }
 
         CacheMode ISession.CacheMode
         {
-            get { return ((ISession)_session).CacheMode; }
-            set { ((ISession)_session).CacheMode = value; }
+            get { return ((ISession) Session).CacheMode; }
+            set { ((ISession) Session).CacheMode = value; }
         }
 
         IQuery ISessionImplementor.GetNamedQuery(string queryName)
         {
-            return ((ISessionImplementor) _session).GetNamedQuery(queryName);
+            return ((ISessionImplementor) Session).GetNamedQuery(queryName);
         }
 
         void ISessionImplementor.Flush()
         {
             _eventAggregator.SendMessage(new SessionFlushingEvent(this));
-            ((ISessionImplementor) _session).Flush();
+            ((ISessionImplementor) Session).Flush();
         }
 
         async Task ISession.FlushAsync()
         {
             await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(this));
-            await ((ISession) _session).FlushAsync();
+            await ((ISession) Session).FlushAsync();
         }
 
-        public IDbConnection Disconnect()
+        public DbConnection Disconnect()
         {
-            return _session.Disconnect();
+            return Session.Disconnect();
         }
 
         public void Reconnect()
         {
-            _session.Reconnect();
+            Session.Reconnect();
         }
 
-        public void Reconnect(IDbConnection connection)
+        public void Reconnect(DbConnection connection)
         {
-            _session.Reconnect(connection);
+            Session.Reconnect(connection);
         }
 
-        public IDbConnection Close()
+        public DbConnection Close()
         {
-            return _session.Close();
+            return Session.Close();
         }
 
         public void CancelQuery()
         {
-            _session.CancelQuery();
+            Session.CancelQuery();
         }
 
         public bool IsDirty()
         {
-            return _session.IsDirty();
+            return Session.IsDirty();
         }
 
         public Task<bool> IsDirtyAsync()
         {
-            return _session.IsDirtyAsync();
+            return Session.IsDirtyAsync();
+        }
+
+        public Task SetReadOnlyAsync(object entityOrProxy, bool readOnly)
+        {
+            return Session.SetReadOnlyAsync(entityOrProxy, readOnly);
         }
 
         public bool IsReadOnly(object entityOrProxy)
         {
-            return _session.IsReadOnly(entityOrProxy);
+            return Session.IsReadOnly(entityOrProxy);
         }
 
         public void SetReadOnly(object entityOrProxy, bool readOnly)
         {
-            _session.SetReadOnly(entityOrProxy, readOnly);
+            Session.SetReadOnly(entityOrProxy, readOnly);
         }
 
         public object GetIdentifier(object obj)
         {
-            return _session.GetIdentifier(obj);
+            return Session.GetIdentifier(obj);
         }
 
         public bool Contains(object obj)
         {
-            return _session.Contains(obj);
+            return Session.Contains(obj);
+        }
+
+        public Task<bool> ContainsAsync(object obj)
+        {
+            return Session.ContainsAsync(obj);
         }
 
         public void Evict(object obj)
         {
-            _session.Evict(obj);
+            Session.Evict(obj);
         }
 
         public Task EvictAsync(object obj)
         {
-            return _session.EvictAsync(obj);
+            return Session.EvictAsync(obj);
         }
 
         public object Load(Type theType, object id, LockMode lockMode)
         {
-            return _session.Load(theType, id, lockMode);
+            return Session.Load(theType, id, lockMode);
         }
 
         public Task<object> LoadAsync(Type theType, object id, LockMode lockMode)
         {
-            return _session.LoadAsync(theType, id, lockMode);
+            return Session.LoadAsync(theType, id, lockMode);
         }
 
         public object Load(string entityName, object id, LockMode lockMode)
         {
-            return _session.Load(entityName, id, lockMode);
+            return Session.Load(entityName, id, lockMode);
         }
 
         public Task<object> LoadAsync(string entityName, object id, LockMode lockMode)
         {
-            return _session.LoadAsync(entityName, id, lockMode);
+            return Session.LoadAsync(entityName, id, lockMode);
         }
 
         public object Load(Type theType, object id)
         {
-            return _session.Load(theType, id);
+            return Session.Load(theType, id);
         }
 
         public Task<object> LoadAsync(Type theType, object id)
         {
-            return _session.LoadAsync(theType, id);
+            return Session.LoadAsync(theType, id);
         }
 
         public T Load<T>(object id, LockMode lockMode)
         {
-            return _session.Load<T>(id, lockMode);
+            return Session.Load<T>(id, lockMode);
         }
 
         public Task<T> LoadAsync<T>(object id, LockMode lockMode)
         {
-            return _session.LoadAsync<T>(id, lockMode);
+            return Session.LoadAsync<T>(id, lockMode);
         }
 
         public T Load<T>(object id)
         {
-            return _session.Load<T>(id);
+            return Session.Load<T>(id);
         }
 
         public Task<T> LoadAsync<T>(object id)
         {
-            return _session.LoadAsync<T>(id);
+            return Session.LoadAsync<T>(id);
         }
 
         public object Load(string entityName, object id)
         {
-            return _session.Load(entityName, id);
+            return Session.Load(entityName, id);
         }
 
         public Task<object> LoadAsync(string entityName, object id)
         {
-            return _session.LoadAsync(entityName, id);
+            return Session.LoadAsync(entityName, id);
         }
 
         public void Load(object obj, object id)
         {
-            _session.Load(obj, id);
+            Session.Load(obj, id);
         }
 
         public Task LoadAsync(object obj, object id)
         {
-            return _session.LoadAsync(obj, id);
+            return Session.LoadAsync(obj, id);
         }
 
         public void Replicate(object obj, ReplicationMode replicationMode)
         {
-            _session.Replicate(obj, replicationMode);
+            Session.Replicate(obj, replicationMode);
         }
 
         public Task ReplicateAsync(object obj, ReplicationMode replicationMode)
         {
-            return _session.ReplicateAsync(obj, replicationMode);
+            return Session.ReplicateAsync(obj, replicationMode);
         }
 
         public void Replicate(string entityName, object obj, ReplicationMode replicationMode)
         {
-            _session.Replicate(entityName, obj, replicationMode);
+            Session.Replicate(entityName, obj, replicationMode);
         }
 
         public Task ReplicateAsync(string entityName, object obj, ReplicationMode replicationMode)
         {
-            return _session.ReplicateAsync(entityName, obj, replicationMode);
+            return Session.ReplicateAsync(entityName, obj, replicationMode);
         }
 
         public object Save(object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            return _session.Save(obj);
+            return Session.Save(obj);
         }
 
         public async Task<object> SaveAsync(object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            return await _session.SaveAsync(obj);
+            return await Session.SaveAsync(obj);
         }
 
         public void Save(object obj, object id)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Save(obj, id);
+            Session.Save(obj, id);
         }
 
         public async Task SaveAsync(object obj, object id)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.SaveAsync(obj, id);
+            await Session.SaveAsync(obj, id);
         }
 
         public object Save(string entityName, object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            return _session.Save(entityName, obj);
+            return Session.Save(entityName, obj);
         }
 
         public async Task<object> SaveAsync(string entityName, object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            return await _session.SaveAsync(entityName, obj);
+            return await Session.SaveAsync(entityName, obj);
         }
 
         public void Save(string entityName, object obj, object id)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Save(entityName, obj, id);
+            Session.Save(entityName, obj, id);
         }
 
         public async Task SaveAsync(string entityName, object obj, object id)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.SaveAsync(entityName, obj, id);
+            await Session.SaveAsync(entityName, obj, id);
         }
 
         public void SaveOrUpdate(object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.SaveOrUpdate(obj);
+            Session.SaveOrUpdate(obj);
         }
 
         public async Task SaveOrUpdateAsync(object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.SaveOrUpdateAsync(obj);
+            await Session.SaveOrUpdateAsync(obj);
         }
 
         public void SaveOrUpdate(string entityName, object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.SaveOrUpdate(entityName, obj);
+            Session.SaveOrUpdate(entityName, obj);
         }
 
         public async Task SaveOrUpdateAsync(string entityName, object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.SaveOrUpdateAsync(entityName, obj);
+            await Session.SaveOrUpdateAsync(entityName, obj);
         }
 
         public void SaveOrUpdate(string entityName, object obj, object id)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.SaveOrUpdate(entityName, obj, id);
+            Session.SaveOrUpdate(entityName, obj, id);
         }
 
         public async Task SaveOrUpdateAsync(string entityName, object obj, object id)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.SaveOrUpdateAsync(entityName, obj, id);
+            await Session.SaveOrUpdateAsync(entityName, obj, id);
         }
 
         public void Update(object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Update(obj);
+            Session.Update(obj);
         }
 
         public async Task UpdateAsync(object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.UpdateAsync(obj);
+            await Session.UpdateAsync(obj);
         }
 
         public void Update(object obj, object id)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Update(obj, id);
+            Session.Update(obj, id);
         }
 
         public async Task UpdateAsync(object obj, object id)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.UpdateAsync(obj, id);
+            await Session.UpdateAsync(obj, id);
         }
 
         public void Update(string entityName, object obj)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Update(entityName, obj);
+            Session.Update(entityName, obj);
         }
 
         public async Task UpdateAsync(string entityName, object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.UpdateAsync(entityName, obj);
+            await Session.UpdateAsync(entityName, obj);
         }
 
         public void Update(string entityName, object obj, object id)
         {
             _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(this));
-            _session.Update(entityName, obj, id);
+            Session.Update(entityName, obj, id);
         }
 
         public async Task UpdateAsync(string entityName, object obj, object id)
         {
             await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(this));
-            await _session.UpdateAsync(entityName, obj, id);
+            await Session.UpdateAsync(entityName, obj, id);
         }
 
         public object Merge(object obj)
         {
-            return _session.Merge(obj);
+            return Session.Merge(obj);
         }
 
         public Task<object> MergeAsync(object obj)
         {
-            return _session.MergeAsync(obj);
+            return Session.MergeAsync(obj);
         }
 
         public object Merge(string entityName, object obj)
         {
-            return _session.Merge(entityName, obj);
+            return Session.Merge(entityName, obj);
         }
 
         public Task<object> MergeAsync(string entityName, object obj)
         {
-            return _session.MergeAsync(entityName, obj);
+            return Session.MergeAsync(entityName, obj);
         }
 
         public T Merge<T>(T entity) where T : class
         {
-            return _session.Merge(entity);
+            return Session.Merge(entity);
         }
 
         public Task<T> MergeAsync<T>(T entity) where T : class
         {
-            return _session.MergeAsync(entity);
+            return Session.MergeAsync(entity);
         }
 
         public T Merge<T>(string entityName, T entity) where T : class
         {
-            return _session.Merge(entityName, entity);
+            return Session.Merge(entityName, entity);
         }
 
         public Task<T> MergeAsync<T>(string entityName, T entity) where T : class
         {
-            return _session.MergeAsync(entityName, entity);
+            return Session.MergeAsync(entityName, entity);
         }
 
         public void Persist(object obj)
         {
-            _session.Persist(obj);
+            Session.Persist(obj);
         }
 
         public Task PersistAsync(object obj)
         {
-            return _session.PersistAsync(obj);
+            return Session.PersistAsync(obj);
         }
 
         public void Persist(string entityName, object obj)
         {
-            _session.Persist(entityName, obj);
+            Session.Persist(entityName, obj);
         }
 
         public Task PersistAsync(string entityName, object obj)
         {
-            return _session.PersistAsync(entityName, obj);
+            return Session.PersistAsync(entityName, obj);
         }
 
         public void Delete(object obj)
         {
             _eventAggregator.SendMessage(new EntityDeletingEvent(this));
-            _session.Delete(obj);
+            Session.Delete(obj);
         }
 
         public async Task DeleteAsync(object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            await _session.DeleteAsync(obj);
+            await Session.DeleteAsync(obj);
         }
 
         public void Delete(string entityName, object obj)
         {
             _eventAggregator.SendMessage(new EntityDeletingEvent(this));
-            _session.Delete(entityName, obj);
+            Session.Delete(entityName, obj);
         }
 
         public async Task DeleteAsync(string entityName, object obj)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            await _session.DeleteAsync(entityName, obj);
+            await Session.DeleteAsync(entityName, obj);
         }
 
         public int Delete(string query)
         {
             _eventAggregator.SendMessage(new EntityDeletingEvent(this));
-            return _session.Delete(query);
+            return Session.Delete(query);
         }
 
         public async Task<int> DeleteAsync(string query)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            return await _session.DeleteAsync(query);
+            return await Session.DeleteAsync(query);
         }
 
         public int Delete(string query, object value, IType type)
         {
             _eventAggregator.SendMessage(new EntityDeletingEvent(this));
-            return _session.Delete(query, value, type);
+            return Session.Delete(query, value, type);
         }
 
         public async Task<int> DeleteAsync(string query, object value, IType type)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            return await _session.DeleteAsync(query, value, type);
+            return await Session.DeleteAsync(query, value, type);
         }
 
         public int Delete(string query, object[] values, IType[] types)
         {
             _eventAggregator.SendMessage(new EntityDeletingEvent(this));
-            return _session.Delete(query, values, types);
+            return Session.Delete(query, values, types);
         }
 
         public async Task<int> DeleteAsync(string query, object[] values, IType[] types)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            return await _session.DeleteAsync(query, values, types);
+            return await Session.DeleteAsync(query, values, types);
         }
 
         public void Lock(object obj, LockMode lockMode)
         {
-            _session.Lock(obj, lockMode);
+            Session.Lock(obj, lockMode);
         }
 
         public Task LockAsync(object obj, LockMode lockMode)
         {
-            return _session.LockAsync(obj, lockMode);
+            return Session.LockAsync(obj, lockMode);
         }
 
         public void Lock(string entityName, object obj, LockMode lockMode)
         {
-            _session.Lock(entityName, obj, lockMode);
+            Session.Lock(entityName, obj, lockMode);
         }
 
         public Task LockAsync(string entityName, object obj, LockMode lockMode)
         {
-            return _session.LockAsync(entityName, obj, lockMode);
+            return Session.LockAsync(entityName, obj, lockMode);
         }
 
         public void Refresh(object obj)
         {
-            _session.Refresh(obj);
+            Session.Refresh(obj);
         }
 
         public Task RefreshAsync(object obj)
         {
-            return _session.RefreshAsync(obj);
+            return Session.RefreshAsync(obj);
         }
 
         public void Refresh(object obj, LockMode lockMode)
         {
-            _session.Refresh(obj, lockMode);
+            Session.Refresh(obj, lockMode);
         }
 
         public Task RefreshAsync(object obj, LockMode lockMode)
         {
-            return _session.RefreshAsync(obj, lockMode);
+            return Session.RefreshAsync(obj, lockMode);
         }
 
         public LockMode GetCurrentLockMode(object obj)
         {
-            return _session.GetCurrentLockMode(obj);
+            return Session.GetCurrentLockMode(obj);
         }
 
         public ITransaction BeginTransaction()
         {
-            return _session.BeginTransaction();
-        }
-
-        public Task<ITransaction> BeginTransactionAsync()
-        {
-            return _session.BeginTransactionAsync();
+            return Session.BeginTransaction();
         }
 
         public ITransaction BeginTransaction(IsolationLevel isolationLevel)
         {
-            return _session.BeginTransaction(isolationLevel);
-        }
-
-        public Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
-        {
-            return _session.BeginTransactionAsync(isolationLevel);
+            return Session.BeginTransaction(isolationLevel);
         }
 
         public ICriteria CreateCriteria<T>() where T : class
         {
-            return _session.CreateCriteria<T>();
+            return Session.CreateCriteria<T>();
         }
 
         public ICriteria CreateCriteria<T>(string alias) where T : class
         {
-            return _session.CreateCriteria<T>(alias);
+            return Session.CreateCriteria<T>(alias);
         }
 
         public ICriteria CreateCriteria(Type persistentClass)
         {
-            return _session.CreateCriteria(persistentClass);
+            return Session.CreateCriteria(persistentClass);
         }
 
         public ICriteria CreateCriteria(Type persistentClass, string alias)
         {
-            return _session.CreateCriteria(persistentClass, alias);
+            return Session.CreateCriteria(persistentClass, alias);
         }
 
         public ICriteria CreateCriteria(string entityName)
         {
-            return _session.CreateCriteria(entityName);
+            return Session.CreateCriteria(entityName);
         }
 
         public ICriteria CreateCriteria(string entityName, string alias)
         {
-            return _session.CreateCriteria(entityName, alias);
+            return Session.CreateCriteria(entityName, alias);
         }
 
         public IQueryOver<T, T> QueryOver<T>() where T : class
         {
-            return _session.QueryOver<T>();
+            return Session.QueryOver<T>();
         }
 
         public IQueryOver<T, T> QueryOver<T>(Expression<Func<T>> alias) where T : class
         {
-            return _session.QueryOver(alias);
+            return Session.QueryOver(alias);
         }
 
         public IQueryOver<T, T> QueryOver<T>(string entityName) where T : class
         {
-            return _session.QueryOver<T>(entityName);
+            return Session.QueryOver<T>(entityName);
         }
 
         public IQueryOver<T, T> QueryOver<T>(string entityName, Expression<Func<T>> alias) where T : class
         {
-            return _session.QueryOver(entityName, alias);
+            return Session.QueryOver(entityName, alias);
         }
 
         public IQuery CreateQuery(string queryString)
         {
-            return _session.CreateQuery(queryString);
+            return Session.CreateQuery(queryString);
         }
 
         public IQuery CreateFilter(object collection, string queryString)
         {
-            return _session.CreateFilter(collection, queryString);
+            return Session.CreateFilter(collection, queryString);
         }
 
         void ISession.Flush()
         {
             _eventAggregator.SendMessage(new SessionFlushingEvent(this));
-            ((ISession) _session).Flush();
+            ((ISession) Session).Flush();
         }
 
         async Task ISessionImplementor.FlushAsync()
         {
             await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(this));
-            await ((ISessionImplementor) _session).FlushAsync();
+            await ((ISessionImplementor) Session).FlushAsync();
         }
 
         public int ExecuteNativeUpdate(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
         {
-            return _session.ExecuteNativeUpdate(specification, queryParameters);
+            return Session.ExecuteNativeUpdate(specification, queryParameters);
         }
 
-        public Task<int> ExecuteNativeUpdateAsync(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
+        public Task<int> ExecuteNativeUpdateAsync(NativeSQLQuerySpecification specification,
+            QueryParameters queryParameters)
         {
-            return _session.ExecuteNativeUpdateAsync(specification, queryParameters);
+            return Session.ExecuteNativeUpdateAsync(specification, queryParameters);
+        }
+
+        public Task<int> ExecuteUpdateAsync(string query, QueryParameters queryParameters)
+        {
+            return Session.ExecuteUpdateAsync(query, queryParameters);
         }
 
         public int ExecuteUpdate(string query, QueryParameters queryParameters)
         {
-            return _session.ExecuteUpdate(query, queryParameters);
+            return Session.ExecuteUpdate(query, queryParameters);
         }
 
         public int ExecuteUpdate(IQueryExpression query, QueryParameters queryParameters)
         {
-            return _session.ExecuteUpdate(query, queryParameters);
+            return Session.ExecuteUpdate(query, queryParameters);
         }
 
         public Task<int> ExecuteUpdateAsync(IQueryExpression query, QueryParameters queryParameters)
         {
-            return _session.ExecuteUpdateAsync(query, queryParameters);
+            return Session.ExecuteUpdateAsync(query, queryParameters);
         }
 
         public void CloseSessionFromDistributedTransaction()
         {
-            _session.CloseSessionFromDistributedTransaction();
+            Session.CloseSessionFromDistributedTransaction();
         }
 
         public EntityKey GenerateEntityKey(object id, IEntityPersister persister)
         {
-            return _session.GenerateEntityKey(id, persister);
+            return Session.GenerateEntityKey(id, persister);
         }
 
         public CacheKey GenerateCacheKey(object id, IType type, string entityOrRoleName)
         {
-            return _session.GenerateCacheKey(id, type, entityOrRoleName);
+            return Session.GenerateCacheKey(id, type, entityOrRoleName);
         }
 
-        public long Timestamp
-        {
-            get { return _session.Timestamp; }
-        }
+        public long Timestamp => Session.Timestamp;
 
-        public ISessionFactoryImplementor Factory
-        {
-            get { return _session.Factory; }
-        }
+        public ISessionFactoryImplementor Factory => Session.Factory;
 
-        public IBatcher Batcher
-        {
-            get { return _session.Batcher; }
-        }
+        public IBatcher Batcher => Session.Batcher;
 
-        public IDictionary<string, IFilter> EnabledFilters
-        {
-            get { return _session.EnabledFilters; }
-        }
+        public IDictionary<string, IFilter> EnabledFilters => Session.EnabledFilters;
 
-        public IInterceptor Interceptor
-        {
-            get { return _session.Interceptor; }
-        }
+        public IInterceptor Interceptor => Session.Interceptor;
 
-        public NHibernate.Event.EventListeners Listeners
-        {
-            get { return _session.Listeners; }
-        }
+        public NHibernate.Event.EventListeners Listeners => Session.Listeners;
 
-        public int DontFlushFromFind
-        {
-            get { return _session.DontFlushFromFind; }
-        }
+        public int DontFlushFromFind => Session.DontFlushFromFind;
 
-        public ConnectionManager ConnectionManager
-        {
-            get { return _session.ConnectionManager; }
-        }
+        public ConnectionManager ConnectionManager => Session.ConnectionManager;
 
-        public bool IsEventSource
-        {
-            get { return _session.IsEventSource; }
-        }
+        public bool IsEventSource => Session.IsEventSource;
 
-        public IPersistenceContext PersistenceContext
-        {
-            get { return _session.PersistenceContext; }
-        }
+        public IPersistenceContext PersistenceContext => Session.PersistenceContext;
 
         CacheMode ISessionImplementor.CacheMode
         {
-            get { return ((ISessionImplementor)_session).CacheMode; }
-            set { ((ISessionImplementor)_session).CacheMode = value; }
+            get { return ((ISessionImplementor) Session).CacheMode; }
+            set { ((ISessionImplementor) Session).CacheMode = value; }
         }
 
-        IDbConnection ISession.Connection
-        {
-            get { return ((ISession)_session).Connection; }
-        }
+        DbConnection ISession.Connection => ((ISession) Session).Connection;
 
-        bool ISession.IsOpen
-        {
-            get { return ((ISession)_session).IsOpen; }
-        }
+        bool ISession.IsOpen => ((ISession) Session).IsOpen;
 
-        bool ISession.IsConnected
-        {
-            get { return ((ISession)_session).IsConnected; }
-        }
+        bool ISession.IsConnected => ((ISession) Session).IsConnected;
 
         public bool DefaultReadOnly
         {
-            get { return _session.DefaultReadOnly; }
-            set { _session.DefaultReadOnly = value; }
+            get { return Session.DefaultReadOnly; }
+            set { Session.DefaultReadOnly = value; }
         }
 
-        public ITransaction Transaction
-        {
-            get { return _session.Transaction; }
-        }
+        public ITransaction Transaction => Session.Transaction;
 
-        public ISessionStatistics Statistics
-        {
-            get { return _session.Statistics; }
-        }
+        public ISessionStatistics Statistics => Session.Statistics;
 
-        bool ISessionImplementor.IsOpen
-        {
-            get { return ((ISessionImplementor)_session).IsOpen; }
-        }
+        bool ISessionImplementor.IsOpen => ((ISessionImplementor) Session).IsOpen;
 
-        bool ISessionImplementor.IsConnected
-        {
-            get { return ((ISessionImplementor)_session).IsConnected; }
-        }
+        bool ISessionImplementor.IsConnected => ((ISessionImplementor) Session).IsConnected;
 
         FlushMode ISessionImplementor.FlushMode
         {
-            get { return ((ISessionImplementor)_session).FlushMode; }
-            set { ((ISessionImplementor)_session).FlushMode = value; }
+            get { return ((ISessionImplementor) Session).FlushMode; }
+            set { ((ISessionImplementor) Session).FlushMode = value; }
         }
 
         public string FetchProfile
         {
-            get { return _session.FetchProfile; }
-            set { _session.FetchProfile = value; }
+            get { return Session.FetchProfile; }
+            set { Session.FetchProfile = value; }
         }
 
-        public ISessionFactory SessionFactory
-        {
-            get { return _session.SessionFactory; }
-        }
+        public ISessionFactory SessionFactory => Session.SessionFactory;
 
-        IDbConnection ISessionImplementor.Connection
-        {
-            get { return ((ISessionImplementor)_session).Connection; }
-        }
+        DbConnection ISessionImplementor.Connection => ((ISessionImplementor) Session).Connection;
 
-        public bool IsClosed
-        {
-            get { return _session.IsClosed; }
-        }
+        public bool IsClosed => Session.IsClosed;
 
-        public bool TransactionInProgress
-        {
-            get { return _session.TransactionInProgress; }
-        }
+        public bool TransactionInProgress => Session.TransactionInProgress;
 
-        public EntityMode EntityMode
-        {
-            get { return _session.EntityMode; }
-        }
+        public EntityMode EntityMode => Session.EntityMode;
 
-        public FutureCriteriaBatch FutureCriteriaBatch
-        {
-            get { return _session.FutureCriteriaBatch; }
-        }
+        public FutureCriteriaBatch FutureCriteriaBatch => Session.FutureCriteriaBatch;
 
-        public FutureQueryBatch FutureQueryBatch
-        {
-            get { return _session.FutureQueryBatch; }
-        }
+        public FutureQueryBatch FutureQueryBatch => Session.FutureQueryBatch;
 
-        public Guid SessionId
-        {
-            get { return _session.SessionId; }
-        }
+        public Guid SessionId => Session.SessionId;
 
         public ITransactionContext TransactionContext
         {
-            get { return _session.TransactionContext; }
-            set { _session.TransactionContext = value; }
+            get { return Session.TransactionContext; }
+            set { Session.TransactionContext = value; }
         }
 
-        public object CustomContext
-        {
-            get { return _session.CustomContext; }
-        }
+        public object UserData => Session.UserData;
 
         public void Dispose()
         {
-            _session.Dispose();
+            Session.Dispose();
         }
 
         public object Instantiate(IEntityPersister persister, object id)
         {
-            return _session.Instantiate(persister, id);
+            return Session.Instantiate(persister, id);
         }
 
-        public async Task ForceFlush(EntityEntry e)
+        public void ForceFlush(EntityEntry e)
+        {
+            Session.ForceFlush(e);
+        }
+
+        public void Merge(string entityName, object obj, IDictionary copiedAlready)
+        {
+            Session.Merge(entityName, obj, copiedAlready);
+        }
+
+        public void Persist(string entityName, object obj, IDictionary createdAlready)
+        {
+            Session.Persist(entityName, obj, createdAlready);
+        }
+
+        public void PersistOnFlush(string entityName, object obj, IDictionary copiedAlready)
+        {
+            Session.PersistOnFlush(entityName, obj, copiedAlready);
+        }
+
+        public void Refresh(object obj, IDictionary refreshedAlready)
+        {
+            Session.Refresh(obj, refreshedAlready);
+        }
+
+        public void Delete(string entityName, object child, bool isCascadeDeleteEnabled, ISet<object> transientEntities)
+        {
+            Session.Delete(entityName, child, isCascadeDeleteEnabled, transientEntities);
+        }
+
+        public async Task ForceFlushAsync(EntityEntry e)
         {
             await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(this));
-            await _session.ForceFlush(e);
+            await Session.ForceFlushAsync(e);
         }
 
-        public Task Merge(string entityName, object obj, IDictionary copiedAlready)
+        public Task MergeAsync(string entityName, object obj, IDictionary copiedAlready)
         {
-            return _session.Merge(entityName, obj, copiedAlready);
+            return Session.MergeAsync(entityName, obj, copiedAlready);
         }
 
-        public Task Persist(string entityName, object obj, IDictionary createdAlready)
+        public Task PersistAsync(string entityName, object obj, IDictionary createdAlready)
         {
-            return _session.Persist(entityName, obj, createdAlready);
+            return Session.PersistAsync(entityName, obj, createdAlready);
         }
 
-        public Task PersistOnFlush(string entityName, object obj, IDictionary copiedAlready)
+        public Task PersistOnFlushAsync(string entityName, object obj, IDictionary copiedAlready)
         {
-            return _session.PersistOnFlush(entityName, obj, copiedAlready);
+            return Session.PersistOnFlushAsync(entityName, obj, copiedAlready);
         }
 
-        public Task Refresh(object obj, IDictionary refreshedAlready)
+        public Task RefreshAsync(object obj, IDictionary refreshedAlready)
         {
-            return _session.Refresh(obj, refreshedAlready);
+            return Session.RefreshAsync(obj, refreshedAlready);
         }
 
-        public async Task Delete(string entityName, object child, bool isCascadeDeleteEnabled, ISet<object> transientEntities)
+        public async Task DeleteAsync(string entityName, object child, bool isCascadeDeleteEnabled,
+            ISet<object> transientEntities)
         {
             await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(this));
-            await _session.Delete(entityName, child, isCascadeDeleteEnabled, transientEntities);
+            await Session.DeleteAsync(entityName, child, isCascadeDeleteEnabled, transientEntities);
         }
 
-        public ActionQueue ActionQueue
+        public ActionQueue ActionQueue => Session.ActionQueue;
+
+
+        public override int GetHashCode()
         {
-            get { return _session.ActionQueue; }
+            return Session.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Session.Equals(obj);
         }
     }
 }

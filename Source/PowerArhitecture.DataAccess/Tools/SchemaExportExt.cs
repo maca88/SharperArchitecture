@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using NHibernate.AdoNet.Util;
 using NHibernate.Bytecode;
@@ -325,7 +326,7 @@ namespace NHibernate.Tool.hbm2ddl
         public void Execute(Action<IDbCommand> beforeExecute, Action<IDbCommand> afterExecute, bool export, bool justDrop)
         {
             Initialize();
-            IDbConnection connection = null;
+            DbConnection connection = null;
             StreamWriter fileOutput = null;
             IConnectionProvider connectionProvider = null;
 

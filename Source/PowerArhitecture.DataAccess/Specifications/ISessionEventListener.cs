@@ -7,8 +7,8 @@ namespace PowerArhitecture.DataAccess.Specifications
 {
     public interface ISessionEventProvider
     {
-        void AddAListener(SessionListenerType type, ISession session, Func<Task> action);
+        void AddListener(SessionListenerType type, ISession session, Action action);
 
-        void AddAListener(SessionListenerType type, ISession session, Func<ISession, Task> action);
+        void AddListener(SessionListenerType type, ISession session, Action<ISession> action);
     }
 }

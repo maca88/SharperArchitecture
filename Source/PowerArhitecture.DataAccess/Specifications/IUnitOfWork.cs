@@ -46,13 +46,6 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         void Rollback();
 
-        Task RollbackAsync();
-
-        /// <summary>
-        /// Use this if you want instantiate a class that has a Repository or Session as dependency
-        /// </summary>
-        IResolutionRoot ResolutionRoot { get; }
-
         void SetFlushMode(FlushMode mode);
 
         IUnitOfWorkImplementor GetUnitOfWorkImplementation();

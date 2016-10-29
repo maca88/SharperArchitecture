@@ -21,14 +21,14 @@ namespace PowerArhitecture.DataAccess.EventListeners
             _eventAggregator = eventAggregator;
         }
 
-        public async Task BeforeCompletion()
+        public void BeforeCompletion()
         {
-            await _eventAggregator.SendMessageAsync(new TransactionCommittingEvent(_session));
+            _eventAggregator.SendMessage(new TransactionCommittingEvent(_session));
         }
 
-        public async Task AfterCompletion(bool success)
+        public void AfterCompletion(bool success)
         {
-            await _eventAggregator.SendMessageAsync(new TransactionCommittedEvent(_session));
+            _eventAggregator.SendMessage(new TransactionCommittedEvent(_session));
         }
     }
 }

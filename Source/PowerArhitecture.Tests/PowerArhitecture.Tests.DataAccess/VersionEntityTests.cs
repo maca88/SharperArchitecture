@@ -8,13 +8,14 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NHibernate;
 using NHibernate.Event;
 using NHibernate.Impl;
 using Ninject;
+using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Providers;
+using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
@@ -24,34 +25,30 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
-    [TestClass]
-    public class VersionEntityTests : BaseTest
+    [TestFixture]
+    public class VersionEntityTests : DatabaseBaseTest
     {
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public VersionEntityTests()
         {
-            EntityAssemblies.Add(typeof(UnitOfWorkSingleDbTests).Assembly);
+            EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
-            BaseClassInitialize(testContext, 
-                CreateDatabaseConfiguration()
+        }
+
+        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
+        {
+            return base.CreateDatabaseConfiguration(dbName)
                 .Conventions(c => c
                     .HiLoId(o => o.Enabled(false)
                     )
-                )
-            );
+                );
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            BaseClassCleanup();
-        }
 
         #region VersionEntity
 
-        [TestMethod]
+        [Test]
         public void save_version_entity()
         {
             var car = new VersionCar { Model = "BMW" };

@@ -62,7 +62,6 @@ namespace PowerArhitecture.DataAccess.Providers
             {
                 IsManaged = true,
                 ResolutionRoot = context.GetContextPreservingResolutionRoot(),
-                CurrentPrincipal = Thread.CurrentPrincipal,
                 CurrentCultureInfo = Thread.CurrentThread.CurrentCulture
             };
             var session = (ISession)new SessionWrapper((IEventSource)sessionFactory.OpenSession(sessionContext), _eventAggregator);

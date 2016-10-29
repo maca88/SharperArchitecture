@@ -15,7 +15,7 @@ using System.Reflection;
 
 namespace PowerArhitecture.CodeList.EventListeners
 {
-    public class HibernateMappingsBuiltEventListener : IListener<HibernateMappingsBuiltEvent>
+    public class HibernateMappingsBuiltEventListener : BaseListener<HibernateMappingsBuiltEvent>
     {
         public void Apply(ClassMappingBase classMapBase)
         {
@@ -146,7 +146,7 @@ namespace PowerArhitecture.CodeList.EventListeners
             return (property != null ? property.Name : type.Name) + "Code";
         }
 
-        public void Handle(HibernateMappingsBuiltEvent e)
+        public override void Handle(HibernateMappingsBuiltEvent e)
         {
             IEnumerable<HibernateMapping> message = e.Message;
 

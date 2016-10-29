@@ -22,18 +22,33 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         {
         }
 
-        protected override Task<object> PerformSaveOrUpdate(SaveOrUpdateEvent @event)
+        protected override object PerformSaveOrUpdate(SaveOrUpdateEvent @event)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
             var entry = @event.Session.PersistenceContext.GetEntry(@event.Entity);
             if (entry != null && entry.Status != Status.Deleted)
             {
-                return Task.FromResult(EntityIsPersistent(@event));
+                return EntityIsPersistent(@event);
             }
             else
             {
                 return EntityIsTransient(@event);
+            }
+        }
+
+        protected override async Task<object> PerformSaveOrUpdateAsync(SaveOrUpdateEvent @event)
+        {
+            // this implementation is supposed to tolerate incorrect unsaved-value
+            // mappings, for the purpose of backward-compatibility
+            var entry = @event.Session.PersistenceContext.GetEntry(@event.Entity);
+            if (entry != null && entry.Status != Status.Deleted)
+            {
+                return EntityIsPersistent(@event);
+            }
+            else
+            {
+                return await EntityIsTransientAsync(@event);
             }
         }
 

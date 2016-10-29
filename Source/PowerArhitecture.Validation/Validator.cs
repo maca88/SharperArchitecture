@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Ninject;
 using PowerArhitecture.Validation.Attributes;
@@ -11,22 +12,67 @@ using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
 using FluentValidation.Validators;
+using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Validation
 {
     //the default validator if a custom one is not defined. This validator validates validation attributes
-    public class PAValidator<TModel> : AbstractValidator<TModel>
+    public class Validator<TModel> : AbstractValidator<TModel>, IValidatorExtended
     {
-        public PAValidator()
+        public Validator()
         {
             AddAttributeValidation();
         }
 
-        protected ValidationFailure ValidationFailure(Expression<Func<TModel, object>> propertyExp,
-                                                                 string errorMsg)
+        public bool HasValidationContextFiller { get; internal set; }
+
+        public virtual bool CanValidateWithoutContextFiller => false;
+
+        public override ValidationResult Validate(ValidationContext<TModel> context)
+        {
+            if (HasValidationContextFiller && !context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFilledKey))
+            {
+                if (context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFillerKey))
+                {
+                    var ctxFiller = context.RootContextData[ValidatorExtensions.DataContextFillerKey] as IValidationContextFiller<TModel>;
+                    ctxFiller?.FillContextData(context.InstanceToValidate, context.RootContextData);
+                }
+                else if (!CanValidateWithoutContextFiller)
+                {
+                    throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
+                                                        "Hint: override property CanValidateWithoutContextFiller or pass the context filler upon validation");
+                }
+                context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
+            }
+            return base.Validate(context);
+        }
+
+        public override async Task<ValidationResult> ValidateAsync(ValidationContext<TModel> context, CancellationToken cancellation = new CancellationToken())
+        {
+            if (HasValidationContextFiller && !context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFilledKey))
+            {
+                if (context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFillerKey))
+                {
+                    var ctxFiller = context.RootContextData[ValidatorExtensions.DataContextFillerKey] as IValidationContextFiller<TModel>;
+                    if (ctxFiller != null)
+                    {
+                        await ctxFiller.FillContextDataAsync(context.InstanceToValidate, context.RootContextData);
+                    }
+                }
+                else if (!CanValidateWithoutContextFiller)
+                {
+                    throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
+                                                        "Hint: override property CanValidateWithoutContextFiller or pass the context filler upon validation");
+                }
+                context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
+            }
+            return await base.ValidateAsync(context, cancellation);
+        }
+
+        protected ValidationFailure ValidationFailure(Expression<Func<TModel, object>> propertyExp, string errorMsg)
         {
             return new ValidationFailure(propertyExp.GetFullPropertyName(), errorMsg);
-            
         }
 
         protected ValidationFailure ValidationFailure(string errorMsg)
@@ -34,13 +80,7 @@ namespace PowerArhitecture.Validation
             return new ValidationFailure("", errorMsg);
         }
 
-        protected ValidationFailure ValidationSuccess
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected ValidationFailure ValidationSuccess => null;
 
         protected void RuleSet(IEnumerable<string> ruleSetNames, Action action)
         {
@@ -50,11 +90,18 @@ namespace PowerArhitecture.Validation
             }
         }
 
-        protected ValidationResult Validate(TModel model, IEnumerable<string> ruleSets)
+        protected virtual ValidationResult Validate(TModel model, string[] ruleSets)
         {
-            var ruleSetSelector = new PARulesetValidatorSelector(ruleSets);
+            var ruleSetSelector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSets);
             return Validate(new ValidationContext<TModel>(model, new PropertyChain(), ruleSetSelector));
         }
+
+        protected virtual Task<ValidationResult> ValidateAsync(TModel model, string[] ruleSets)
+        {
+            var ruleSetSelector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSets);
+            return ValidateAsync(new ValidationContext<TModel>(model, new PropertyChain(), ruleSetSelector));
+        }
+
 
         private void AddAttributeValidation()
         {
@@ -102,24 +149,6 @@ namespace PowerArhitecture.Validation
                     AddComparisonValidator(attr as EqualAttribute, type, prop,
                         o => new EqualValidator(o), 
                         (func, info) => new EqualValidator(func, info));
-
-                    #endregion
-                    #region ExclusiveBetweenAttribute
-
-                    var exclBtw = attr as ExclusiveBetweenAttribute;
-                    if (exclBtw != null)
-                    {
-                        propValidator = new ExclusiveBetweenValidator(exclBtw.From, exclBtw.To);
-                    }
-
-                    #endregion
-                    #region InclusiveBetweenAttribute
-
-                    var inclBtw = attr as InclusiveBetweenAttribute;
-                    if (inclBtw != null)
-                    {
-                        propValidator = new InclusiveBetweenValidator(inclBtw.From, inclBtw.To);
-                    }
 
                     #endregion
                     #region LengthAttribute

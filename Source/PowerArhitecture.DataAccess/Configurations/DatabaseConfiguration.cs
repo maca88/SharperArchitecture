@@ -41,6 +41,7 @@ namespace PowerArhitecture.DataAccess.Configurations
             RecreateAtStartup = AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.RecreateSchemaAtStartup);
             UpdateSchemaAtStartup = AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.UpdateSchemaAtStartup);
             AllowOneToOneWithoutLazyLoading = AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.AllowOneToOneWithoutLazyLoading);
+            HbmMappingsPath = AppConfiguration.GetSetting<string>(DatabaseConfigurationKeys.HbmMappingsPath);
             Conventions.FillFromConfig();
         }
 

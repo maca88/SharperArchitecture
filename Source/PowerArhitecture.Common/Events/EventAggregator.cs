@@ -57,35 +57,32 @@ namespace PowerArhitecture.Common.Events
     /// Specifies a class that would like to receive particular messages.
     /// </summary>
     /// <typeparam name="TMessage">The type of message object to subscribe to.</typeparam>
-#if WINDOWS_PHONE
-    public interface IListener<TMessage>
-#else
-    public interface IListener<TMessage>
-#endif
+    public interface IListener<in TMessage>
     {
         /// <summary>
         /// This will be called every time a TMessage is published through the event aggregator
         /// </summary>
         void Handle(TMessage message);
-    }
 
-#if ASYNC
-    /// <summary>
-    /// Specifies a class that would like to receive particular messages.
-    /// </summary>
-    /// <typeparam name="TMessage">The type of message object to subscribe to.</typeparam>
-#if WINDOWS_PHONE
-    public interface IListenerAsync<TMessage>
-#else
-    public interface IListenerAsync<in TMessage>
-#endif
-    {
         /// <summary>
         /// This will be called every time a TMessage is published through the event aggregator
         /// </summary>
-        Task Handle(TMessage message);
+        Task HandleAsync(TMessage message);
     }
-#endif
+
+    public abstract class BaseListener<TMessage> : IListener<TMessage>
+    {
+        public virtual void Handle(TMessage message)
+        {
+        }
+
+        public virtual  Task HandleAsync(TMessage message)
+        {
+            Handle(message);
+            return Task.CompletedTask;
+        }
+    }
+
     /// <summary>
     /// Provides a way to add and remove a listener object from the EventAggregator
     /// </summary>
@@ -108,16 +105,7 @@ namespace PowerArhitecture.Common.Events
         /// <param name="holdStrongReference">determines if the EventAggregator should hold a weak or strong reference to the listener object. If null it will use the Config level option unless overriden by the parameter.</param>
         /// <returns>Returns the current IEventSubscriptionManager to allow for easy fluent additions.</returns>
         IEventSubscriptionManager AddListener<T>(IListener<T> listener, bool? holdStrongReference = null);
-#if ASYNC
-        /// <summary>
-        /// Adds the given listener object to the EventAggregator.
-        /// </summary>
-        /// <typeparam name="T">Listener Message type</typeparam>
-        /// <param name="listener"></param>
-        /// <param name="holdStrongReference">determines if the EventAggregator should hold a weak or strong reference to the listener object. If null it will use the Config level option unless overriden by the parameter.</param>
-        /// <returns>Returns the current IEventSubscriptionManager to allow for easy fluent additions.</returns>
-        IEventSubscriptionManager AddListener<T>(IListenerAsync<T> listener, bool? holdStrongReference = null);
-#endif
+
         /// <summary>
         /// Removes the listener object from the EventAggregator
         /// </summary>
@@ -207,7 +195,7 @@ namespace PowerArhitecture.Common.Events
             if (marshal == null)
                 marshal = _config.DefaultThreadAsyncMarshaler;
 
-            return CallAsync<IListenerAsync<TMessage>>(message, marshal);
+            return CallAsync<IListener<TMessage>>(message, marshal);
         }
 
         /// <summary>
@@ -226,10 +214,10 @@ namespace PowerArhitecture.Common.Events
         private void Call<TListener>(object message, Action<Action> marshaller)
             where TListener : class
         {
-            int listenerCalledCount = 0;
+            var listenerCalledCount = 0;
             marshaller(() =>
             {
-                foreach (ListenerWrapper o in _listeners.Where(o => o.Handles<TListener>() || o.HandlesMessage(message)))
+                foreach (var o in _listeners.Where(o => o.Handles<TListener>() || o.HandlesMessage(message)))
                 {
                     bool wasThisOneCalled;
                     o.TryHandle<TListener>(message, out wasThisOneCalled);
@@ -249,16 +237,16 @@ namespace PowerArhitecture.Common.Events
         private async Task CallAsync<TListener>(object message, Func<Func<Task>, Task> marshaller)
             where TListener : class
         {
-            int listenerCalledCount = 0;
+            var listenerCalledCount = 0;
             await marshaller(async () =>
             {
-                foreach (ListenerWrapper o in _listeners.Where(o => o.Handles<TListener>() || o.HandlesMessage(message)))
+                foreach (var o in _listeners.Where(o => o.Handles<TListener>() || o.HandlesMessage(message)))
                 {
-                    bool wasThisOneCalled = await o.TryHandleAsync<TListener>(message).ConfigureAwait(false);
+                    bool wasThisOneCalled = await o.TryHandleAsync<TListener>(message);
                     if (wasThisOneCalled)
                         listenerCalledCount++;
                 }
-            }).ConfigureAwait(false);
+            });
 
             var wasAnyListenerCalled = listenerCalledCount > 0;
 
@@ -292,14 +280,7 @@ namespace PowerArhitecture.Common.Events
 
             return this;
         }
-#if ASYNC
-        public IEventSubscriptionManager AddListener<T>(IListenerAsync<T> listener, bool? holdStrongReference = null)
-        {
-            AddListener((object)listener, holdStrongReference);
 
-            return this;
-        }
-#endif
         public IEventSubscriptionManager RemoveListener(object listener)
         {
             _listeners.RemoveListener(listener);
@@ -417,6 +398,7 @@ namespace PowerArhitecture.Common.Events
         private class ListenerWrapper
         {
             private const string HandleMethodName = "Handle";
+            private const string HandleAsyncMethodName = "HandleAsync";
             private readonly Action<ListenerWrapper> _onRemoveCallback;
             private readonly List<HandleMethodWrapper> _handlers = new List<HandleMethodWrapper>();
             private readonly IReference _reference;
@@ -431,18 +413,15 @@ namespace PowerArhitecture.Common.Events
                     _reference = new WeakReferenceImpl(listener);
 
                 var listenerInterfaces = TypeHelper.GetBaseInterfaceType(listener.GetType())
-                                                   .Where(w => TypeHelper.DirectlyClosesGeneric(w, typeof(IListener<>))
-#if ASYNC
-                                                   || TypeHelper.DirectlyClosesGeneric(w, typeof (IListenerAsync<>))
-#endif
-                                                   );
+                                                   .Where(w => TypeHelper.DirectlyClosesGeneric(w, typeof(IListener<>)));
 
                 foreach (var listenerInterface in listenerInterfaces)
                 {
                     var messageType = TypeHelper.GetFirstGenericType(listenerInterface);
                     var handleMethod = TypeHelper.GetMethod(listenerInterface, HandleMethodName);
+                    var handleAsyncMethod = TypeHelper.GetMethod(listenerInterface, HandleAsyncMethodName);
 
-                    HandleMethodWrapper handler = new HandleMethodWrapper(handleMethod, listenerInterface, messageType, supportMessageInheritance);
+                    var handler = new HandleMethodWrapper(handleMethod, handleAsyncMethod, listenerInterface, messageType, supportMessageInheritance);
                     _handlers.Add(handler);
                 }
             }
@@ -492,7 +471,7 @@ namespace PowerArhitecture.Common.Events
 
                 foreach (var handler in _handlers)
                 {
-                    wasHandled |= await handler.TryHandleAsync<TListener>(target, message).ConfigureAwait(false);
+                    wasHandled |= await handler.TryHandleAsync<TListener>(target, message);
                 }
                 return wasHandled;
             }
@@ -508,13 +487,15 @@ namespace PowerArhitecture.Common.Events
             private readonly Type _listenerInterface;
             private readonly Type _messageType;
             private readonly MethodInfo _handlerMethod;
+            private readonly MethodInfo _handlerAsyncMethod;
             private readonly bool _supportMessageInheritance;
             private readonly Dictionary<Type, bool> supportedMessageTypes = new Dictionary<Type, bool>();
 
-            public HandleMethodWrapper(MethodInfo handlerMethod, Type listenerInterface, Type messageType,
+            public HandleMethodWrapper(MethodInfo handlerMethod, MethodInfo handlerAsyncMethod, Type listenerInterface, Type messageType,
                 bool supportMessageInheritance)
             {
                 _handlerMethod = handlerMethod;
+                _handlerAsyncMethod = handlerAsyncMethod;
                 _listenerInterface = listenerInterface;
                 _messageType = messageType;
                 _supportMessageInheritance = supportMessageInheritance;
@@ -553,57 +534,15 @@ namespace PowerArhitecture.Common.Events
                 }
 
                 if (!Handles<TListener>() && !HandlesMessage(message)) return false;
-#if !ASYNC && !UNWRAP_EX
-                _handlerMethod.Invoke(target, new[] { message });
-#elif ASYNC && !UNWRAP_EX
-                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>)))
-                {
-                    ((Task)_handlerMethod.Invoke(target, new[] {message})).ConfigureAwait(false).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    _handlerMethod.Invoke(target, new[] {message});
-                }
-#elif ASYNC
-                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof(IListenerAsync<>)))
-                {
-                    ((Task)_handlerMethod.Invoke(target, new[] { message })).ConfigureAwait(false).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    try
-                    {
-                        _handlerMethod.Invoke(target, new[] {message});
-                    }
-                    catch (TargetInvocationException ex)
-                    {
-#if NET_CLIENT
-                        PreserveStackTrace(ex.InnerException ?? ex);
-#endif
-#if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
-                        throw ex.InnerException ?? ex;
-#else
-                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-#endif
-                    }
-                }
-#else
+
                 try
                 {
                     _handlerMethod.Invoke(target, new[] {message});
                 }
                 catch (TargetInvocationException ex)
                 {
-#if NET_CLIENT
-                    PreserveStackTrace(ex.InnerException ?? ex);
-#endif
-#if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
-                    throw ex.InnerException ?? ex;
-#else
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-#endif
                 }
-#endif
                 return true;
             }
 
@@ -616,44 +555,13 @@ namespace PowerArhitecture.Common.Events
                     return false;
                 }
                 if (!Handles<TListener>() && !HandlesMessage(message)) return false;
-                if (TypeHelper.IsAssignableToGenericType(target.GetType(), typeof (IListenerAsync<>)))
-                {
-                    await ((Task) _handlerMethod.Invoke(target, new[] {message})).ConfigureAwait(false);
-                }
-                else
-                {
-#if !UNWRAP_EX
-                    _handlerMethod.Invoke(target, new[] {message});
-#else
-                    try
-                    {
-                        _handlerMethod.Invoke(target, new[] {message});
-                    }
-                    catch (TargetInvocationException ex)
-                    {
-#if NET_CLIENT
-                        PreserveStackTrace(ex.InnerException ?? ex);
-#endif
-#if NETFX_CORE || WINDOWS_PHONE || NET_CLIENT
-                        throw ex.InnerException ?? ex;
-#else
-                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-#endif
-                    }
-#endif
-                }
+
+                await (Task)_handlerAsyncMethod.Invoke(target, new[] { message });
+
                 return true;
             }
 #endif
 
-#if NET_CLIENT
-            private static void PreserveStackTrace(Exception exception)
-            {
-                var preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
-                  BindingFlags.Instance | BindingFlags.NonPublic);
-                preserveStackTrace.Invoke(exception, null);
-            }
-#endif
         }
 
         internal static class TypeHelper

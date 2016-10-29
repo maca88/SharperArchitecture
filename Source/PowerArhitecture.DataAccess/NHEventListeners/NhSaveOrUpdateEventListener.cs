@@ -19,6 +19,7 @@ using NHibernate.Event;
 using NHibernate.Event.Default;
 using NHibernate.Intercept;
 using NHibernate.Persister.Entity;
+using PowerArhitecture.Common.Exceptions;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
 {
@@ -40,26 +41,52 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         /// </summary>
         /// <param name="event"></param>
         /// <returns></returns>
-        protected override async Task<object> EntityIsTransient(SaveOrUpdateEvent @event) //override this for fixing not-null transient property
+        protected override async Task<object> EntityIsTransientAsync(SaveOrUpdateEvent @event) //override this for fixing not-null transient property
         {
             //If entry is set then entity will be deleted otherwise will be inserted
             if (@event.Entry == null)
             {
                 //We have to set only for transient entites here just for fixing not-null transient property exception from NH
                 //for persistent entites we will update the audit properties in the preupdate listener (here we dont know if the entity is dirty)
-                await SetAuditProperties(@event.Entity, @event.Session).ConfigureAwait(false);
-                await EventAggregator.SendMessageAsync(new EntitySavingEvent(@event)).ConfigureAwait(false);
+                var dbSettings = Database.GetSessionFactoryInfo(@event.Session)?.DatabaseConfiguration;
+                var reqLastModifiedProp = dbSettings?.Conventions?.RequiredLastModifiedProperty == true;
+                var userType = SetAuditProperties(@event.Entity, reqLastModifiedProp);
+                if (userType != null)
+                {
+                    SetCurrentUser(@event.Entity, await GetCurrentUserAsync(@event.Session, userType), reqLastModifiedProp);
+                }
+                await EventAggregator.SendMessageAsync(new EntitySavingEvent(@event));
             }
-            return await base.EntityIsTransient(@event);
+            return await base.EntityIsTransientAsync(@event);
+        }
+
+        protected override object EntityIsTransient(SaveOrUpdateEvent @event)
+        {
+            //If entry is set then entity will be deleted otherwise will be inserted
+            if (@event.Entry == null)
+            {
+                //We have to set only for transient entites here just for fixing not-null transient property exception from NH
+                //for persistent entites we will update the audit properties in the preupdate listener (here we dont know if the entity is dirty)
+                var dbSettings = Database.GetSessionFactoryInfo(@event.Session)?.DatabaseConfiguration;
+                var reqLastModifiedProp = dbSettings?.Conventions?.RequiredLastModifiedProperty == true;
+                var userType = SetAuditProperties(@event.Entity, reqLastModifiedProp);
+                if (userType != null)
+                {
+                    SetCurrentUser(@event.Entity, GetCurrentUser(@event.Session, userType), reqLastModifiedProp);
+                }
+                EventAggregator.SendMessage(new EntitySavingEvent(@event));
+            }
+            return base.EntityIsTransient(@event);
         }
 
         //This method can be called multiple times for a transient entity (because of cascades) so we will update the audit values only if they are not set
-        private async Task SetAuditProperties(object obj, ISession session)
+        private Type SetAuditProperties(object obj, bool requiredLastModifiedProp)
         {
             var entity = obj as IVersionedEntity;
-            if (entity == null) return;
-            var dbSettings = Database.GetSessionFactoryInfo(session)?.DatabaseConfiguration;
-            var requiredLastModifiedProp = dbSettings?.Conventions?.RequiredLastModifiedProperty == true;
+            if (entity == null)
+            {
+                return null;
+            }
             var currentDate = DateTime.UtcNow;
             if (entity.CreatedDate == DateTime.MinValue)
                 obj.SetMemberValue("CreatedDate", currentDate);
@@ -68,11 +95,31 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
             var entityType = entity.GetTypeUnproxied();
             var genType = entityType.GetGenericType(typeof(IVersionedEntityWithUser<>));
-            if (genType == null)
-                return;
+            return genType?.GetGenericArguments()[0];
+        }
 
-            var userType = genType.GetGenericArguments()[0];
-            var currentUser = await _auditUserProvider.GetCurrentUser(session, userType).ConfigureAwait(false);
+        private object GetCurrentUser(ISession session, Type userType)
+        {
+            var currentUser = _auditUserProvider.GetCurrentUser(session, userType);
+            if (currentUser == null)
+            {
+                throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
+            }
+            return currentUser;
+        }
+
+        private async Task<object> GetCurrentUserAsync(ISession session, Type userType)
+        {
+            var currentUser = await _auditUserProvider.GetCurrentUserAsync(session, userType);
+            if (currentUser == null)
+            {
+                throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
+            }
+            return currentUser;
+        }
+
+        private void SetCurrentUser(object obj, object currentUser, bool requiredLastModifiedProp)
+        {
             if (obj.GetMemberValue("CreatedBy") == null)
                 obj.SetMemberValue("CreatedBy", currentUser);
             if (obj.GetMemberValue("LastModifiedBy") == null && requiredLastModifiedProp)

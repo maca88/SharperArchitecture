@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Internationalization;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace PowerArhitecture.Tests.Common
 {
-    [TestClass]
+    [TestFixture]
     public class Internacionalization
     {
-        [TestMethod]
+        [Test]
         public void Test()
         {
             var test1 = TranslatorFormatter.Custom("{Drek} {0} {0} {1} {{0}} {{escape}}", "str1", "str2", new {Drek = "dela"});

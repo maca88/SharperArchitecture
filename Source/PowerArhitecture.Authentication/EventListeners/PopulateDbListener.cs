@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.Identity;
 using NHibernate.Extensions;
@@ -13,7 +14,7 @@ using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 namespace PowerArhitecture.Authentication.EventListeners
 {
     [Priority(1000)]
-    public class PopulateDbListener : IListener<PopulateDbEvent>
+    public class PopulateDbListener : BaseListener<PopulateDbEvent>
     {
         private readonly IAuthenticationConfiguration _authSettings;
         private readonly IPasswordHasher _passwordHasher;
@@ -26,7 +27,7 @@ namespace PowerArhitecture.Authentication.EventListeners
             _userType = Type.GetType(authSettings.UserClass, true);
         }
 
-        public void Handle(PopulateDbEvent e)
+        public override void Handle(PopulateDbEvent e)
         {
             var unitOfWork = e.Message;
             var systemUser = (IEntity)Activator.CreateInstance(_userType);

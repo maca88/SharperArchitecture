@@ -12,6 +12,7 @@ using Ninject;
 using Ninject.Activation;
 using Ninject.Extensions.Logging;
 using Ninject.Syntax;
+using PowerArhitecture.Common.Configuration;
 
 namespace PowerArhitecture.Common.Providers
 {
@@ -20,16 +21,15 @@ namespace PowerArhitecture.Common.Providers
         public object Create(IContext context)
         {
             var eventAggregator = new EventAggregator();
-            Type = eventAggregator.GetType();
             return eventAggregator;
         }
 
         public static void OnActivation(IContext context, IEventAggregator aggregator)
         {
-            foreach (var listenerType in AppDomain.CurrentDomain.GetAssemblies()
+            foreach (var listenerType in AppConfiguration.GetDomainAssemblies()
                 .SelectMany(assembly => assembly.GetTypes()
-                    .Where(o => !o.IsInterface && !o.IsAbstract && (o.IsAssignableToGenericType(typeof(IListener<>)) || o.IsAssignableToGenericType(typeof(IListenerAsync<>))) 
-                        && o != typeof(DelegateListener<>) && o != typeof(DelegateListenerAsync<>)))
+                    .Where(o => !o.IsInterface && !o.IsAbstract && o.IsAssignableToGenericType(typeof(IListener<>))
+                        && o != typeof(DelegateListener<>) /*&& o != typeof(DelegateListenerAsync<>)*/))
                     .OrderByDescending(o =>
                     {
                         var attr = o.GetCustomAttribute<PriorityAttribute>();
@@ -46,6 +46,6 @@ namespace PowerArhitecture.Common.Providers
             new UnhandledExceptionPublisher(aggregator); //TODO: move to another place
         }
 
-        public Type Type { get; private set; }
+        public Type Type => typeof(EventAggregator);
     }
 }

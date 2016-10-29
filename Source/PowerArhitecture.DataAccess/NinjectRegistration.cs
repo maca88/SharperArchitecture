@@ -22,6 +22,7 @@ using Ninject.Extensions.Conventions;
 using Ninject.Extensions.NamedScope;
 using Ninject.Modules;
 using Ninject.Web.Common;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess.Parameters;
 
 namespace PowerArhitecture.DataAccess
@@ -63,7 +64,7 @@ namespace PowerArhitecture.DataAccess
 
             //Convention for custom repositories
             Kernel.Bind(o => o
-                .From(AppDomain.CurrentDomain.GetAssemblies()
+                .From(AppConfiguration.GetDomainAssemblies()
                     .Where(a => a.GetTypes().Any(t => typeof (IRepository).IsAssignableFrom(t))))
                 .IncludingNonePublicTypes()
                 .Select(t =>
@@ -92,9 +93,9 @@ namespace PowerArhitecture.DataAccess
             Bind<IPreUpdateEventListener>()
                 .To<AuditEntityEventListener>()
                 .InSingletonScope();
-            Bind<IPreUpdateEventListener, IPreInsertEventListener>()
-                .To<RootAggregatePreUpdateInsertEventListener>()
-                .InSingletonScope();
+            //Bind<IPreUpdateEventListener, IPreInsertEventListener>()
+            //    .To<RootAggregatePreUpdateInsertEventListener>()
+            //    .InSingletonScope();
 
             if (!Kernel.GetBindings(typeof(IAuditUserProvider)).Any()) //bind if it was not configured in xml
                 Bind<IAuditUserProvider>().To<AuditUserProvider>().InSingletonScope();

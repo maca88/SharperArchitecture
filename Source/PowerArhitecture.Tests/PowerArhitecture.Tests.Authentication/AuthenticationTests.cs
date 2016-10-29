@@ -1,14 +1,14 @@
 ﻿using System;
+using NUnit.Framework;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Tests.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PowerArhitecture.Tests.Authentication
 {
-    [TestClass]
+    [TestFixture]
     public class AuthenticationTests : BaseTest
     {
-        [TestMethod]
+        [Test]
         public void TestMethod1()
         {
         }

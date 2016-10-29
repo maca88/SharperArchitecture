@@ -7,11 +7,12 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NHibernate;
 using Ninject;
+using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Providers;
+using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
@@ -20,35 +21,29 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
-    [TestClass]
-    public class VersionedEntityRequiredLastModified : BaseTest
+    [TestFixture]
+    public class VersionedEntityRequiredLastModified : DatabaseBaseTest
     {
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public VersionedEntityRequiredLastModified()
         {
-            EntityAssemblies.Add(typeof(UnitOfWorkSingleDbTests).Assembly);
+            EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
-            BaseClassInitialize(testContext,
-                CreateDatabaseConfiguration()
-                .Conventions(c => c
-                    .HiLoId(o => o.Enabled(false)
-                    )
-                    .RequiredLastModifiedProperty()
-                )
-            );
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
+        protected override IFluentDatabaseConfiguration GetDatabaseConfiguration()
         {
-            BaseClassCleanup();
+            return base.GetDatabaseConfiguration().Conventions(c => c
+                .HiLoId(o => o.Enabled(false)
+                )
+                .RequiredLastModifiedProperty()
+                );
         }
 
         #region VersionEntity
 
-        [TestMethod]
+        [Test]
         public void save_version_entity()
         {
             var car = new VersionCar { Model = "BMW" };
@@ -69,7 +64,7 @@ namespace PowerArhitecture.Tests.DataAccess
             Assert.AreEqual(2, car.Version);
         }
 
-        [TestMethod]
+        [Test]
         public void save_version_entity_nested()
         {
             var bmw = new VersionCar { Model = "BMW" };
@@ -138,7 +133,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
         #region VersionEntityWithStringUser
 
-        [TestMethod]
+        [Test]
         public void save_version_entity_with_string_user()
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
@@ -168,7 +163,7 @@ namespace PowerArhitecture.Tests.DataAccess
             Assert.AreEqual(2, car.Version);
         }
 
-        [TestMethod]
+        [Test]
         public void save_version_entity_with_string_user_nested()
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
@@ -256,7 +251,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
         #region VersionEntityWithEntityUser
 
-        [TestMethod]
+        [Test]
         public void save_version_entity_with_entity_user()
         {
             var session = Kernel.Get<ISession>();
@@ -299,7 +294,7 @@ namespace PowerArhitecture.Tests.DataAccess
             Assert.AreEqual(2, car.Version);
         }
 
-        [TestMethod]
+        [Test]
         public void save_version_entity_with_entity_user_nested()
         {
             var session = Kernel.Get<ISession>();

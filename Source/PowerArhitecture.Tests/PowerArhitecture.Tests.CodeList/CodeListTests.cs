@@ -4,18 +4,19 @@ using System.Reflection;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.CodeList;
 using PowerArhitecture.CodeList.Specifications;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ninject;
+using NUnit.Framework.Internal;
 using PowerArhitecture.Authentication;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.DataAccess.Factories;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.CodeList.Entities;
+using NUnit.Framework;
 
 namespace PowerArhitecture.Tests.CodeList
 {
-    [TestClass]
-    public class CodeListTests : BaseTest
+    [TestFixture]
+    public class CodeListTests : DatabaseBaseTest
     {
         public CodeListTests()
         {
@@ -24,17 +25,6 @@ namespace PowerArhitecture.Tests.CodeList
             DatabaseConfiguration.AddConventionAssembly(Assembly.GetAssembly(typeof (ICodeList)));
             DatabaseConfiguration.AddConventionAssembly(Assembly.GetAssembly(typeof(IUser)));
             AddMappingStepAssembly(Assembly.GetAssembly(typeof(ICodeList)));
-        }
-
-        [TestMethod]
-        public void TestMethod1()
-        {
-            FillData();
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
         }
 
         private void FillData()

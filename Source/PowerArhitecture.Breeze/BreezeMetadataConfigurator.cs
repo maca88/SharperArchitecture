@@ -15,6 +15,7 @@ using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
 using FluentValidation.Internal;
 using PowerArhitecture.Breeze.Attributes;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Domain.Attributes;
 
@@ -94,7 +95,7 @@ namespace PowerArhitecture.Breeze
                 if (metadata.ContainsKey("processed")) return;
 
                 var metadataSchema = new MetadataSchema(metadata);
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var assemblies = AppConfiguration.GetDomainAssemblies();
 
                 var clientModelTypes = assemblies
                     .Where(a => a.GetTypes().Any(t => typeof(IClientModel).IsAssignableFrom(t)))

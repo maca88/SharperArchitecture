@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerArhitecture.Validation</RootNamespace>
     <AssemblyName>PowerArhitecture.Validation</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -33,13 +33,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentValidation, Version=6.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentValidation.6.2.1.0\lib\Net45\FluentValidation.dll</HintPath>
+    <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentValidation.6.4.0-beta6\lib\Net45\FluentValidation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Extensions.Conventions, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.Extensions.Conventions.3.2.0.0\lib\net45-full\Ninject.Extensions.Conventions.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -59,29 +63,30 @@
     <Compile Include="Attributes\LessThanOrEqualAttribute.cs" />
     <Compile Include="Attributes\GreaterThanOrEqualAttribute.cs" />
     <Compile Include="Attributes\ExactLengthAttribute.cs" />
-    <Compile Include="Attributes\ExclusiveBetweenAttribute.cs" />
     <Compile Include="Attributes\IgnoreValidationAttributesAttribute.cs" />
-    <Compile Include="Attributes\InclusiveBetweenAttribute.cs" />
     <Compile Include="Attributes\LengthAttribute.cs" />
     <Compile Include="Attributes\NotEmptyAttribute.cs" />
     <Compile Include="Attributes\NotEqualAttribute.cs" />
     <Compile Include="Attributes\NotNullAttribute.cs" />
     <Compile Include="Attributes\RegularExpressionAttribute.cs" />
     <Compile Include="Attributes\ValidationAttribute.cs" />
+    <Compile Include="BaseValidationContextFiller.cs" />
     <Compile Include="PARulesetValidatorSelector.cs" />
     <Compile Include="PAValidationException.cs" />
-    <Compile Include="PAValidator.cs" />
-    <Compile Include="PAValidatorEngine.cs" />
+    <Compile Include="Specifications\IValidatorExtended.cs" />
+    <Compile Include="Validator.cs" />
+    <Compile Include="ValidatorEngine.cs" />
     <Compile Include="CompositeValidatorRule.cs" />
     <Compile Include="Extensions\IPropertyValidatorExtensions.cs" />
     <Compile Include="Extensions\PropertyRuleExtensions.cs" />
     <Compile Include="Extensions\IRuleBuilderExtensions.cs" />
     <Compile Include="Extensions\IRuleBuilderOptionsExtensions.cs" />
-    <Compile Include="Extensions\IValidatorExtensions.cs" />
+    <Compile Include="Extensions\ValidatorExtensions.cs" />
     <Compile Include="Factories\NinjectValidatorFactory.cs" />
     <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Specifications\IAutoValidated.cs" />
+    <Compile Include="Specifications\IValidationContextFiller.cs" />
     <Compile Include="Specifications\IValidatorEngine.cs" />
     <Compile Include="Specifications\IValidatorFactoryExtended.cs" />
     <Compile Include="UniqueListValidator.cs" />

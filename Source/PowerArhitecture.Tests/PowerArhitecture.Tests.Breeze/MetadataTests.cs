@@ -4,15 +4,16 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using PowerArhitecture.Breeze;
 using PowerArhitecture.Breeze.Metadata;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using NUnit.Framework.Internal;
+using NUnit.Framework;
 
 namespace PowerArhitecture.Tests.Breeze
 {
-    [TestClass]
+    [TestFixture]
     public class MetadataTests
     {
-        [TestMethod]
+        [Test]
         public void Deserialize()
         {
             var assembly = Assembly.GetExecutingAssembly();

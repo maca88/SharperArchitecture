@@ -10,7 +10,7 @@ using Ninject;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class NhConfigurationEventListener : IListener<NhConfigurationEvent>
+    public class NhConfigurationEventListener : BaseListener<NhConfigurationEvent>
     {
         private readonly IList<ISaveOrUpdateEventListener> _saveOrUpdateEventListeners;
         private readonly IList<IFlushEventListener> _flushEventListeners;
@@ -56,7 +56,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
             _postDeleteEventListeners = postDeleteEventListeners;
         }
 
-        public void Handle(NhConfigurationEvent e)
+        public override void Handle(NhConfigurationEvent e)
         {
             var config = e.Message;
             var eventListeners = config.EventListeners;

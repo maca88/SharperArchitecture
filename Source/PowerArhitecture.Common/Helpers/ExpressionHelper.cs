@@ -38,7 +38,7 @@ namespace PowerArhitecture.Common.Helpers
                 }
                 if (IsConversion(memberExpression.Expression.NodeType))
                 {
-                    fullPath = (GetExpressionInfo(memberExpression.Expression, expressionInfo) + "." + memberExpression.Member.Name).TrimStart('.'); ;
+                    fullPath = (GetExpressionInfo(memberExpression.Expression, expressionInfo) + "." + memberExpression.Member.Name).TrimStart('.');
                     expressionInfo.FullPath = fullPath;
                     expressionInfo.AddSubExpression(memberExpression);
                     return fullPath;

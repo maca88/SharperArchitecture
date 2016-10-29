@@ -38,12 +38,102 @@ namespace PowerArhitecture.DataAccess.Providers
         /// </summary>
         public static bool CacheUserIds;
 
-        protected ConcurrentDictionary<string, object> UserNameIds = new ConcurrentDictionary<string, object>(); 
+        protected ConcurrentDictionary<string, object> UserNameIds = new ConcurrentDictionary<string, object>();
 
-        public virtual async Task<object> GetCurrentUser(ISession session, Type userType)
+        protected class UserInfo
         {
-            var sessionContext = session.GetSessionImplementation().CustomContext as SessionContext;
-            var principal = sessionContext?.CurrentPrincipal;
+            public static readonly UserInfo NotFound = new UserInfo(null);
+
+            public UserInfo()
+            {
+            }
+
+            public UserInfo(object current)
+            {
+                Current = current;
+                Found = true;
+            }
+
+            public IClassMetadata Metadata { get; set; }
+
+            public string Name { get; set; }
+
+            public object Id { get; set; }
+
+            public object Current { get; set; }
+
+            public bool NaturalId { get; set; }
+
+            public bool Found { get; }
+        }
+
+        public virtual object GetCurrentUser(ISession session, Type userType)
+        {
+            var userInfo = GetCurrentUserInfo(session, userType);
+            if (userInfo.Found || userInfo == UserInfo.NotFound)
+            {
+                return userInfo.Current;
+            }
+
+            if (userInfo.Id != null)
+            {
+                return GetEntityById(session, userInfo.Metadata, userType, userInfo.Id);
+            }
+
+            IEntity user;
+            if (userInfo.NaturalId)
+            {
+                user = (IEntity) session.CreateCriteria(userType)
+                    .Add(Restrictions.NaturalId().Set(UserNamePropertyName, userInfo.Name))
+                    .SetCacheable(true)
+                    .UniqueResult();
+            }
+            else
+            {
+                user = (IEntity) session.CreateCriteria(userType)
+                    .Add(Restrictions.Eq(UserNamePropertyName, userInfo.Name))
+                    .SetCacheable(true)
+                    .UniqueResult();
+            }
+            CacheUserId(user, userInfo.Name);
+            return user;
+        }
+
+        public virtual async Task<object> GetCurrentUserAsync(ISession session, Type userType)
+        {
+            var userInfo = GetCurrentUserInfo(session, userType);
+            if (userInfo.Found || userInfo == UserInfo.NotFound)
+            {
+                return userInfo.Current;
+            }
+
+            if (userInfo.Id != null)
+            {
+                return await GetEntityByIdAsync(session, userInfo.Metadata, userType, userInfo.Id);
+            }
+
+            IEntity user;
+            if (userInfo.NaturalId)
+            {
+                user = (IEntity) await session.CreateCriteria(userType)
+                    .Add(Restrictions.NaturalId().Set(UserNamePropertyName, userInfo.Name))
+                    .SetCacheable(true)
+                    .UniqueResultAsync();
+            }
+            else
+            {
+                user = (IEntity) await session.CreateCriteria(userType)
+                    .Add(Restrictions.Eq(UserNamePropertyName, userInfo.Name))
+                    .SetCacheable(true)
+                    .UniqueResultAsync();
+            }
+            CacheUserId(user, userInfo.Name);
+            return user;
+        }
+
+        protected virtual UserInfo GetCurrentUserInfo(ISession session, Type userType)
+        {
+            var principal = Thread.CurrentPrincipal; // .NET 4.6 and above
             var userName = principal?.Identity?.Name;
 
             if (string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(DefaultUserName))
@@ -51,11 +141,11 @@ namespace PowerArhitecture.DataAccess.Providers
 
             if (userType == typeof(string))
             {
-                return userName;
+                return new UserInfo(userName);
             }
             if (principal == null)
             {
-                return null;
+                return UserInfo.NotFound;
             }
 
             var genPrincipal = principal as GenericPrincipal;
@@ -72,28 +162,38 @@ namespace PowerArhitecture.DataAccess.Providers
                         try
                         {
                             var id = objId.ConvertTo(userMetaData.IdentifierType.ReturnedClass);
-                            return await GetEntityById(session, userMetaData, userType, id).ConfigureAwait(false);
+                            return new UserInfo
+                            {
+                                Id = id,
+                                Metadata = userMetaData
+                            };
                         }
                         catch
                         {
-                            
                         }
-                        
                     }
                 }
             }
 
-            if (typeof (IEntity).IsAssignableFrom(userType))
+            if (typeof(IEntity).IsAssignableFrom(userType))
             {
                 var userMetaData = GetUserMetadata(session, userType);
                 if (userMetaData == null)
-                    return null;
+                {
+                    return UserInfo.NotFound;
+                }
 
                 if (string.IsNullOrEmpty(userName))
                 {
-                    if(DefaultUserId == null)
-                        return null;
-                    return await GetEntityById(session, userMetaData, userType, DefaultUserId).ConfigureAwait(false);
+                    if (DefaultUserId == null)
+                    {
+                        return UserInfo.NotFound;
+                    }
+                    return new UserInfo
+                    {
+                        Metadata = userMetaData,
+                        Id = DefaultUserId
+                    };
                 }
 
                 if (CacheUserIds)
@@ -101,7 +201,11 @@ namespace PowerArhitecture.DataAccess.Providers
                     object userId;
                     if (UserNameIds.TryGetValue(userName, out userId))
                     {
-                        return await GetEntityById(session, userMetaData, userType, userId).ConfigureAwait(false);
+                        return new UserInfo
+                        {
+                            Metadata = userMetaData,
+                            Id = userId
+                        };
                     }
                 }
 
@@ -110,62 +214,44 @@ namespace PowerArhitecture.DataAccess.Providers
                     if (userMetaData.PropertyNames[i] == UserNamePropertyName &&
                         userMetaData.PropertyTypes[i].ReturnedClass == typeof(string))
                     {
-                        IEntity user;
+                        var userInfo = new UserInfo
+                        {
+                            Name = userName
+                        };
                         if (
                             userMetaData.HasNaturalIdentifier &&
                             userMetaData.NaturalIdentifierProperties.Length == 1 &&
                             userMetaData.NaturalIdentifierProperties.Contains(i))
                         {
-                            user = (IEntity) await session.CreateCriteria(userType)
-                                .Add(Restrictions.NaturalId().Set(UserNamePropertyName, userName))
-                                .SetCacheable(true)
-                                .UniqueResultAsync().ConfigureAwait(false);
+                            userInfo.NaturalId = true;
                         }
-                        else
-                        {
-                            user = (IEntity)await session.CreateCriteria(userType)
-                                .Add(Restrictions.Eq(UserNamePropertyName, userName))
-                                .SetCacheable(true)
-                                .UniqueResultAsync().ConfigureAwait(false);
-                        }
-                        if (CacheUserIds)
-                        {
-                            var userId = user.GetId();
-                            if (!UserNameIds.ContainsKey(userName))
-                                UserNameIds.TryAdd(userName, userId);
-                            else
-                            {
-                                //Check if the user id is the same as the cached one (can happen when user is reinserted)
-                                object currUserId;
-                                if (UserNameIds.TryGetValue(userName, out currUserId) && currUserId != userId)
-                                {
-                                    UserNameIds.TryUpdate(userName, userId, currUserId);
-                                }
-
-                            }
-                            
-                        }
-
-                        return user;
+                        return userInfo;
                     }
                 }
             }
-
-            throw new NotSupportedException(string.Format("Unsupported user type: {0}. Hint: Register a custom IAuditUserProvider", userType));
+            throw new NotSupportedException($"Unsupported user type: {userType}. Hint: Register a custom IAuditUserProvider");
         }
 
-        /// <summary>
-        /// Check if the entity has an entry in the given session, if true then return the same instance otherwise load the entity with the Load session method
-        /// </summary>
-        /// <param name="session"></param>
-        /// <param name="userType"></param>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        protected virtual object GetEntity(ISession session, Type userType, IEntity entity)
+        protected virtual void CacheUserId(IEntity user, string userName)
         {
-            if (session.GetSessionImplementation().PersistenceContext.IsEntryFor(entity))
-                return entity;
-            return session.Load(userType, entity.GetId());
+            if (user == null || !CacheUserIds)
+            {
+                return;
+            }
+            var userId = user.GetId();
+            if (!UserNameIds.ContainsKey(userName))
+            {
+                UserNameIds.TryAdd(userName, userId);
+            }
+            else
+            {
+                //Check if the user id is the same as the cached one (can happen when user is reinserted)
+                object currUserId;
+                if (UserNameIds.TryGetValue(userName, out currUserId) && currUserId != userId)
+                {
+                    UserNameIds.TryUpdate(userName, userId, currUserId);
+                }
+            }
         }
 
         /// <summary>
@@ -176,25 +262,32 @@ namespace PowerArhitecture.DataAccess.Providers
         /// <param name="userType"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        protected virtual Task<object> GetEntityById(ISession session, IClassMetadata metadata, Type userType, object id)
+        protected virtual Task<object> GetEntityByIdAsync(ISession session, IClassMetadata metadata, Type userType, object id)
+        {
+            var entity = GetEntityByIdFromContext(session, metadata, userType, id);
+            return entity != null ? Task.FromResult(entity) : session.LoadAsync(userType, id);
+        }
+
+        /// <summary>
+        /// Return the entity from the persistence context if found otherwise the Load method will be used
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="metadata"></param>
+        /// <param name="userType"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        protected virtual object GetEntityById(ISession session, IClassMetadata metadata, Type userType, object id)
+        {
+            var entity = GetEntityByIdFromContext(session, metadata, userType, id);
+            return entity ?? session.Load(userType, id);
+        }
+
+        protected virtual object GetEntityByIdFromContext(ISession session, IClassMetadata metadata, Type userType, object id)
         {
             var sessionImpl = session.GetSessionImplementation();
             var persister = sessionImpl.Factory.GetEntityPersister(metadata.EntityName);
             var key = sessionImpl.GenerateEntityKey(id, persister);
-            var entity = sessionImpl.PersistenceContext.GetEntity(key);
-            if (entity != null)
-                return Task.FromResult(entity);
-            return session.LoadAsync(userType, id);
-        }
-
-        /// <summary>
-        /// Gets the username from the identity
-        /// </summary>
-        /// <param name="principal"></param>
-        /// <returns></returns>
-        protected virtual string GetCurrentUserName(IPrincipal principal)
-        {
-            return principal.Identity.Name;
+            return sessionImpl.PersistenceContext.GetEntity(key);
         }
 
         /// <summary>

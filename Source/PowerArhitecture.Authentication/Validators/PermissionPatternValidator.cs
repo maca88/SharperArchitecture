@@ -10,7 +10,7 @@ using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
 namespace PowerArhitecture.Authentication.Validators
 {
-    public class PermissionPatternValidator: PAValidator<IPermissionPattern>
+    public class PermissionPatternValidator: Validator<IPermissionPattern>
     {
         public PermissionPatternValidator()
         {

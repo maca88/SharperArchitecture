@@ -2,87 +2,101 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NHibernate;
 using NHibernate.Transform;
 using Ninject;
+using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
+using PowerArhitecture.Tests.DataAccess.Extensions;
 using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
-    [TestClass]
-    public class UnitOfWorkSingleDbTests : BaseTest
+    [TestFixture]
+    public class LifecycleTests : DatabaseBaseTest
     {
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public LifecycleTests()
         {
-            EntityAssemblies.Add(typeof(UnitOfWorkSingleDbTests).Assembly);
+            EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
-            BaseClassInitialize(testContext, CreateDatabaseConfiguration());
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            BaseClassCleanup();
-        }
-
-        [TestMethod]
-        public void session_within_a_unit_of_work()
+        [Test]
+        public void SessionWithinUnitOfWork()
         {
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            using (var unitOfWork = (UnitOfWork)unitOfWorkFactory.GetNew())
+            using (var unitOfWork = unitOfWorkFactory.GetNew().GetUnitOfWorkImplementation())
             {  
                 var repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
                 var repo2 = (Repository<AttrLazyLoad, long>)unitOfWork.GetRepository<AttrLazyLoad>();
                 var session = unitOfWork.ResolutionRoot.Get<ISession>();
 
-                Assert.AreEqual(unitOfWork.Session, repo1.Session);
-                Assert.AreEqual(unitOfWork.Session, repo2.Session);
+                Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
+                Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
                 Assert.AreEqual(unitOfWork.Session, session);
             }
         }
 
-        [TestMethod]
-        public void session_within_a_request()
+        [Test]
+        public void SessionWithinUnitOfWorkAndRequest()
+        {
+            HttpContextSetup();
+            var reqSession = Kernel.Get<ISession>();
+
+            var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
+            using (var unitOfWork = unitOfWorkFactory.GetNew().GetUnitOfWorkImplementation())
+            {
+                var repo1 = (Repository<AttrIndexAttribute, long>)unitOfWork.GetRepository<AttrIndexAttribute>();
+                var repo2 = (Repository<AttrLazyLoad, long>)unitOfWork.GetRepository<AttrLazyLoad>();
+                var session = unitOfWork.ResolutionRoot.Get<ISession>();
+
+                Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
+                Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
+                Assert.AreEqual(unitOfWork.Session, session);
+                Assert.AreNotEqual(reqSession, session);
+            }
+        }
+
+        [Test]
+        public void SessionWithinRequest()
         {
             HttpContextSetup();
             var session = Kernel.Get<ISession>();
             var repo1 = (Repository<AttrIndexAttribute, long>)Kernel.Get<IRepository<AttrIndexAttribute, long>>();
             var repo2 = (Repository<AttrLazyLoad, long>)Kernel.Get<IRepository<AttrLazyLoad, long>>();
-            Assert.AreEqual(session, repo1.Session);
-            Assert.AreEqual(session, repo2.Session);
+            Assert.AreEqual(session, repo1.GetSession());
+            Assert.AreEqual(session, repo2.GetSession());
         }
 
-        [TestMethod]
-        public void session_within_multiple_requests()
+        [Test]
+        public void SessionWithinMultipleRequests()
         {
             HttpContextSetup();
             var session = Kernel.Get<ISession>();
             var repo1 = (Repository<AttrIndexAttribute, long>)Kernel.Get<IRepository<AttrIndexAttribute, long>>();
-            Assert.AreEqual(session, repo1.Session);
+            Assert.AreEqual(session, repo1.GetSession());
             
             HttpContextSetup();
             var session2 = Kernel.Get<ISession>();
             var repo2 = (Repository<AttrLazyLoad, long>)Kernel.Get<IRepository<AttrLazyLoad, long>>();
-            Assert.AreEqual(session2, repo2.Session);
+            Assert.AreEqual(session2, repo2.GetSession());
 
             Assert.AreNotEqual(session, session2);
         }
 
-        [TestMethod]
-        public void session_non_managed()
+        [Test]
+        public void SessionNonManaged()
         {
             var session = Kernel.Get<ISession>();
             var session2 = Kernel.Get<ISession>();
@@ -205,6 +219,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 Assert.AreEqual(unitOfWork.Get<EQBPerson>(1).Age, 36);
             }
         }*/
+        
     }
 
 

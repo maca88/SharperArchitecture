@@ -2,7 +2,6 @@
 using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Authentication.Specifications;
-using Bootstrap.Extensions.StartupTasks;
 using Ninject;
 using Ninject.Extensions.Logging;
 using Ninject.Syntax;

@@ -27,7 +27,7 @@ namespace PowerArhitecture.Validation.Extensions
             if (propValType == typeof(NotNullValidator))
             {
                 errorMsg = includePropName
-                    ? I18N.Translate(messageId, new { PropertyName = new { PropertyName = I18N.Translate(propName) } })
+                    ? I18N.Translate(messageId, new { PropertyName = I18N.Translate(propName) })
                     : I18N.Translate(messageId);
             }
             #endregion

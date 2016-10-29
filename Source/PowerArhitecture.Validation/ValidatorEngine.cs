@@ -10,13 +10,13 @@ using FluentValidation.Results;
 
 namespace PowerArhitecture.Validation
 {
-    public class PAValidatorEngine : IValidatorEngine
+    public class ValidatorEngine : IValidatorEngine
     {
         private readonly IValidatorFactory _validatorFactory;
         private static readonly MethodInfo ValidateGenMultiRuleSetMethodInfo;
-        static PAValidatorEngine()
+        static ValidatorEngine()
         {
-            ValidateGenMultiRuleSetMethodInfo = typeof(PAValidatorEngine).GetMethods()
+            ValidateGenMultiRuleSetMethodInfo = typeof(ValidatorEngine).GetMethods()
                 .Where(m => m.Name == "Validate")
                 .Select(m => new
                 {
@@ -32,7 +32,7 @@ namespace PowerArhitecture.Validation
                 .Single();
         }
 
-        public PAValidatorEngine(IValidatorFactory validatorFactory)
+        public ValidatorEngine(IValidatorFactory validatorFactory)
         {
             _validatorFactory = validatorFactory;
         }
@@ -59,7 +59,7 @@ namespace PowerArhitecture.Validation
 
         public ValidationResult Validate<T>(T model, IEnumerable<string> ruleSets)
         {
-            var ruleSetSelector = new PARulesetValidatorSelector(ruleSets);
+            var ruleSetSelector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSets.ToArray());
             return _validatorFactory.GetValidator(model.GetType()).Validate(new ValidationContext<T>(model, new PropertyChain(), ruleSetSelector));
         }
     }

@@ -10,7 +10,7 @@ namespace PowerArhitecture.Common.Internationalization
     public static class I18N
     {
         //Used by L10N
-        internal readonly static Dictionary<string, Translator> Translators = new Dictionary<string, Translator>();
+        internal static readonly Dictionary<string, Translator> Translators = new Dictionary<string, Translator>();
 
         static I18N()
         {

@@ -31,16 +31,26 @@ namespace PowerArhitecture.DataAccess.EventListeners
             entity.SetMemberValue(o => o.Id, entity.Id.TrimEnd(' '));
         }
 
-        public Task<bool> OnPreInsert(PreInsertEvent @event)
+        public Task<bool> OnPreInsertAsync(PreInsertEvent @event)
         {
-            EndTrim(@event.Entity as Entity<string>);
-            return Task.FromResult(false);
+            return Task.FromResult(OnPreInsert(@event));
         }
 
-        public Task<bool> OnPreUpdate(PreUpdateEvent @event)
+        public bool OnPreInsert(PreInsertEvent @event)
         {
             EndTrim(@event.Entity as Entity<string>);
-            return Task.FromResult(false);
+            return false;
+        }
+
+        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        {
+            return Task.FromResult(OnPreUpdate(@event));
+        }
+
+        public bool OnPreUpdate(PreUpdateEvent @event)
+        {
+            EndTrim(@event.Entity as Entity<string>);
+            return false;
         }
     }
 }

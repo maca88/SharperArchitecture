@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PowerArhitecture.Common.Configuration;
 
 namespace System.Reflection
 {
@@ -11,7 +12,7 @@ namespace System.Reflection
     {
         public static IEnumerable<Assembly> GetDependentAssemblies(this Assembly analyzedAssembly)
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
+            return AppConfiguration.GetDomainAssemblies()
                 .Where(a => GetNamesOfAssembliesReferencedBy(a)
                                     .Contains(analyzedAssembly.FullName));
         }

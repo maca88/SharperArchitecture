@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PowerArhitecture.Validation.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class IgnoreValidationAttributesAttribute : ValidationAttribute
+    public class IgnoreValidationAttributesAttribute : Attribute
     {
         public IgnoreValidationAttributesAttribute()
         {

@@ -19,11 +19,10 @@ using LockMode = PowerArhitecture.DataAccess.Enums.LockMode;
 
 namespace PowerArhitecture.DataAccess
 {
-    public class UnitOfWork : IUnitOfWork, IUnitOfWorkImplementor
+    public class UnitOfWork : IUnitOfWorkImplementor
     {
         private readonly ILogger _logger;
         private readonly IRepositoryFactory _repositoryFactory;
-        private readonly IResolutionRoot _resolutionRoot;
         private readonly ISession _session;
 
         public UnitOfWork(ILogger logger, IRepositoryFactory repositoryFactory, IResolutionRoot resolutionRoot, ISession session, 
@@ -33,7 +32,7 @@ namespace PowerArhitecture.DataAccess
             session.BeginTransaction(isolationLevel);
             session.Transaction.RegisterSynchronization(new TransactionEventListener(session, eventAggregator));
             _repositoryFactory = repositoryFactory;
-            _resolutionRoot = resolutionRoot;
+            ResolutionRoot = resolutionRoot;
             _session = session;
         }
 
@@ -77,9 +76,9 @@ namespace PowerArhitecture.DataAccess
             return _session.Get<TModel>(id);
         }
 
-        public async Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>
+        public Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>
         {
-            return await _session.GetAsync<TModel>(id);
+            return _session.GetAsync<TModel>(id);
         }
 
         public TModel Get<TModel>(long id) where TModel : IEntity<long>
@@ -87,9 +86,9 @@ namespace PowerArhitecture.DataAccess
             return _session.Get<TModel>(id);
         }
 
-        public async Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>
+        public Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>
         {
-            return await _session.GetAsync<TModel>(id);
+            return _session.GetAsync<TModel>(id);
         }
 
         /// <summary>
@@ -129,9 +128,9 @@ namespace PowerArhitecture.DataAccess
             _session.Flush();
         }
 
-        public async Task FlushAsync()
+        public Task FlushAsync()
         {
-            await _session.FlushAsync();
+            return _session.FlushAsync();
         }
 
         public void Commit()
@@ -139,9 +138,9 @@ namespace PowerArhitecture.DataAccess
             _session.CommitTransaction();
         }
 
-        public async Task CommitAsync()
+        public Task CommitAsync()
         {
-            await _session.CommitTransactionAsync();
+            return _session.CommitTransactionAsync();
         }
 
         public void Rollback()
@@ -149,15 +148,7 @@ namespace PowerArhitecture.DataAccess
             _session.RollbackTransaction();
         }
 
-        public Task RollbackAsync()
-        {
-            return _session.RollbackTransactionAsync();
-        }
-
-        public IResolutionRoot ResolutionRoot
-        {
-            get { return _resolutionRoot; }
-        }
+        public IResolutionRoot ResolutionRoot { get; }
 
         public void SetFlushMode(FlushMode mode)
         {

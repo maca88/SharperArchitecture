@@ -12,7 +12,7 @@ namespace PowerArhitecture.Notifications.Entities
 {
     [Ignore]
     [Serializable]
-    public abstract partial class NotificationRecipient<TRecipient, TNotification, TNotificationRecipient> : VersionedEntity, INotificationRecipient<TRecipient>
+    public abstract partial class NotificationRecipient<TRecipient, TNotification, TNotificationRecipient> : Entity, INotificationRecipient<TRecipient>
         where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()
         where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>, new()
     {

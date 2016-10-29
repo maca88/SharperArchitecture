@@ -9,6 +9,8 @@ namespace PowerArhitecture.DataAccess.Specifications
 {
     public interface IAuditUserProvider
     {
-        Task<object> GetCurrentUser(ISession session, Type userType);
+        object GetCurrentUser(ISession session, Type userType);
+
+        Task<object> GetCurrentUserAsync(ISession session, Type userType);
     }
 }

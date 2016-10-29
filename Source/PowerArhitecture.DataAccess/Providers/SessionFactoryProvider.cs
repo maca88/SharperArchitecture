@@ -90,6 +90,7 @@ namespace PowerArhitecture.DataAccess.Providers
                 try
                 {
                     eventAggregator.SendMessage(new PopulateDbEvent(unitOfWork));
+                    unitOfWork.Commit();
                 }
                 catch (Exception ex)
                 {

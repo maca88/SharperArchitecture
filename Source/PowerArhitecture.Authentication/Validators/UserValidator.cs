@@ -16,7 +16,7 @@ using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 
 namespace PowerArhitecture.Authentication.Validators
 {
-    public abstract class UserValidator<TUser> : PAValidator<TUser>, IIdentityValidator<TUser>
+    public abstract class UserValidator<TUser> : Validator<TUser>, IIdentityValidator<TUser>
         where TUser : class, IUser, IEntity<long>, new()
     {
         private readonly IUserRepository<TUser> _repository;
@@ -49,17 +49,17 @@ namespace PowerArhitecture.Authentication.Validators
 
         private async Task<ValidationFailure> CheckDuplicates(TUser user)
         {
-            return await _repository.Query().AnyAsync(o => o.UserName == user.UserName).ConfigureAwait(false)
+            return await _repository.Query().AnyAsync(o => o.UserName == user.UserName)
                 ? ValidationFailure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName))
                 : null;
         }
 
-        Task<IdentityResult> IIdentityValidator<TUser>.ValidateAsync(TUser item)
+        async Task<IdentityResult> IIdentityValidator<TUser>.ValidateAsync(TUser item)
         {
-            var result = Validate(item, ValidationRuleSet.AttributeInsertUpdate);
-            return Task.FromResult(result.IsValid
+            var result = await ValidateAsync(item, ValidationRuleSet.AttributeInsertUpdate);
+            return result.IsValid
                 ? IdentityResult.Success
-                : new IdentityResult(result.Errors.Select(o => o.ErrorMessage).ToList()));
+                : new IdentityResult(result.Errors.Select(o => o.ErrorMessage).ToList());
         }
 
     }

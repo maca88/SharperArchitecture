@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Security.Principal;
+using System.Threading;
 using NHibernate;
 using Ninject;
+using NUnit.Framework;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
@@ -17,41 +19,35 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.Notifications
 {
-    [TestClass]
-    public class NotificationTests : BaseTest
+    [TestFixture]
+    public class NotificationTests : DatabaseBaseTest
     {
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public NotificationTests()
         {
             EntityAssemblies.Add(typeof(NotificationTests).Assembly);
             TestAssemblies.Add(typeof(NotificationTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
-            BaseClassInitialize(testContext,
-                CreateDatabaseConfiguration()
-                .Conventions(c => c
-                    .HiLoId(o => o.Enabled(false)
-                    )
-                )
-            );
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
+        protected override IFluentDatabaseConfiguration GetDatabaseConfiguration()
         {
-            BaseClassCleanup();
+            return base.GetDatabaseConfiguration().Conventions(c => c
+                .HiLoId(o => o.Enabled(false))
+                .RequiredLastModifiedProperty()
+                );
         }
 
         #region StringRecipient
 
-        [TestMethod]
+        [Test]
         public void notification_string_listener_test()
         {
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
             var listener = Kernel.Get<NotificationListener>();
             listener.Reset();
-            using (var unitOfWork = (UnitOfWork) unitOfWorkFactory.GetNew())
+            using (var unitOfWork = unitOfWorkFactory.GetNew())
             {
                 var repo = unitOfWork.GetRepository<NotificationWithStringRecipient>();
                 var notif = new NotificationWithStringRecipient
@@ -78,7 +74,7 @@ namespace PowerArhitecture.Tests.Notifications
 
         #region EntityRecipient
 
-        [TestMethod]
+        [Test]
         public void notification_entity_listener_test()
         {
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
@@ -89,6 +85,7 @@ namespace PowerArhitecture.Tests.Notifications
                 var user1 = new User {UserName = "User1"};
                 var user2 = new User {UserName = "User2"};
                 unitOfWork.Save(user1, user2);
+                Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("User1"), null);
 
                 var repo = unitOfWork.GetRepository<NotificationWithEntityRecipient>();
                 var notif = new NotificationWithEntityRecipient

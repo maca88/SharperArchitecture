@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.DataAccess.Specifications;
@@ -15,7 +16,6 @@ using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
 using Ninject.Extensions.Logging;
-using LockMode = PowerArhitecture.DataAccess.Enums.LockMode;
 using Property = NHibernate.Mapping.Property;
 
 namespace PowerArhitecture.DataAccess
@@ -42,20 +42,19 @@ namespace PowerArhitecture.DataAccess
             SessionEventProvider = sessionEventProvider;
         }
 
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger { get; }
 
-        public ISession Session { get; private set; }
+        protected ISession Session { get; }
 
-        public virtual IPrincipal User
+        protected ISessionEventProvider SessionEventProvider { get; }
+
+        public virtual IPrincipal User // TODO: Verify if needed
         {
             get
             {
-                var context = Session?.GetSessionImplementation()?.CustomContext as SessionContext;
-                return context?.CurrentPrincipal;
+                return Thread.CurrentPrincipal;
             }
         }
-
-        protected ISessionEventProvider SessionEventProvider { get; private set; }
 
         public virtual Task<TUser> GetCurrentUserAsync<TUser>(Expression<Func<TUser, string>> nameProperty, bool cachable) where TUser : IEntity
         {
@@ -71,7 +70,7 @@ namespace PowerArhitecture.DataAccess
             return (TUser)await Session.CreateCriteria(typeof(TUser))
                 .Add(Restrictions.Eq(nameProperty, User.Identity.Name))
                 .SetCacheable(cachable)
-                .UniqueResultAsync().ConfigureAwait(false);
+                .UniqueResultAsync();
         }
 
         public virtual IQueryable<TModel> Query()
@@ -129,14 +128,14 @@ namespace PowerArhitecture.DataAccess
             return Session.SaveAsync(model);
         }
 
-        public virtual void AddAListener(Func<Task> action, SessionListenerType listenerType)
+        public virtual void AddListener(Action action, SessionListenerType listenerType)
         {
-            SessionEventProvider.AddAListener(listenerType, Session, action);
+            SessionEventProvider.AddListener(listenerType, Session, action);
         }
 
-        public virtual void AddAListener(Func<IRepository<TModel, TId>, Task> action, SessionListenerType listenerType)
+        public virtual void AddListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType)
         {
-            SessionEventProvider.AddAListener(listenerType, Session, () => action(this));
+            SessionEventProvider.AddListener(listenerType, Session, () => action(this));
         }
 
         public virtual IQueryable<T> Query<T>() where T : IEntity
@@ -181,7 +180,7 @@ namespace PowerArhitecture.DataAccess
 
         public virtual async Task DeleteAsync(TId id)
         {
-            await DeleteAsync(await LoadAsync(id).ConfigureAwait(false));
+            await DeleteAsync(await LoadAsync(id));
         }
 
         public virtual IEnumerable<PropertyInfo> GetMappedProperties()

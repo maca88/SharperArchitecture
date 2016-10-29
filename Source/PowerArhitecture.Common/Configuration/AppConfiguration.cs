@@ -10,20 +10,36 @@ namespace PowerArhitecture.Common.Configuration
     public class AppConfiguration
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(AppConfiguration));
+        private static Func<IEnumerable<Assembly>> _domainAssembliesFunc;
 
-		//without a static constructor static fields will not be initialized
+        //without a static constructor static fields will not be initialized
         static AppConfiguration()
         {
+            _domainAssembliesFunc = AppDomain.CurrentDomain.GetAssemblies;
         }
+
+        public static void SetGetDomainAssembliesFunction(Func<IEnumerable<Assembly>> func)
+        {
+            if (func == null)
+            {
+                return;
+            }
+            _domainAssembliesFunc = func;
+        }
+
+        public static IEnumerable<Assembly> GetDomainAssemblies()
+        {
+            return _domainAssembliesFunc();
+        } 
 
         public static Dictionary<string, object> GetSettings(string prefix = "")
         {
             var result = new Dictionary<string, object>();
             foreach (string key in ConfigurationManager.AppSettings)
             {
-                if(!String.IsNullOrEmpty(prefix) && !key.StartsWith(prefix)) continue;
+                if(!string.IsNullOrEmpty(prefix) && !key.StartsWith(prefix)) continue;
                 var fullnameTypePair = key.Split(':');
-                var toSkip = prefix != null ? prefix.Split('.').Length : 0;
+                var toSkip = prefix?.Split('.').Length ?? 0;
                 var name = string.Join(".", fullnameTypePair[0].Split('.').Skip(toSkip));
                 var type = fullnameTypePair[1];
                 var value = typeof (AppConfiguration)
@@ -34,7 +50,7 @@ namespace PowerArhitecture.Common.Configuration
             }
             return result;
         }
-		public static T GetSetting<T>(string name)
+        public static T GetSetting<T>(string name)
         {
             try
             {
@@ -42,8 +58,7 @@ namespace PowerArhitecture.Common.Configuration
             }
             catch (Exception e)
             {
-                Logger.Error(String.Format("Error occurred while getting setting with name '{0}'. Details: {1}",
-                        name, e));
+                Logger.Error($"Error occurred while getting setting with name '{name}'. Details: {e}");
                 return default(T);
             }
         }

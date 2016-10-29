@@ -5,17 +5,16 @@ using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Events;
-using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation;
 using FluentValidation;
-using FluentValidation.Internal;
 using NHibernate;
 using NHibernate.Event;
 using NHibernate.Util;
 using Ninject;
 using Ninject.Extensions.Logging;
 using Ninject.Parameters;
+using Ninject.Syntax;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation.Specifications;
 
@@ -28,51 +27,100 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListenerType(typeof(IDeleteEventListener), Order = int.MinValue)]
     public class ValidatePreInsertUpdateDeleteEventListener :
         //Reset cache
-        IListenerAsync<SessionFlushingEvent>,
-        IListenerAsync<EntityDeletingEvent>,
-        IListenerAsync<EntitySavingOrUpdatingEvent>,
+        IListener<SessionFlushingEvent>,
+        IListener<EntityDeletingEvent>,
+        IListener<EntitySavingOrUpdatingEvent>,
 
         //Validation events
-        IListenerAsync<EntitySavingEvent>,
+        IListener<EntitySavingEvent>,
         IPreCollectionUpdateEventListener,
         IPreUpdateEventListener,
         IPreDeleteEventListener
     {
         private readonly ILogger _logger;
+        private readonly IResolutionRoot _resolutionRoot;
         private readonly HashSet<IAutoValidated> _validatedEntities = new HashSet<IAutoValidated>(); 
 
-        public ValidatePreInsertUpdateDeleteEventListener(ILogger logger)
+        public ValidatePreInsertUpdateDeleteEventListener(ILogger logger, IResolutionRoot resolutionRoot)
         {
             _logger = logger;
+            _resolutionRoot = resolutionRoot;
         }
 
-        private Task Validate(object entity, ISession session, EntityMode mode, string ruleSet)
+        private class ValidationInfo
         {
-            return Validate(entity, session, mode, new [] { ruleSet });
+            public ValidationInfo(IValidator validator, IAutoValidated model, Type modelType, string[] ruleSets, object contextDataFiller)
+            {
+                Validator = validator;
+                RuleSets = ruleSets;
+                Model = model;
+                ModelType = modelType;
+                ContextDataFiller = contextDataFiller;
+            }
+
+            public IValidator Validator { get; }
+
+            public IAutoValidated Model { get; }
+
+            public Type ModelType { get; }
+
+            public string[] RuleSets { get; }
+
+            public object ContextDataFiller { get; }
         }
 
-        private async Task Validate(object item, ISession session, EntityMode mode, string[] ruleSets)
+        private async Task ValidateAsync(object entity, ISession session, EntityMode mode, string[] ruleSet)
+        {
+            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
+            if (valInfo == null)
+            {
+                return;
+            }
+
+            var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
+                valInfo.RuleSets, valInfo.ContextDataFiller);
+            if (!validationResult.IsValid)
+            {
+                _validatedEntities.Clear();
+                throw new PAValidationException(validationResult.Errors, entity, valInfo.ModelType, valInfo.RuleSets);
+            }
+            _validatedEntities.Add(valInfo.Model);
+        }
+
+        private void Validate(object entity, ISession session, EntityMode mode, string[] ruleSet)
+        {
+            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
+            if (valInfo == null)
+            {
+                return;
+            }
+
+            var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
+                valInfo.RuleSets, valInfo.ContextDataFiller);
+            if (!validationResult.IsValid)
+            {
+                _validatedEntities.Clear();
+                throw new PAValidationException(validationResult.Errors, entity, valInfo.ModelType, valInfo.RuleSets);
+            }
+            _validatedEntities.Add(valInfo.Model);
+        }
+
+        private ValidationInfo GetValidationInfo(object item, ISession session, EntityMode mode, string[] ruleSets)
         {
             if (item == null || mode != EntityMode.Poco)
-                return;
+                return null;
             //Example 1: UnitOfWork inside a HttpRequest that have a Session
             //Example 2: UnitOfWork outside HttpRequest (SessionProvider will return always a new session) 
-            var sessionContext = session.GetSessionImplementation().CustomContext as SessionContext;
-            if (sessionContext == null)
-            {
-                _logger.Warn("Skip validation for type '{0}' as session is not managed", item.GetType());
-                return; //Unmanaged session
-            }
             var entity = item as IEntity;
             if (entity == null)
             {
                 _logger.Warn("Skip validation for type '{0}' as is not castable to IEntity", item.GetType());
-                return;
+                return null;
             }
             var validableEntity = GetValidableEntity(item);
             if (validableEntity == null)
             {
-                return;
+                return null;
             }
 
             if (
@@ -81,13 +129,29 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                     (ruleSets.Contains(ValidationRuleSet.Insert) && !validableEntity.ValidateOnInsert)
                 )
             {
-                return;
+                return null;
             }
 
             if (_validatedEntities.Contains(validableEntity))
             {
-                _logger.Debug("Entity for type '{0}' was already validated", item.GetType());
-                return;
+                _logger.Debug("Entity of type '{0}' was already validated", item.GetType());
+                return null;
+            }
+
+            entity = validableEntity as IEntity;
+            var type = entity != null
+                ? entity.GetTypeUnproxied()
+                : validableEntity.GetType();
+            // Validators are singleton
+            var validator = (IValidator)_resolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type));
+            var validatorEx = validator as IValidatorExtended;
+            var sessionContext = session.GetSessionImplementation().UserData as SessionContext;
+            object contextFiller = null;
+
+            if (sessionContext == null && validatorEx != null && !validatorEx.CanValidateWithoutContextFiller && validatorEx.HasValidationContextFiller)
+            {
+                _logger.Warn("Entity of type '{0}' won't be validated as ISession is not managed and a IValidationContextFiller<> is required", item.GetType());
+                return null;
             }
 
             //For validation we want to have a clean session (cache lvl 1) that share the same connection and transaction from the current one
@@ -95,22 +159,15 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             //FlushMode is set to Never to ensure that validation process will not trigger any update/insert statements
             var childSession = session.GetSession(EntityMode.Poco);
             childSession.FlushMode = FlushMode.Never;
-            if (sessionContext.ResolutionRoot == null) //When session is manually created, skip validation
-            {
-                _logger.Warn("Skip validation for type '{0}' as session was manually created", item.GetType());
-                return;
-            }
-            var type = entity.GetTypeUnproxied();
-            var validator = (IValidator)sessionContext.ResolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type),
-                new TypeMatchingConstructorArgument(typeof(ISession), (context, target) => childSession, true));
 
-            var validationResult = await validator.ValidateAsync(GetValidationContext(type, entity, ruleSets)).ConfigureAwait(false);
-            if (!validationResult.IsValid)
+            if (sessionContext != null)
             {
-                _validatedEntities.Clear();
-                throw new PAValidationException(validationResult.Errors, entity, type, ruleSets);
+                contextFiller = sessionContext.ResolutionRoot.TryGet(
+                    typeof(IValidationContextFiller<>).MakeGenericType(type),
+                    new TypeMatchingConstructorArgument(typeof(ISession), (context, target) => childSession, true));
             }
-            _validatedEntities.Add(validableEntity);
+
+            return new ValidationInfo(validator, validableEntity, type, ruleSets, contextFiller);
         }
 
         private IAutoValidated GetValidableEntity(object entity)
@@ -130,58 +187,94 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             return null;
         }
 
-        private ValidationContext GetValidationContext(Type type, object entity, IEnumerable<string> ruleSets)
-        {
-            return typeof (ValidationContext<>).MakeGenericType(type).GetConstructors()
-                .First(c => c.GetParameters().Length == 3)
-                .Invoke(new[] {entity, new PropertyChain(), new PARulesetValidatorSelector(ruleSets)}) as ValidationContext;
-        }
-
         //Validation for inserting has to be before the Id is set by NHibernate
-        public Task Handle(EntitySavingEvent message)
+        public void Handle(EntitySavingEvent message)
         {
             var @event = message.Message;
-            return Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
+            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 
-        public async Task OnPreUpdateCollection(PreCollectionUpdateEvent @event)
+        public Task HandleAsync(EntitySavingEvent message)
+        {
+            var @event = message.Message;
+            return ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
+        }
+
+        public async Task OnPreUpdateCollectionAsync(PreCollectionUpdateEvent @event)
         {
             var owner = @event.AffectedOwnerOrNull;
             if (!ReferenceEquals(null, owner))
             {
-                await Validate(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate).ConfigureAwait(false);
+                await ValidateAsync(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
             }
         }
 
-        public async Task<bool> OnPreUpdate(PreUpdateEvent @event)
+        public void OnPreUpdateCollection(PreCollectionUpdateEvent @event)
         {
-            await Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate).ConfigureAwait(false);
+            var owner = @event.AffectedOwnerOrNull;
+            if (!ReferenceEquals(null, owner))
+            {
+                Validate(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+            }
+        }
+
+        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        {
+            await ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
             return false;
         }
 
-        public async Task<bool> OnPreDelete(PreDeleteEvent @event)
+        public bool OnPreUpdate(PreUpdateEvent @event)
         {
-            await Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.Delete).ConfigureAwait(false);
+            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+            return false;
+        }
+
+        public async Task<bool> OnPreDeleteAsync(PreDeleteEvent @event)
+        {
+            await ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, new [] {ValidationRuleSet.Delete});
+            return false;
+        }
+
+        public bool OnPreDelete(PreDeleteEvent @event)
+        {
+            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, new[] { ValidationRuleSet.Delete });
             return false;
         }
 
 
-        public Task Handle(SessionFlushingEvent message)
+        public void Handle(SessionFlushingEvent message)
+        {
+            _validatedEntities.Clear();
+        }
+
+        public Task HandleAsync(SessionFlushingEvent message)
+        {
+            _validatedEntities.Clear();
+            return Task.CompletedTask;
+        }
+
+        public void Handle(EntityDeletingEvent message)
+        {
+            _validatedEntities.Clear();
+        }
+
+        public Task HandleAsync(EntityDeletingEvent message)
         {
             _validatedEntities.Clear();
             return TaskHelper.CompletedTask;
         }
 
-        public Task Handle(EntityDeletingEvent message)
+        public void Handle(EntitySavingOrUpdatingEvent message)
+        {
+            _validatedEntities.Clear();
+        }
+
+        public Task HandleAsync(EntitySavingOrUpdatingEvent message)
         {
             _validatedEntities.Clear();
             return TaskHelper.CompletedTask;
         }
 
-        public Task Handle(EntitySavingOrUpdatingEvent message)
-        {
-            _validatedEntities.Clear();
-            return TaskHelper.CompletedTask;
-        }
     }
 }

@@ -13,6 +13,7 @@ using NHibernate.Persister.Entity;
 using NHibernate.Proxy.DynamicProxy;
 using NHibernate.Proxy;
 using NHibernate.Type;
+using PowerArhitecture.DataAccess.Wrappers;
 
 namespace NHibernate
 {
@@ -49,7 +50,7 @@ namespace NHibernate
         {
             if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return;
-            await session.Transaction.RollbackAsync().ConfigureAwait(false);
+            session.Transaction.Rollback();
             session.Transaction.Dispose();
         }
 
@@ -82,12 +83,12 @@ namespace NHibernate
                 return false;
             try
             {
-                await session.Transaction.CommitAsync().ConfigureAwait(false);
+                await session.Transaction.CommitAsync();
                 return true;
             }
             catch (Exception)
             {
-                await RollbackTransactionAsync(session).ConfigureAwait(false);
+                RollbackTransaction(session);
                 throw;
             }
         }
@@ -106,6 +107,12 @@ namespace NHibernate
                 RollbackTransaction(session);
                 throw;
             }
+        }
+
+        internal static ISession Unwrap(this ISession session)
+        {
+            var wrap = session as SessionWrapper;
+            return wrap != null ? wrap.Session : session;
         }
     }
 }

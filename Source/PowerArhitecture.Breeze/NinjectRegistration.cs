@@ -9,6 +9,7 @@ using Breeze.ContextProvider.NH;
 using Ninject;
 using Ninject.Modules;
 using Ninject.Extensions.Conventions;
+using PowerArhitecture.Common.Configuration;
 
 namespace PowerArhitecture.Breeze
 {
@@ -19,7 +20,7 @@ namespace PowerArhitecture.Breeze
             Bind<BreezeMetadataConfigurator>().ToSelf().InSingletonScope();
             Bind<IBreezeRepository>().To<BreezeRepository>();
             Kernel.Bind(o => o
-                .From(AppDomain.CurrentDomain.GetAssemblies()
+                .From(AppConfiguration.GetDomainAssemblies()
                     .Where(a => a.GetTypes().Any(t => typeof(IBreezeModelConfigurator).IsAssignableFrom(t))))
                 .IncludingNonePublicTypes()
                 .SelectAllClasses()

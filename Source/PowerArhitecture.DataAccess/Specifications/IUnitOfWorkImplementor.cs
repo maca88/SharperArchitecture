@@ -8,10 +8,13 @@ using Ninject.Syntax;
 
 namespace PowerArhitecture.DataAccess.Specifications
 {
-    public interface IUnitOfWorkImplementor
+    public interface IUnitOfWorkImplementor : IUnitOfWork
     {
         ISession Session { get; }
 
+        /// <summary>
+        /// Use this if you want instantiate a class that has a Repository or Session as dependency
+        /// </summary>
         IResolutionRoot ResolutionRoot { get; }
     }
 }

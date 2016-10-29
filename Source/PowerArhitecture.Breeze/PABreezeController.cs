@@ -35,14 +35,6 @@ namespace PowerArhitecture.Breeze
             Session.Transaction.Dispose();
         }
 
-        public async Task RollbackTransactionAsync()
-        {
-            if (Session.Transaction.WasRolledBack || !Session.Transaction.IsActive)
-                return;
-            await Session.Transaction.RollbackAsync().ConfigureAwait(false);
-            Session.Transaction.Dispose();
-        }
-
         public bool CommitTransaction()
         {
             if (Session.Transaction.WasRolledBack || !Session.Transaction.IsActive)
@@ -64,12 +56,12 @@ namespace PowerArhitecture.Breeze
                 return false;
             try
             {
-                await Session.Transaction.CommitAsync().ConfigureAwait(false);
+                await Session.Transaction.CommitAsync();
                 return true;
             }
             catch (Exception)
             {
-                await RollbackTransactionAsync().ConfigureAwait(false);
+                RollbackTransaction();
                 throw;
             }
         }

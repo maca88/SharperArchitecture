@@ -15,8 +15,6 @@ namespace PowerArhitecture.DataAccess
 
         public CultureInfo CurrentCultureInfo { get; set; }
 
-        public IPrincipal CurrentPrincipal { get; set; }
-
         public bool IsManaged { get; set; }
     }
 }

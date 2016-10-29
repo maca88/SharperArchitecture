@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Principal;
-using System.Threading;
 using PowerArhitecture.Common.Cryptographics;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.JsonNet;
@@ -51,7 +49,7 @@ namespace PowerArhitecture.Common
 
             //Convenction for tasks
             Kernel.Bind(o => o
-                .From(AppDomain.CurrentDomain.GetAssemblies()
+                .From(AppConfiguration.GetDomainAssemblies()
                     .Where(a => a.GetTypes().Any(t => typeof(ITask).IsAssignableFrom(t))))
                 .IncludingNonePublicTypes()
                 .SelectAllClasses()
@@ -61,11 +59,11 @@ namespace PowerArhitecture.Common
 
             //Convenction for listeners
             Kernel.Bind(o => o
-                .From(AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => a.GetTypes().Any(t => t.IsAssignableToGenericType(typeof(IListener<>)) || t.IsAssignableToGenericType(typeof(IListenerAsync<>)))))
+                .From(AppConfiguration.GetDomainAssemblies()
+                    .Where(a => a.GetTypes().Any(t => t.IsAssignableToGenericType(typeof(IListener<>)))))
                 .IncludingNonePublicTypes()
-                .Select(t => !t.IsInterface && !t.IsAbstract && (t.IsAssignableToGenericType(typeof(IListener<>)) || t.IsAssignableToGenericType(typeof(IListenerAsync<>))) && 
-                    t != typeof(DelegateListener<>) && t != typeof(DelegateListenerAsync<>) && !Kernel.GetBindings(t).Any())
+                .Select(t => !t.IsInterface && !t.IsAbstract && t.IsAssignableToGenericType(typeof(IListener<>)) && 
+                    t != typeof(DelegateListener<>) /*&& t != typeof(DelegateListenerAsync<>)*/ && !Kernel.GetBindings(t).Any())
                 .BindSelection((type, types) => new List<Type> {type}.Union(types))
                 .Configure(syntax => syntax.InSingletonScope()));
 

@@ -15,29 +15,39 @@ using Ninject.Syntax;
 
 namespace PowerArhitecture.Notifications.EventListeners
 {
-    public class NotificationInsertingEventListener : IListener<EntitySavingEvent>
+    public class NotificationInsertingEventListener : BaseListener<EntitySavingEvent>
     {
         private readonly ISessionEventProvider _sessionEventProvider;
-        private readonly IResolutionRoot _resolutionRoot;
         private readonly IEventAggregator _eventAggregator;
 
-        public NotificationInsertingEventListener(ISessionEventProvider sessionEventProvider, IResolutionRoot resolutionRoot, 
-            IEventAggregator eventAggregator)
+        public NotificationInsertingEventListener(ISessionEventProvider sessionEventProvider, IEventAggregator eventAggregator)
         {
             _sessionEventProvider = sessionEventProvider;
-            _resolutionRoot = resolutionRoot;
             _eventAggregator = eventAggregator;
         }
 
-        public void Handle(EntitySavingEvent e)
+        public override void Handle(EntitySavingEvent e)
         {
             var @event = e.Message;
             var notification = @event.Entity as INotificationInternal;
             if (notification == null) return;
 
-            _sessionEventProvider.AddAListener(SessionListenerType.AfterCommit, @event.Session,
-                () => _eventAggregator.SendMessageAsync(new NewNotificationEvent(notification)));
+            _sessionEventProvider.AddListener(SessionListenerType.AfterCommit, @event.Session,
+                () => _eventAggregator.SendMessage(new NewNotificationEvent(notification)));
+        }
 
+
+        public override Task HandleAsync(EntitySavingEvent e)
+        {
+            var @event = e.Message;
+            var notification = @event.Entity as INotificationInternal;
+            if (notification == null)
+            {
+                return Task.CompletedTask;
+            }
+            _sessionEventProvider.AddListener(SessionListenerType.AfterCommit, @event.Session,
+                () => _eventAggregator.SendMessageAsync(new NewNotificationEvent(notification)));
+            return Task.CompletedTask;
         }
     }
 }
