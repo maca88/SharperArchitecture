@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ninject.Syntax;
-using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.DataAccess.Specifications

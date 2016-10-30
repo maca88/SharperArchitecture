@@ -147,9 +147,7 @@ namespace PowerArhitecture.CodeList.EventHandlers
 
         public override void Handle(HibernateMappingsBuiltEvent e)
         {
-            IEnumerable<HibernateMapping> message = e.Message;
-
-            foreach (var classMap in message.SelectMany(o => o.Classes))
+            foreach (var classMap in e.Mappings.SelectMany(o => o.Classes))
             {
                 Apply(classMap);
             }

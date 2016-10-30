@@ -13,6 +13,7 @@ using NHibernate.Persister.Entity;
 using NHibernate.Proxy.DynamicProxy;
 using NHibernate.Proxy;
 using NHibernate.Type;
+using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Wrappers;
 
 namespace NHibernate
@@ -39,14 +40,6 @@ namespace NHibernate
         }
 
         public static void RollbackTransaction(this ISession session)
-        {
-            if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
-                return;
-            session.Transaction.Rollback();
-            session.Transaction.Dispose();
-        }
-
-        public static async Task RollbackTransactionAsync(this ISession session)
         {
             if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return;
@@ -113,6 +106,12 @@ namespace NHibernate
         {
             var wrap = session as SessionWrapper;
             return wrap != null ? wrap.Session : session;
+        }
+
+        internal static bool IsManaged(this ISession session)
+        {
+            var data = session.GetSessionImplementation().UserData as SessionContext;
+            return data?.IsManaged ?? false;
         }
     }
 }

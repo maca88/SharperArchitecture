@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class SequentialAsyncEvent : BaseEvent
+    public class SequentialAsyncEvent : IEvent
     {
         public Action<SequentialAsyncEventHandler> OnStarted { get; set; }
 

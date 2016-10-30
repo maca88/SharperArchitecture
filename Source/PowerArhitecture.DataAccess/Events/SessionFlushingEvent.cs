@@ -5,13 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class SessionFlushingEvent : BaseEvent<ISession>
+    public class SessionFlushingEvent : IEvent
     {
-        public SessionFlushingEvent(ISession message) : base(message)
+        public SessionFlushingEvent(ISession session)
         {
+            Session = session;
         }
+
+        public ISession Session { get; }
     }
 }

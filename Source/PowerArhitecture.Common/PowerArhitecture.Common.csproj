@@ -100,7 +100,7 @@
     <Compile Include="Cryptographics\AESCryptography.cs" />
     <Compile Include="Cryptographics\Sha1Cryptography.cs" />
     <Compile Include="Enums\PatternOptions.cs" />
-    <Compile Include="Events\BaseEvent.cs" />
+    <Compile Include="Events\MessageEvent.cs" />
     <Compile Include="Events\BaseEventHandler.cs" />
     <Compile Include="Events\BaseEventsHandler.cs" />
     <Compile Include="Specifications\ICommand.cs" />

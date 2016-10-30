@@ -4,20 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class ThreeEventsPerHandlerEvent : BaseEvent
+    public class ThreeEventsPerHandlerEvent : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class ThreeEventsPerHandler2Event : BaseEvent
+    public class ThreeEventsPerHandler2Event : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class ThreeEventsPerHandler3Event : BaseEvent
+    public class ThreeEventsPerHandler3Event : IEvent
     {
         public bool Success { get; set; }
     }

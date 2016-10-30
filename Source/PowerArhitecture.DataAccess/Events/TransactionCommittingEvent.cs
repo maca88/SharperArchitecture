@@ -1,13 +1,16 @@
 ﻿using PowerArhitecture.Common.Events;
 using NHibernate;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class TransactionCommittingEvent : BaseEvent<ISession>
+    public class TransactionCommittingEvent : IEvent
     {
-        public TransactionCommittingEvent(ISession message)
-            : base(message)
+        public TransactionCommittingEvent(ISession session)
         {
+            Session = session;
         }
+
+        public ISession Session { get; }
     }
 }

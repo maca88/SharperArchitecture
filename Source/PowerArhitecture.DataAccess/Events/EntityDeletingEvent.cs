@@ -5,13 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class EntityDeletingEvent : BaseEvent<ISession>
+    public class EntityDeletingEvent : IEvent
     {
-        public EntityDeletingEvent(ISession message) : base(message)
+        public EntityDeletingEvent(ISession session)
         {
+            Session = session;
         }
+
+        public ISession Session { get; }
     }
 }

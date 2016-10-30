@@ -2,7 +2,7 @@
 
 namespace PowerArhitecture.Common.Events
 {
-    public class UnhandledExceptionEvent : BaseEvent<Exception>
+    public class UnhandledExceptionEvent : MessageEvent<Exception>
     {
         public UnhandledExceptionEvent(Exception message) : base(message)
         {

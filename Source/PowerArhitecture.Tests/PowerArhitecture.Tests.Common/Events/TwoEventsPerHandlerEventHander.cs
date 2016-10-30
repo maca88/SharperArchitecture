@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class TwoEventsPerHandlerEvent : BaseEvent
+    public class TwoEventsPerHandlerEvent : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class TwoEventsPerHandler2Event : BaseEvent
+    public class TwoEventsPerHandler2Event : IEvent
     {
         public bool Success { get; set; }
     }

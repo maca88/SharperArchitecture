@@ -58,7 +58,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
 
         public override void Handle(NhConfigurationEvent e)
         {
-            var config = e.Message;
+            var config = e.Configuration;
             var eventListeners = config.EventListeners;
 
             //ISaveOrUpdateEventListener

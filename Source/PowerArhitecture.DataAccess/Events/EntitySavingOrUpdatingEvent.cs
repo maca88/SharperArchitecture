@@ -5,13 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class EntitySavingOrUpdatingEvent : BaseEvent<ISession>
+    public class EntitySavingOrUpdatingEvent : IEvent
     {
-        public EntitySavingOrUpdatingEvent(ISession message) : base(message)
+        public EntitySavingOrUpdatingEvent(ISession session)
         {
+            Session = session;
         }
+
+        public ISession Session { get; }
     }
 }

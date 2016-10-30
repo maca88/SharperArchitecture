@@ -8,7 +8,6 @@ using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Attributes;
-using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;

@@ -5,14 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentNHibernate.MappingModel;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class HibernateMappingsBuiltEvent : BaseEvent<IEnumerable<HibernateMapping>>
+    public class HibernateMappingsBuiltEvent : IEvent
     {
-        public HibernateMappingsBuiltEvent(IEnumerable<HibernateMapping> message)
-            : base(message)
+        public HibernateMappingsBuiltEvent(IEnumerable<HibernateMapping> mappings)
         {
+            Mappings = mappings;
         }
+
+        public IEnumerable<HibernateMapping> Mappings { get; }
     }
 }

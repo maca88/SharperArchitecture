@@ -156,6 +156,7 @@ namespace PowerArhitecture.DataAccess
 
         public void Dispose()
         {
+            Commit();
             _session.Dispose();
         }
 

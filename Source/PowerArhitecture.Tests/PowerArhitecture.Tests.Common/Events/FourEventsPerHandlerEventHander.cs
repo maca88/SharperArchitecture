@@ -4,25 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class FourEventsPerHandlerEvent : BaseEvent
+    public class FourEventsPerHandlerEvent : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class FourEventsPerHandler2Event : BaseEvent
+    public class FourEventsPerHandler2Event : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class FourEventsPerHandler3Event : BaseEvent
+    public class FourEventsPerHandler3Event : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class FourEventsPerHandler4Event : BaseEvent
+    public class FourEventsPerHandler4Event : IEvent
     {
         public bool Success { get; set; }
     }
@@ -45,9 +46,9 @@ namespace PowerArhitecture.Tests.Common.Events
             @event.Success = true;
         }
 
-        public override void Handle(FourEventsPerHandler4Event @event)
+        public override void Handle(FourEventsPerHandler4Event e)
         {
-            @event.Success = true;
+            e.Success = true;
         }
     }
 }

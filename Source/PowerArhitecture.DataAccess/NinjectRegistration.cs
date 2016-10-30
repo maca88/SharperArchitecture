@@ -94,9 +94,6 @@ namespace PowerArhitecture.DataAccess
             Bind<ISaveOrUpdateEventListener>().To<NhUpdateEventListener>().InSingletonScope();
             Bind<ISaveOrUpdateEventListener>().To<NhSaveEventListener>().InSingletonScope();
 
-            //var interfaces = typeof (ValidatePreInsertUpdateDeleteEventListener).GetInterfaces();
-            //Bind(interfaces).To(typeof (ValidatePreInsertUpdateDeleteEventListener)).InSingletonScope();
-
             Bind<IPreInsertEventListener, IPreUpdateEventListener>()
                 .To<EntityPreUpdateInsertEventListener>()
                 .InSingletonScope();

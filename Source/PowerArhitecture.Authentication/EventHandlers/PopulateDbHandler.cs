@@ -24,7 +24,7 @@ namespace PowerArhitecture.Authentication.EventHandlers
 
         public override void Handle(PopulateDbEvent e)
         {
-            var unitOfWork = e.Message;
+            var unitOfWork = e.UnitOfWork;
             var systemUser = (IEntity)Activator.CreateInstance(_userType);
 
             _userType.GetProperty("TimeZoneId").SetValue(systemUser, TimeZoneInfo.Utc.Id);

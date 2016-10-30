@@ -191,15 +191,15 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         }
 
         //Validation for inserting has to be before the Id is set by NHibernate
-        public override void Handle(EntitySavingEvent message)
+        public override void Handle(EntitySavingEvent e)
         {
-            var @event = message.Message;
+            var @event = e.Event;
             Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 
-        public override Task HandleAsync(EntitySavingEvent message, CancellationToken cancellationToken)
+        public override Task HandleAsync(EntitySavingEvent e, CancellationToken cancellationToken)
         {
-            var @event = message.Message;
+            var @event = e.Event;
             return ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 

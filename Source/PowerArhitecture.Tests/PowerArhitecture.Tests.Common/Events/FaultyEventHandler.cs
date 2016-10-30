@@ -7,7 +7,7 @@ using PowerArhitecture.Common.Events;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class FaultyEvent : BaseEvent<string>
+    public class FaultyEvent : MessageEvent<string>
     {
         public FaultyEvent(string message) : base(message)
         {

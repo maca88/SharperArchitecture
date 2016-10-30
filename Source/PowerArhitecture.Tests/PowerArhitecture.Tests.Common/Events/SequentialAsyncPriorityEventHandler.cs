@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class SequentialAsyncPriorityEvent : BaseEvent
+    public class SequentialAsyncPriorityEvent : IEvent
     {
         public Action<SequentialAsyncPriorityEventHandler> OnStarted { get; set; }
 

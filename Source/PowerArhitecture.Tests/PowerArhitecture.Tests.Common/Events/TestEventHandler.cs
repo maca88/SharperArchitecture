@@ -3,7 +3,7 @@ using PowerArhitecture.Common.Events;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class TestEvent : BaseEvent<string>
+    public class TestEvent : MessageEvent<string>
     {
         public TestEvent(string message) : base(message)
         {

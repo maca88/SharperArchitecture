@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;

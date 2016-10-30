@@ -61,7 +61,6 @@ namespace PowerArhitecture.DataAccess.Providers
             }
             var sessionContext = new SessionContext
             {
-                IsManaged = true,
                 ResolutionRoot = context.GetContextPreservingResolutionRoot(),
                 CurrentCultureInfo = Thread.CurrentThread.CurrentCulture
             };
@@ -81,7 +80,7 @@ namespace PowerArhitecture.DataAccess.Providers
                 session.BeginTransaction();
                 session.Transaction.RegisterSynchronization(new TransactionEventListener(eventSource, _eventPublisher));
             }
-            else //If a session is created when HttpContext is not available tell SessionManager that the session must be manually disposed
+            else // A session is created when HttpContext is not available
             {
                 _logger.Warn("An unmanaged session was created");
             }

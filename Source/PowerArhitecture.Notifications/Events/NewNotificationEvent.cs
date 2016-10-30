@@ -4,7 +4,7 @@ using PowerArhitecture.Notifications.Specifications;
 
 namespace PowerArhitecture.Notifications.Events
 {
-    public class NewNotificationEvent : BaseEvent<INotification>
+    public class NewNotificationEvent : MessageEvent<INotification>
     {
         public NewNotificationEvent(INotification message)
             : base(message)

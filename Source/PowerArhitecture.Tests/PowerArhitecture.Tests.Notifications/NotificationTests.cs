@@ -91,7 +91,7 @@ namespace PowerArhitecture.Tests.Notifications
                 var notif = new NotificationWithEntityRecipient
                 {
                     Type = NotificationType.Success,
-                    Message = "Mesage",
+                    Message = "Mesage"
                 };
                 notif.AddRecipient(new NotificationRecipientWithEntityRecipient
                 {

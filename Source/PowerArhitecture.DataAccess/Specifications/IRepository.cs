@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using NHibernate;
-using PowerArhitecture.DataAccess.Enums;
 using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.DataAccess.Specifications

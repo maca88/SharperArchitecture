@@ -29,7 +29,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
 
         public void AfterCompletion(bool success)
         {
-            _eventPublisher.Publish(new TransactionCommittedEvent(_session));
+            _eventPublisher.Publish(new TransactionCommittedEvent(_session, success));
         }
     }
 }

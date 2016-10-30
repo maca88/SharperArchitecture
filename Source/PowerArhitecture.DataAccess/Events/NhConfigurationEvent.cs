@@ -1,12 +1,16 @@
 ﻿using PowerArhitecture.Common.Events;
 using NHibernate.Cfg;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Events
 {
-    public class NhConfigurationEvent : BaseEvent<Configuration>
+    public class NhConfigurationEvent : IEvent
     {
-        public NhConfigurationEvent(Configuration message) : base(message)
+        public NhConfigurationEvent(Configuration configuration)
         {
+            Configuration = configuration;
         }
+
+        public Configuration Configuration { get; }
     }
 }
