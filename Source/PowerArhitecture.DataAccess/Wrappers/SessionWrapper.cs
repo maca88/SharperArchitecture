@@ -22,18 +22,19 @@ using NHibernate.Stat;
 using NHibernate.Transaction;
 using NHibernate.Type;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.DataAccess.Wrappers
 {
     public class SessionWrapper : IEventSource
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
 
-        public SessionWrapper(IEventSource session, IEventAggregator eventAggregator)
+        public SessionWrapper(IEventSource session, IEventPublisher eventPublisher)
         {
             Session = session;
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
         }
 
         internal readonly IEventSource Session;
@@ -530,13 +531,13 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         void ISessionImplementor.Flush()
         {
-            _eventAggregator.SendMessage(new SessionFlushingEvent(Session));
+            _eventPublisher.Publish(new SessionFlushingEvent(Session));
             ((ISessionImplementor) Session).Flush();
         }
 
         async Task ISession.FlushAsync()
         {
-            await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await ((ISession) Session).FlushAsync();
         }
 
@@ -707,133 +708,133 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public object Save(object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             return Session.Save(obj);
         }
 
         public async Task<object> SaveAsync(object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             return await Session.SaveAsync(obj);
         }
 
         public void Save(object obj, object id)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Save(obj, id);
         }
 
         public async Task SaveAsync(object obj, object id)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.SaveAsync(obj, id);
         }
 
         public object Save(string entityName, object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             return Session.Save(entityName, obj);
         }
 
         public async Task<object> SaveAsync(string entityName, object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             return await Session.SaveAsync(entityName, obj);
         }
 
         public void Save(string entityName, object obj, object id)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Save(entityName, obj, id);
         }
 
         public async Task SaveAsync(string entityName, object obj, object id)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.SaveAsync(entityName, obj, id);
         }
 
         public void SaveOrUpdate(object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.SaveOrUpdate(obj);
         }
 
         public async Task SaveOrUpdateAsync(object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.SaveOrUpdateAsync(obj);
         }
 
         public void SaveOrUpdate(string entityName, object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.SaveOrUpdate(entityName, obj);
         }
 
         public async Task SaveOrUpdateAsync(string entityName, object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.SaveOrUpdateAsync(entityName, obj);
         }
 
         public void SaveOrUpdate(string entityName, object obj, object id)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.SaveOrUpdate(entityName, obj, id);
         }
 
         public async Task SaveOrUpdateAsync(string entityName, object obj, object id)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.SaveOrUpdateAsync(entityName, obj, id);
         }
 
         public void Update(object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Update(obj);
         }
 
         public async Task UpdateAsync(object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.UpdateAsync(obj);
         }
 
         public void Update(object obj, object id)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Update(obj, id);
         }
 
         public async Task UpdateAsync(object obj, object id)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.UpdateAsync(obj, id);
         }
 
         public void Update(string entityName, object obj)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Update(entityName, obj);
         }
 
         public async Task UpdateAsync(string entityName, object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.UpdateAsync(entityName, obj);
         }
 
         public void Update(string entityName, object obj, object id)
         {
-            _eventAggregator.SendMessage(new EntitySavingOrUpdatingEvent(Session));
+            _eventPublisher.Publish(new EntitySavingOrUpdatingEvent(Session));
             Session.Update(entityName, obj, id);
         }
 
         public async Task UpdateAsync(string entityName, object obj, object id)
         {
-            await _eventAggregator.SendMessageAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
             await Session.UpdateAsync(entityName, obj, id);
         }
 
@@ -899,61 +900,61 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public void Delete(object obj)
         {
-            _eventAggregator.SendMessage(new EntityDeletingEvent(Session));
+            _eventPublisher.Publish(new EntityDeletingEvent(Session));
             Session.Delete(obj);
         }
 
         public async Task DeleteAsync(object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             await Session.DeleteAsync(obj);
         }
 
         public void Delete(string entityName, object obj)
         {
-            _eventAggregator.SendMessage(new EntityDeletingEvent(Session));
+            _eventPublisher.Publish(new EntityDeletingEvent(Session));
             Session.Delete(entityName, obj);
         }
 
         public async Task DeleteAsync(string entityName, object obj)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             await Session.DeleteAsync(entityName, obj);
         }
 
         public int Delete(string query)
         {
-            _eventAggregator.SendMessage(new EntityDeletingEvent(Session));
+            _eventPublisher.Publish(new EntityDeletingEvent(Session));
             return Session.Delete(query);
         }
 
         public async Task<int> DeleteAsync(string query)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             return await Session.DeleteAsync(query);
         }
 
         public int Delete(string query, object value, IType type)
         {
-            _eventAggregator.SendMessage(new EntityDeletingEvent(Session));
+            _eventPublisher.Publish(new EntityDeletingEvent(Session));
             return Session.Delete(query, value, type);
         }
 
         public async Task<int> DeleteAsync(string query, object value, IType type)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             return await Session.DeleteAsync(query, value, type);
         }
 
         public int Delete(string query, object[] values, IType[] types)
         {
-            _eventAggregator.SendMessage(new EntityDeletingEvent(Session));
+            _eventPublisher.Publish(new EntityDeletingEvent(Session));
             return Session.Delete(query, values, types);
         }
 
         public async Task<int> DeleteAsync(string query, object[] values, IType[] types)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             return await Session.DeleteAsync(query, values, types);
         }
 
@@ -1074,13 +1075,13 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         void ISession.Flush()
         {
-            _eventAggregator.SendMessage(new SessionFlushingEvent(Session));
+            _eventPublisher.Publish(new SessionFlushingEvent(Session));
             ((ISession) Session).Flush();
         }
 
         async Task ISessionImplementor.FlushAsync()
         {
-            await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await ((ISessionImplementor) Session).FlushAsync();
         }
 
@@ -1254,7 +1255,7 @@ namespace PowerArhitecture.DataAccess.Wrappers
 
         public async Task ForceFlushAsync(EntityEntry e)
         {
-            await _eventAggregator.SendMessageAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await Session.ForceFlushAsync(e);
         }
 
@@ -1281,7 +1282,7 @@ namespace PowerArhitecture.DataAccess.Wrappers
         public async Task DeleteAsync(string entityName, object child, bool isCascadeDeleteEnabled,
             ISet<object> transientEntities)
         {
-            await _eventAggregator.SendMessageAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
             await Session.DeleteAsync(entityName, child, isCascadeDeleteEnabled, transientEntities);
         }
 

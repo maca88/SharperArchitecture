@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NHibernate;
 using NHibernate.Transaction;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.DataAccess.EventListeners
@@ -13,22 +14,22 @@ namespace PowerArhitecture.DataAccess.EventListeners
     public class TransactionEventListener : ISynchronization
     {
         private readonly ISession _session;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
 
-        public TransactionEventListener(ISession session, IEventAggregator eventAggregator)
+        public TransactionEventListener(ISession session, IEventPublisher eventPublisher)
         {
             _session = session;
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
         }
 
         public void BeforeCompletion()
         {
-            _eventAggregator.SendMessage(new TransactionCommittingEvent(_session));
+            _eventPublisher.Publish(new TransactionCommittingEvent(_session));
         }
 
         public void AfterCompletion(bool success)
         {
-            _eventAggregator.SendMessage(new TransactionCommittedEvent(_session));
+            _eventPublisher.Publish(new TransactionCommittedEvent(_session));
         }
     }
 }

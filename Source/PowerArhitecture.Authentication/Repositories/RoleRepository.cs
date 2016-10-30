@@ -19,8 +19,8 @@ namespace PowerArhitecture.Authentication.Repositories
     public class RoleRepository<TRole> : Repository<TRole>, IRoleRepository<TRole>
          where TRole : class, IRole, IEntity<long>, new()
     {
-        public RoleRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
-            : base(session, logger, sessionEventProvider)
+        public RoleRepository(ISession session, ILogger logger) 
+            : base(session, logger)
         {
         }
 

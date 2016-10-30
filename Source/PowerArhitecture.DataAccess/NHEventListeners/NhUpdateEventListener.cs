@@ -18,8 +18,8 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListener(ReplaceListener = typeof(DefaultUpdateEventListener))]
     public class NhUpdateEventListener : NhSaveOrUpdateEventListener
     {
-        public NhUpdateEventListener(IAuditUserProvider auditUserProvider, IEventAggregator eventAggregator)
-            : base(auditUserProvider, eventAggregator)
+        public NhUpdateEventListener(IAuditUserProvider auditUserProvider, IEventPublisher eventPublisher)
+            : base(auditUserProvider, eventPublisher)
         {
         }
 

@@ -28,6 +28,7 @@ using NHibernate.Cfg;
 using NHibernate.Connection;
 using NHibernate.Tool.hbm2ddl;
 using log4net;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess
 {
@@ -35,12 +36,12 @@ namespace PowerArhitecture.DataAccess
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Database));
         private static readonly Dictionary<ISessionFactory, SessionFactoryInfo> SessionFactories = new Dictionary<ISessionFactory, SessionFactoryInfo>();
-        private static IEventAggregator _eventAggregator;
+        private static IEventPublisher _eventPublisher;
 
         static Database(){}
 
         public static ISessionFactory CreateSessionFactory(
-            IEventAggregator eventAggregator,
+            IEventPublisher eventPublisher,
             DatabaseConfiguration dbConfiguration,
             string name = null)
         {
@@ -70,12 +71,12 @@ namespace PowerArhitecture.DataAccess
 
             try
             {
-                _eventAggregator = eventAggregator;
+                _eventPublisher = eventPublisher;
                 var fluentConfig = Fluently.Configure(cfg);
                 dbConfiguration.FluentConfigurationAction?.Invoke(fluentConfig);
                 var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
                 var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies,
-                    dbConfiguration.Conventions, conventionAssemblies, dialect, eventAggregator);
+                    dbConfiguration.Conventions, conventionAssemblies, dialect, eventPublisher);
                 fluentConfig
                     .Mappings(m =>
                     {
@@ -92,7 +93,7 @@ namespace PowerArhitecture.DataAccess
                             configuration.SetInterceptor(new NhibernateInterceptor());
                         }
 
-                        _eventAggregator?.SendMessage(new NhConfigurationEvent(configuration));
+                        _eventPublisher?.Publish(new NhConfigurationEvent(configuration));
                         dbConfiguration.ConfigurationCompletedAction?.Invoke(configuration);
 
                         RecreateOrUpdateSchema(autoPestModel, configuration, dbConfiguration);
@@ -167,7 +168,7 @@ namespace PowerArhitecture.DataAccess
 
         private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration, ICollection<Assembly> assemblies, 
             ConventionsConfiguration conventionsConfiguration, IEnumerable<Assembly> conventionAssemblies,
-            NHibernate.Dialect.Dialect dialect, IEventAggregator eventAggregator)
+            NHibernate.Dialect.Dialect dialect, IEventPublisher eventPublisher)
         {
             var conventions = new List<IConvention>();
             foreach (var convType in conventionAssemblies
@@ -214,7 +215,7 @@ namespace PowerArhitecture.DataAccess
                 conventions.Add(conv);
             }
 
-            return GetAutoPersistenceModel(eventAggregator, automappingConfiguration, assemblies)
+            return GetAutoPersistenceModel(eventPublisher, automappingConfiguration, assemblies)
                 .UseOverridesFromAssemblies(assemblies)
                 .AddConventions(conventions)
                 .AddFilters(GetFilterDefinitions(assemblies))
@@ -229,9 +230,9 @@ namespace PowerArhitecture.DataAccess
             return assemblies.SelectMany(o => o.GetTypes()).Where(o => typeof (FilterDefinition).IsAssignableFrom(o));
         }
 
-        private static CustomAutoPersistenceModel GetAutoPersistenceModel(IEventAggregator eventAggregator, IAutomappingConfiguration cfg, IEnumerable<Assembly> assemblies)
+        private static CustomAutoPersistenceModel GetAutoPersistenceModel(IEventPublisher eventPublisher, IAutomappingConfiguration cfg, IEnumerable<Assembly> assemblies)
         {
-            var model = new CustomAutoPersistenceModel(eventAggregator, cfg);
+            var model = new CustomAutoPersistenceModel(eventPublisher, cfg);
             model.AddTypeSource(new CombinedAssemblyTypeSource(assemblies.Select(o => new AssemblyTypeSource(o))));
             return model;
         }

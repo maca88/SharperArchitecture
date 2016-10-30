@@ -14,6 +14,7 @@ using Ninject.Extensions.ContextPreservation;
 using Ninject.Extensions.Logging;
 using Ninject.Planning.Bindings;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Parameters;
@@ -26,15 +27,15 @@ namespace PowerArhitecture.DataAccess.Providers
         private readonly ILogger _logger;
         private readonly ISessionFactory _defaultSessionFactory;
         private readonly IResolutionRoot _resolutionRoot;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
 
         public SessionProvider(ILogger logger, ISessionFactory defaultSessionFactory, IResolutionRoot resolutionRoot, 
-            IEventAggregator eventAggregator)
+            IEventPublisher eventPublisher)
         {
             _logger = logger;
             _defaultSessionFactory = defaultSessionFactory;
             _resolutionRoot = resolutionRoot;
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
         }
 
         public object Create(IContext context)
@@ -65,7 +66,7 @@ namespace PowerArhitecture.DataAccess.Providers
                 CurrentCultureInfo = Thread.CurrentThread.CurrentCulture
             };
             var eventSource = (IEventSource) sessionFactory.OpenSession(sessionContext);
-            var session = (ISession)new SessionWrapper(eventSource, _eventAggregator);
+            var session = (ISession)new SessionWrapper(eventSource, _eventPublisher);
             Type = session.GetType();
             session.FlushMode = FlushMode.Commit; //HACK ... TODO: update to 4.1
 
@@ -78,12 +79,11 @@ namespace PowerArhitecture.DataAccess.Providers
                 sessionContext.IsManaged = true;
                 //TODO: check for transaction attribute, forward as ninject parameter
                 session.BeginTransaction();
-                session.Transaction.RegisterSynchronization(new TransactionEventListener(eventSource, _eventAggregator));
+                session.Transaction.RegisterSynchronization(new TransactionEventListener(eventSource, _eventPublisher));
             }
             else //If a session is created when HttpContext is not available tell SessionManager that the session must be manually disposed
             {
                 _logger.Warn("An unmanaged session was created");
-                //_sessionManager.MarkAsUnmanaged(session);
             }
             return session;
         }

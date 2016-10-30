@@ -45,7 +45,7 @@ namespace PowerArhitecture.Tests.Notifications
         public void notification_string_listener_test()
         {
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            var listener = Kernel.Get<NotificationListener>();
+            var listener = Kernel.Get<NotificationHandler>();
             listener.Reset();
             using (var unitOfWork = unitOfWorkFactory.GetNew())
             {
@@ -78,7 +78,7 @@ namespace PowerArhitecture.Tests.Notifications
         public void notification_entity_listener_test()
         {
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            var listener = Kernel.Get<NotificationListener>();
+            var listener = Kernel.Get<NotificationHandler>();
             listener.Reset();
             using (var unitOfWork = (UnitOfWork)unitOfWorkFactory.GetNew())
             {

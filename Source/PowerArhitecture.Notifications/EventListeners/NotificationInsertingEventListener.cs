@@ -15,39 +15,28 @@ using Ninject.Syntax;
 
 namespace PowerArhitecture.Notifications.EventListeners
 {
-    public class NotificationInsertingEventListener : BaseListener<EntitySavingEvent>
+    public class NotificationInsertingEventHandler : BaseEventHandler<EntitySavingEvent>
     {
-        private readonly ISessionEventProvider _sessionEventProvider;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly ISessionSubscriptionManager _sessionSubscriptionManager;
+        private readonly IEventPublisher _eventPublisher;
 
-        public NotificationInsertingEventListener(ISessionEventProvider sessionEventProvider, IEventAggregator eventAggregator)
+        public NotificationInsertingEventHandler(ISessionSubscriptionManager sessionSubscriptionManager, IEventPublisher eventPublisher)
         {
-            _sessionEventProvider = sessionEventProvider;
-            _eventAggregator = eventAggregator;
+            _sessionSubscriptionManager = sessionSubscriptionManager;
+            _eventPublisher = eventPublisher;
         }
 
         public override void Handle(EntitySavingEvent e)
         {
             var @event = e.Message;
             var notification = @event.Entity as INotificationInternal;
-            if (notification == null) return;
-
-            _sessionEventProvider.AddListener(SessionListenerType.AfterCommit, @event.Session,
-                () => _eventAggregator.SendMessage(new NewNotificationEvent(notification)));
-        }
-
-
-        public override Task HandleAsync(EntitySavingEvent e)
-        {
-            var @event = e.Message;
-            var notification = @event.Entity as INotificationInternal;
             if (notification == null)
             {
-                return Task.CompletedTask;
+                return;
             }
-            _sessionEventProvider.AddListener(SessionListenerType.AfterCommit, @event.Session,
-                () => _eventAggregator.SendMessageAsync(new NewNotificationEvent(notification)));
-            return Task.CompletedTask;
+
+            _sessionSubscriptionManager.Subscribe(SessionSubscription.AfterCommit, @event.Session,
+                () => _eventPublisher.Publish(new NewNotificationEvent(notification)));
         }
     }
 }

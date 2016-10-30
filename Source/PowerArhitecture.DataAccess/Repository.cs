@@ -22,8 +22,8 @@ namespace PowerArhitecture.DataAccess
 {
     public class Repository<TModel> : Repository<TModel, long>, IRepository<TModel> where TModel : class, IEntity<long>, new()
     {
-        public Repository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) //TODO: Session Lazy - need to test perserving context!
-            : base(session, logger, sessionEventProvider)
+        public Repository(ISession session, ILogger logger) //TODO: Session Lazy - need to test perserving context!
+            : base(session, logger)
         {
         }
     }
@@ -35,18 +35,15 @@ namespace PowerArhitecture.DataAccess
     /// <typeparam name="TId"></typeparam>
     public class Repository<TModel, TId> : IRepository<TModel, TId> where TModel : class, IEntity<TId>, new()
     {
-        public Repository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider)
+        public Repository(ISession session, ILogger logger)
         {
             Logger = logger;
             Session = session;
-            SessionEventProvider = sessionEventProvider;
         }
 
         protected ILogger Logger { get; }
 
         protected ISession Session { get; }
-
-        protected ISessionEventProvider SessionEventProvider { get; }
 
         public virtual IPrincipal User // TODO: Verify if needed
         {
@@ -126,16 +123,6 @@ namespace PowerArhitecture.DataAccess
         public virtual Task SaveAsync(object model)
         {
             return Session.SaveAsync(model);
-        }
-
-        public virtual void AddListener(Action action, SessionListenerType listenerType)
-        {
-            SessionEventProvider.AddListener(listenerType, Session, action);
-        }
-
-        public virtual void AddListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType)
-        {
-            SessionEventProvider.AddListener(listenerType, Session, () => action(this));
         }
 
         public virtual IQueryable<T> Query<T>() where T : IEntity

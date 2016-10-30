@@ -12,10 +12,10 @@ namespace PowerArhitecture.Tests.Common
     public class Internacionalization
     {
         [Test]
-        public void Test()
+        public void TestFormatter()
         {
-            var test1 = TranslatorFormatter.Custom("{Drek} {0} {0} {1} {{0}} {{escape}}", "str1", "str2", new {Drek = "dela"});
-            Assert.AreEqual("dela str1 str1 str2 {0} {escape}", test1);
+            var test1 = TranslatorFormatter.Custom("{Test} {0} {0} {1} {{0}} {{escape}}", "str1", "str2", new {Test = "test"});
+            Assert.AreEqual("test str1 str1 str2 {0} {escape}", test1);
         }
     }
 }

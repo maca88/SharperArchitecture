@@ -15,6 +15,7 @@ using NHibernate;
 using NHibernate.Cfg;
 using Ninject;
 using Ninject.Activation;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Parameters;
 
@@ -22,14 +23,14 @@ namespace PowerArhitecture.DataAccess.Providers
 {
     public class SessionFactoryProvider : IProvider<ISessionFactory>
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
         private readonly IResolutionRoot _resolutionRoot;
-        private readonly static Dictionary<string, ISessionFactory> Factories = new Dictionary<string, ISessionFactory>();
+        private static readonly Dictionary<string, ISessionFactory> Factories = new Dictionary<string, ISessionFactory>();
         private const string DefaultName = "Default";
 
-        public SessionFactoryProvider(IEventAggregator eventAggregator, IResolutionRoot resolutionRoot)
+        public SessionFactoryProvider(IEventPublisher eventPublisher, IResolutionRoot resolutionRoot)
         {
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
             _resolutionRoot = resolutionRoot;
         }
 
@@ -62,8 +63,8 @@ namespace PowerArhitecture.DataAccess.Providers
                 dbConfiguration = _resolutionRoot.Get<DatabaseConfiguration>();
             }
 
-            var sessionFactory = Database.CreateSessionFactory(_eventAggregator, dbConfiguration, name);
-            _eventAggregator.SendMessage(new SessionFactoryCreatedEvent(sessionFactory));
+            var sessionFactory = Database.CreateSessionFactory(_eventPublisher, dbConfiguration, name);
+            _eventPublisher.Publish(new SessionFactoryCreatedEvent(sessionFactory));
             Factories[name ?? DefaultName] = sessionFactory;
 
             Type = sessionFactory.GetType();
@@ -72,7 +73,7 @@ namespace PowerArhitecture.DataAccess.Providers
 
         internal static void PopulateData(IContext context, ISessionFactory sessionFactory)
         {
-            var eventAggregator = context.Kernel.Get<IEventAggregator>();
+            var eventPublisher = context.Kernel.Get<IEventPublisher>();
 
             var pair = Factories.FirstOrDefault(o => ReferenceEquals(o.Value, sessionFactory));
 
@@ -89,12 +90,12 @@ namespace PowerArhitecture.DataAccess.Providers
             {
                 try
                 {
-                    eventAggregator.SendMessage(new PopulateDbEvent(unitOfWork));
+                    eventPublisher.Publish(new PopulateDbEvent(unitOfWork));
                     unitOfWork.Commit();
                 }
                 catch (Exception ex)
                 {
-                    eventAggregator.SendMessage(new UnhandledExceptionEvent(ex));
+                    eventPublisher.Publish(new UnhandledExceptionEvent(ex));
                     throw;
                 }
             }

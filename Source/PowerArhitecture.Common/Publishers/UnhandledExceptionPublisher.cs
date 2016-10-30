@@ -1,21 +1,22 @@
 ﻿using System;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Common.Publishers
 {
     public class UnhandledExceptionPublisher
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
 
-        public UnhandledExceptionPublisher(IEventAggregator eventAggregator)
+        public UnhandledExceptionPublisher(IEventPublisher eventPublisher)
         {
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
         }
 
         private void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
-            _eventAggregator.SendMessage(new UnhandledExceptionEvent(e.ExceptionObject as Exception));
+            _eventPublisher.Publish(new UnhandledExceptionEvent(e.ExceptionObject as Exception));
         }
     }
 }

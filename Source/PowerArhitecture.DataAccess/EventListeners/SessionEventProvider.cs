@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Enums;
@@ -11,48 +12,46 @@ using Ninject.Extensions.Logging;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class SessionEventProvider : ISessionEventProvider,
-        IListener<TransactionCommittedEvent>,
-        IListener<TransactionCommittingEvent>
+    public class SessionSubscriptionManager : BaseEventsHandler<TransactionCommittedEvent, TransactionCommittingEvent>, ISessionSubscriptionManager
     {
-        private readonly ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>> _dict = 
-            new ConcurrentDictionary<SessionListenerType, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>>();
+        private readonly ConcurrentDictionary<SessionSubscription, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>> _dict = 
+            new ConcurrentDictionary<SessionSubscription, ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>>();
 
         private readonly ILogger _logger;
 
-        public SessionEventProvider(ILogger logger)
+        public SessionSubscriptionManager(ILogger logger)
         {
             _logger = logger;
         }
 
-        public void Handle(TransactionCommittedEvent e)
+        public override void Handle(TransactionCommittedEvent e)
         {
-            HandleEvent(SessionListenerType.AfterCommit, e.Message);
+            HandleEvent(SessionSubscription.AfterCommit, e.Message);
         }
 
-        public Task HandleAsync(TransactionCommittedEvent e)
+        public override Task HandleAsync(TransactionCommittedEvent e, CancellationToken cancellationToken)
         {
-            HandleEvent(SessionListenerType.AfterCommit, e.Message);
+            HandleEvent(SessionSubscription.AfterCommit, e.Message);
             return Task.CompletedTask;
         }
 
-        public void Handle(TransactionCommittingEvent e)
+        public override void Handle(TransactionCommittingEvent e)
         {
-            HandleEvent(SessionListenerType.BeforeCommit, e.Message);
+            HandleEvent(SessionSubscription.BeforeCommit, e.Message);
         }
 
-        public Task HandleAsync(TransactionCommittingEvent e)
+        public override Task HandleAsync(TransactionCommittingEvent e, CancellationToken cancellationToken)
         {
-            HandleEvent(SessionListenerType.BeforeCommit, e.Message);
+            HandleEvent(SessionSubscription.BeforeCommit, e.Message);
             return Task.CompletedTask;
         }
 
-        public void AddListener(SessionListenerType type, ISession session, Action action)
+        public void Subscribe(SessionSubscription type, ISession session, Action action)
         {
-            AddListener(type, session, s => action());
+            Subscribe(type, session, s => action());
         }
 
-        public void AddListener(SessionListenerType type, ISession session, Action<ISession> action)
+        public void Subscribe(SessionSubscription type, ISession session, Action<ISession> action)
         {
             session = session.Unwrap();
             var typeDict = _dict.GetOrAdd(type, o => new ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>>());
@@ -60,7 +59,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
             syncCol.Add(action);
         }
 
-        private void HandleEvent(SessionListenerType type, ISession session)
+        private void HandleEvent(SessionSubscription type, ISession session)
         {
             session = session.Unwrap();
             ConcurrentDictionary<ISession, SynchronizedCollection<Action<ISession>>> typeDict;

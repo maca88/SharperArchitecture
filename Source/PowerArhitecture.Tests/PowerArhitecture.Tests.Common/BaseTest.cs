@@ -8,24 +8,22 @@ using System.Web.SessionState;
 using PowerArhitecture.Common.Internationalization;
 using Bootstrap.Extensions.StartupTasks;
 using Bootstrap.Ninject;
+using Ninject;
 using Ninject.MockingKernel.Moq;
 using NUnit.Framework;
+using PowerArhitecture.Common;
 
 namespace PowerArhitecture.Tests.Common
 {
     public abstract class BaseTest
     {
-        protected static MoqMockingKernel Kernel;
+        protected MoqMockingKernel Kernel;
         
-        protected static List<Assembly> TestAssemblies = new List<Assembly>
+        protected List<Assembly> TestAssemblies = new List<Assembly>
         {
             typeof(I18N).Assembly
         };
         
-        static BaseTest()
-        {
-        }
-
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -40,11 +38,18 @@ namespace PowerArhitecture.Tests.Common
 
         protected virtual void Cleanup()
         {
+            foreach (var module in Kernel.GetModules())
+            {
+                Kernel.Unload(module.Name);
+            }
+            Kernel.Dispose(true);
+            Bootstrap.Bootstrapper.Reset();
         }
 
         protected virtual void Configure()
         {
             Kernel = Kernel ?? new MoqMockingKernel();
+            ConfigureKernel(Kernel);
             try
             {
                 Bootstrap.Bootstrapper
@@ -60,6 +65,15 @@ namespace PowerArhitecture.Tests.Common
             {
                 throw new Exception(string.Join(", ", e.LoaderExceptions.Select(o => o.ToString())));
             }
+            catch (Exception xe)
+            {
+
+            }
+        }
+
+        protected virtual void ConfigureKernel(MoqMockingKernel kernel)
+        {
+            
         }
 
         protected void HttpContextSetup()

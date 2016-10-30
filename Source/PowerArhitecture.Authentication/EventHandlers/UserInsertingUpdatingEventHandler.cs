@@ -1,0 +1,55 @@
+﻿using System;
+using System.Threading.Tasks;
+using NHibernate.Event;
+using NHibernate.Persister.Entity;
+using PowerArhitecture.Authentication.Specifications;
+
+namespace PowerArhitecture.Authentication.EventHandlers
+{
+    public class UserInsertingUpdatingEventHandler :
+        IPreInsertEventListener,
+        IPreUpdateEventListener
+    {
+        private string GenerateSecurityStamp()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        private static void Set(IEntityPersister persister, object[] state, object value)
+        {
+            var index = Array.IndexOf(persister.PropertyNames, "SecurityStamp");
+            if (index == -1)
+                return;
+            state[index] = value;
+        }
+
+        public Task<bool> OnPreInsertAsync(PreInsertEvent @event)
+        {
+            return Task.FromResult(OnPreInsert(@event));
+        }
+
+        public bool OnPreInsert(PreInsertEvent @event)
+        {
+            var user = @event.Entity as IUser;
+            if (user == null) return false;
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
+            return false;
+        }
+
+        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        {
+            return Task.FromResult(OnPreUpdate(@event));
+        }
+
+        public bool OnPreUpdate(PreUpdateEvent @event)
+        {
+            var user = @event.Entity as IUser;
+            if (user == null)
+            {
+                return false;
+            }
+            Set(@event.Persister, @event.State, GenerateSecurityStamp());
+            return false;
+        }
+    }
+}

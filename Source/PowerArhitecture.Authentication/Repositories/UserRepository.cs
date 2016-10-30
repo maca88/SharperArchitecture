@@ -31,9 +31,8 @@ namespace PowerArhitecture.Authentication.Repositories
     {
         protected readonly IAuthenticationConfiguration Configuration;
 
-        protected UserRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider,
-            IAuthenticationConfiguration configuration) 
-            : base(session, logger, sessionEventProvider)
+        protected UserRepository(ISession session, ILogger logger, IAuthenticationConfiguration configuration) 
+            : base(session, logger)
         {
             Configuration = configuration;
         }

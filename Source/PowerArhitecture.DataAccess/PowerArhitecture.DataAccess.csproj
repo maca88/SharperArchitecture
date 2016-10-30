@@ -49,6 +49,10 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -99,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\IsolationLevelAttribute.cs" />
     <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
     <Compile Include="Attributes\RepositoryAttribute.cs" />
     <Compile Include="Attributes\NamedSessionFactoryAttribute.cs" />
@@ -135,12 +140,9 @@
     <Compile Include="Conventions\Mssql\MssqlUniqueMultipleNullsConvention.cs" />
     <Compile Include="Conventions\VersionedEntityConvention.cs" />
     <Compile Include="Database.cs" />
-    <Compile Include="Enums\FlushMode.cs" />
-    <Compile Include="Enums\LockMode.cs" />
-    <Compile Include="Enums\Order.cs" />
-    <Compile Include="Enums\SessionListenerType.cs" />
+    <Compile Include="Enums\SessionSubscription.cs" />
     <Compile Include="EventListeners\EntityPreUpdateInsertEventListener.cs" />
-    <Compile Include="EventListeners\NhConfigurationEventListener.cs" />
+    <Compile Include="EventListeners\NhConfigurationEventHandler.cs" />
     <Compile Include="EventListeners\TransactionEventListener.cs" />
     <Compile Include="Events\EntityDeletingEvent.cs" />
     <Compile Include="Events\EntitySavingEvent.cs" />
@@ -158,10 +160,8 @@
     <Compile Include="Extensions\ConfigurationExtensions.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Extensions\FluentNHibernateInspectorExtensions.cs" />
-    <Compile Include="Extensions\LockModeExtensions.cs" />
     <Compile Include="Extensions\NhConfigurationExtensions.cs" />
     <Compile Include="Extensions\NinjectModuleExtensions.cs" />
-    <Compile Include="Extensions\QueryOverExtensions.cs" />
     <Compile Include="Extensions\SessionExtensions.cs" />
     <Compile Include="Factories\RepositoryFactory.cs" />
     <Compile Include="Attributes\NhEventListenerAttribute.cs" />
@@ -201,7 +201,7 @@
     <Compile Include="Specifications\ISchemaConvention.cs" />
     <Compile Include="Specifications\IRepository.cs" />
     <Compile Include="Specifications\IRepositoryFactory.cs" />
-    <Compile Include="Specifications\ISessionEventListener.cs" />
+    <Compile Include="Specifications\ISessionSubscriptionManager.cs" />
     <Compile Include="Specifications\IUpdateSchemaConvention.cs" />
     <Compile Include="Specifications\IUnitOfWork.cs" />
     <Compile Include="Specifications\IUnitOfWorkFactory.cs" />

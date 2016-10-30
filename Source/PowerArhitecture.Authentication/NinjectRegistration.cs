@@ -17,6 +17,7 @@ namespace PowerArhitecture.Authentication
     {
         public override void Load()
         {
+            Bind<IPasswordHasher>().To<PasswordHasher>().InSingletonScope();
             Bind<IPasswordValidator>().To<Validators.PasswordValidator>();
             Bind(typeof (IClaimsIdentityFactory<>)).To(typeof (ClaimsIdentityFactory<>));
 

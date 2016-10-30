@@ -21,6 +21,7 @@ using Ninject.Activation;
 using Ninject.Extensions.Conventions;
 using Ninject.Extensions.NamedScope;
 using Ninject.Modules;
+using Ninject.Parameters;
 using Ninject.Web.Common;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess.Parameters;
@@ -60,6 +61,16 @@ namespace PowerArhitecture.DataAccess
             Bind<IUnitOfWorkFactory>().To<UnitOfWorkFactory>();
             Bind<IUnitOfWork, IUnitOfWorkImplementor>()
                 .To<UnitOfWork>()
+                .WithConstructorArgument("isolationLevel", (ctx, target) =>
+                {
+                    var level = IsolationLevel.Unspecified;
+                    var attr = (IsolationLevelAttribute) target?.GetCustomAttributes(typeof(IsolationLevelAttribute), true).FirstOrDefault();
+                    if (attr != null)
+                    {
+                        level = attr.Level;
+                    }
+                    return level;
+                })
                 .DefinesNamedScope(ResolutionScopes.UnitOfWork);
 
             //Convention for custom repositories
@@ -69,12 +80,12 @@ namespace PowerArhitecture.DataAccess
                 .IncludingNonePublicTypes()
                 .Select(t =>
                 {
-                    if (!t.IsClass || t.IsAbstract || t.IsGenericType || !typeof (IRepository).IsAssignableFrom(t))
+                    if (!t.IsClass || t.IsAbstract || t.IsGenericType || !typeof(IRepository).IsAssignableFrom(t))
+                    {
                         return false;
+                    }
                     var repoAttr = t.GetCustomAttribute<RepositoryAttribute>();
-                    if (repoAttr != null && !repoAttr.AutoBind) return false;
-
-                    return true;
+                    return repoAttr == null || repoAttr.AutoBind;
                 })
                 .BindAllInterfaces());
 

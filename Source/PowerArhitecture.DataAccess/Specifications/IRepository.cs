@@ -25,8 +25,6 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task SaveAsync(object model);
 
-        void AddListener(Action action, SessionListenerType listenerType);
-
         IQueryable<T> Query<T>() where T : IEntity;
 
         /// <summary>
@@ -64,8 +62,6 @@ namespace PowerArhitecture.DataAccess.Specifications
         void Delete(TId id);
 
         Task DeleteAsync(TId id);
-
-        void AddListener(Action<IRepository<TModel, TId>> action, SessionListenerType listenerType);
 
         IEnumerable<PropertyInfo> GetMappedProperties();
     }

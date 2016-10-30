@@ -45,6 +45,10 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
@@ -91,7 +95,7 @@
     <Compile Include="Configurations\CodeListConfiguration.cs" />
     <Compile Include="Configurations\CodeListConfigurationKeys.cs" />
     <Compile Include="Configurations\FluentCodeListConfiguration.cs" />
-    <Compile Include="EventListeners\HibernateMappingsBuiltEventListener.cs" />
+    <Compile Include="EventHandlers\HibernateMappingsBuiltEventHandler.cs" />
     <Compile Include="Extensions\IIdentityInstanceExtensions.cs" />
     <Compile Include="MappingSteps\CodeListStep.cs" />
     <Compile Include="NinjectRegistration.cs" />

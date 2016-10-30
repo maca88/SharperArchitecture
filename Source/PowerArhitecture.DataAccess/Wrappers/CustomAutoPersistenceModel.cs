@@ -7,23 +7,24 @@ using FluentNHibernate.Automapping;
 using FluentNHibernate.MappingModel;
 using NHibernate.Cfg;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.DataAccess.Wrappers
 {
     public class CustomAutoPersistenceModel: AutoPersistenceModel
     {
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventPublisher _eventPublisher;
 
-        public CustomAutoPersistenceModel(IEventAggregator eventAggregator, IAutomappingConfiguration cfg) : base(cfg)
+        public CustomAutoPersistenceModel(IEventPublisher eventPublisher, IAutomappingConfiguration cfg) : base(cfg)
         {
-            _eventAggregator = eventAggregator;
+            _eventPublisher = eventPublisher;
         }
 
         public override IEnumerable<HibernateMapping> BuildMappings()
         {
             var message = base.BuildMappings();
-            _eventAggregator.SendMessage(new HibernateMappingsBuiltEvent(message));
+            _eventPublisher.Publish(new HibernateMappingsBuiltEvent(message));
             return message;
         }
     }

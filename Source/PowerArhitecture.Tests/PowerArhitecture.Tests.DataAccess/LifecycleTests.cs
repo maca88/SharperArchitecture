@@ -10,6 +10,7 @@ using System.Web;
 using NHibernate;
 using NHibernate.Transform;
 using Ninject;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
@@ -46,6 +47,38 @@ namespace PowerArhitecture.Tests.DataAccess
                 Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
                 Assert.AreEqual(unitOfWork.Session, session);
             }
+        }
+
+        [Test]
+        public void SessionWithinUnitOfWorkAsyncFlow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                {
+                    await Task.Delay(100);
+
+                    var repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
+                    var repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
+                    var session = unitOfWork.ResolutionRoot.Get<ISession>();
+
+                    Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
+                    Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
+                    Assert.AreEqual(unitOfWork.Session, session);
+
+                    var id = Thread.CurrentThread.ManagedThreadId;
+                    await Task.Delay(100).ConfigureAwait(false);
+                    Assert.AreNotEqual(id, Thread.CurrentThread.ManagedThreadId);
+
+                    repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
+                    repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
+                    session = unitOfWork.ResolutionRoot.Get<ISession>();
+
+                    Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
+                    Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
+                    Assert.AreEqual(unitOfWork.Session, session);
+                }
+            });
         }
 
         [Test]

@@ -27,12 +27,12 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     public class NhSaveOrUpdateEventListener : DefaultSaveOrUpdateEventListener
     {
         private readonly IAuditUserProvider _auditUserProvider;
-        protected readonly IEventAggregator EventAggregator;
+        protected readonly IEventPublisher EventPublisher;
 
-        public NhSaveOrUpdateEventListener(IAuditUserProvider auditUserProvider, IEventAggregator eventAggregator)
+        public NhSaveOrUpdateEventListener(IAuditUserProvider auditUserProvider, IEventPublisher eventPublisher)
         {
             _auditUserProvider = auditUserProvider;
-            EventAggregator = eventAggregator;
+            EventPublisher = eventPublisher;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 {
                     SetCurrentUser(@event.Entity, await GetCurrentUserAsync(@event.Session, userType), reqLastModifiedProp);
                 }
-                await EventAggregator.SendMessageAsync(new EntitySavingEvent(@event));
+                await EventPublisher.PublishAsync(new EntitySavingEvent(@event));
             }
             return await base.EntityIsTransientAsync(@event);
         }
@@ -74,7 +74,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 {
                     SetCurrentUser(@event.Entity, GetCurrentUser(@event.Session, userType), reqLastModifiedProp);
                 }
-                EventAggregator.SendMessage(new EntitySavingEvent(@event));
+                EventPublisher.PublishAsync(new EntitySavingEvent(@event));
             }
             return base.EntityIsTransient(@event);
         }

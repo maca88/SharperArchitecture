@@ -111,7 +111,19 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
+    <Compile Include="CommandDispatcherTests.cs" />
+    <Compile Include="Commands\ModelCommandHandler.cs" />
+    <Compile Include="Commands\VoidCommandHandler.cs" />
+    <Compile Include="Commands\TestCommandHandler.cs" />
     <Compile Include="DatabaseBaseTest.cs" />
+    <Compile Include="EventPublisherTests.cs" />
+    <Compile Include="Events\FaultyEventHandler.cs" />
+    <Compile Include="Events\SequentialAsyncPriorityEventHandler.cs" />
+    <Compile Include="Events\SequentialAsyncEventHandler.cs" />
+    <Compile Include="Events\TestEventHandler.cs" />
+    <Compile Include="Events\ThreeEventsPerHandlerEventHander.cs" />
+    <Compile Include="Events\FourEventsPerHandlerEventHander.cs" />
+    <Compile Include="Events\TwoEventsPerHandlerEventHander.cs" />
     <Compile Include="Internacionalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActionBootstrapperExtension.cs" />
@@ -138,6 +150,7 @@
       <Name>PowerArhitecture.Domain</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

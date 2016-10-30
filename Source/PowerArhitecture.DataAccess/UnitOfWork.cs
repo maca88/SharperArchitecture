@@ -13,9 +13,8 @@ using Ninject.Extensions.Logging;
 using Ninject.Extensions.NamedScope;
 using Ninject.Syntax;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.EventListeners;
-using FlushMode = PowerArhitecture.DataAccess.Enums.FlushMode;
-using LockMode = PowerArhitecture.DataAccess.Enums.LockMode;
 
 namespace PowerArhitecture.DataAccess
 {
@@ -26,11 +25,11 @@ namespace PowerArhitecture.DataAccess
         private readonly ISession _session;
 
         public UnitOfWork(ILogger logger, IRepositoryFactory repositoryFactory, IResolutionRoot resolutionRoot, ISession session, 
-            IEventAggregator eventAggregator, [Optional]IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+            IEventPublisher eventPublisher, [Optional]IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
             _logger = logger;
             session.BeginTransaction(isolationLevel);
-            session.Transaction.RegisterSynchronization(new TransactionEventListener(session.Unwrap(), eventAggregator));
+            session.Transaction.RegisterSynchronization(new TransactionEventListener(session.Unwrap(), eventPublisher));
             _repositoryFactory = repositoryFactory;
             ResolutionRoot = resolutionRoot;
             _session = session;
@@ -149,11 +148,6 @@ namespace PowerArhitecture.DataAccess
         }
 
         public IResolutionRoot ResolutionRoot { get; }
-
-        public void SetFlushMode(FlushMode mode)
-        {
-            _session.FlushMode = (NHibernate.FlushMode) ((int) mode);
-        }
 
         public IUnitOfWorkImplementor GetUnitOfWorkImplementation()
         {

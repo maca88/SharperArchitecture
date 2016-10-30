@@ -37,9 +37,9 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -65,8 +65,8 @@
       <HintPath>..\packages\Ninject.Extensions.NamedScope.3.2.0.0\lib\net45-full\Ninject.Extensions.NamedScope.dll</HintPath>
     </Reference>
     <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="SecondLanguage, Version=1.0.2.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SecondLanguage.1.0.2.1\lib\net35\SecondLanguage.dll</HintPath>
@@ -89,13 +89,25 @@
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
+    <Compile Include="Commands\BaseCommandHandler.cs" />
+    <Compile Include="Commands\CommandDispatcher.cs" />
+    <Compile Include="Commands\ModelCommand.cs" />
     <Compile Include="Configuration\AppConfiguration.cs" />
     <Compile Include="Configuration\CommonConfiguration.cs" />
     <Compile Include="Configuration\CommonConfigurationKeys.cs" />
     <Compile Include="Configuration\NinjectConfiguration.cs" />
+    <Compile Include="Ninject\ContravariantBindingResolver.cs" />
     <Compile Include="Cryptographics\AESCryptography.cs" />
     <Compile Include="Cryptographics\Sha1Cryptography.cs" />
     <Compile Include="Enums\PatternOptions.cs" />
+    <Compile Include="Events\BaseEvent.cs" />
+    <Compile Include="Events\BaseEventHandler.cs" />
+    <Compile Include="Events\BaseEventsHandler.cs" />
+    <Compile Include="Specifications\ICommand.cs" />
+    <Compile Include="Specifications\ICommandDispatcher.cs" />
+    <Compile Include="Specifications\ICommandHandler.cs" />
+    <Compile Include="Specifications\IEvent.cs" />
+    <Compile Include="Events\EventPublisher.cs" />
     <Compile Include="Exceptions\PowerArhitectureException.cs" />
     <Compile Include="Expressions\ExpressionInfo.cs" />
     <Compile Include="Expressions\SubExpressionInfo.cs" />
@@ -114,9 +126,6 @@
     <Compile Include="JsonNet\ContractResolvers.cs" />
     <Compile Include="Internationalization\I18N.cs" />
     <Compile Include="Localization\L10N.cs" />
-    <Compile Include="Events\EventAggregator.cs" />
-    <Compile Include="Events\BaseEvent.cs" />
-    <Compile Include="Events\EventAggregatorExtensions.cs" />
     <Compile Include="Events\UnhandledExceptionEvent.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
@@ -127,25 +136,20 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="Providers\EventAggregatorProvider.cs" />
     <Compile Include="Publishers\UnhandledExceptionPublisher.cs" />
     <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Security\PasswordHasher.cs" />
     <Compile Include="Specifications\ICommonConfiguration.cs" />
+    <Compile Include="Specifications\IEventPublisher.cs" />
     <Compile Include="Specifications\IMultipleContractResolver.cs" />
     <Compile Include="Specifications\ICryptography.cs" />
+    <Compile Include="Specifications\IEventHandler.cs" />
     <Compile Include="Specifications\ITask.cs" />
     <Compile Include="Writers\StringWriterWithEncoding.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Header.ttinclude" />
-    <None Include="Imports.ttinclude" />
     <None Include="packages.config" />
-    <None Include="Settings.ttinclude" />
-    <None Include="Utils.ttinclude" />
-    <None Include="VsHelperInit.ttinclude" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

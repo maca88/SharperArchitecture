@@ -14,8 +14,8 @@ namespace PowerArhitecture.Tests.Notifications.Repositories
     public class NotificationWithEntityRecipientRepository
         : NotificationRepository<User, NotificationWithEntityRecipient, NotificationRecipientWithEntityRecipient>
     {
-        public NotificationWithEntityRecipientRepository(ISession session, ILogger logger, ISessionEventProvider sessionEventProvider) 
-            : base(session, logger, sessionEventProvider)
+        public NotificationWithEntityRecipientRepository(ISession session, ILogger logger) 
+            : base(session, logger)
         {
         }
     }

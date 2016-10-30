@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Attributes;
@@ -25,14 +26,16 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListenerType(typeof(IAutoFlushEventListener), Order = int.MinValue)]
     [NhEventListenerType(typeof(ISaveOrUpdateEventListener), Order = int.MinValue)]
     [NhEventListenerType(typeof(IDeleteEventListener), Order = int.MinValue)]
-    public class ValidatePreInsertUpdateDeleteEventListener :
-        //Reset cache
-        IListener<SessionFlushingEvent>,
-        IListener<EntityDeletingEvent>,
-        IListener<EntitySavingOrUpdatingEvent>,
-
+    public class ValidatePreInsertUpdateDeleteEventHandler : BaseEventsHandler
+        <
+            //Reset cache
+            SessionFlushingEvent,
+            EntityDeletingEvent,
+            EntitySavingOrUpdatingEvent,
+            //Validation events
+            EntitySavingEvent
+        >,
         //Validation events
-        IListener<EntitySavingEvent>,
         IPreCollectionUpdateEventListener,
         IPreUpdateEventListener,
         IPreDeleteEventListener
@@ -41,7 +44,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         private readonly IResolutionRoot _resolutionRoot;
         private readonly HashSet<IAutoValidated> _validatedEntities = new HashSet<IAutoValidated>(); 
 
-        public ValidatePreInsertUpdateDeleteEventListener(ILogger logger, IResolutionRoot resolutionRoot)
+        public ValidatePreInsertUpdateDeleteEventHandler(ILogger logger, IResolutionRoot resolutionRoot)
         {
             _logger = logger;
             _resolutionRoot = resolutionRoot;
@@ -188,13 +191,13 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         }
 
         //Validation for inserting has to be before the Id is set by NHibernate
-        public void Handle(EntitySavingEvent message)
+        public override void Handle(EntitySavingEvent message)
         {
             var @event = message.Message;
             Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 
-        public Task HandleAsync(EntitySavingEvent message)
+        public override Task HandleAsync(EntitySavingEvent message, CancellationToken cancellationToken)
         {
             var @event = message.Message;
             return ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
@@ -243,34 +246,34 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         }
 
 
-        public void Handle(SessionFlushingEvent message)
+        public override void Handle(SessionFlushingEvent message)
         {
             _validatedEntities.Clear();
         }
 
-        public Task HandleAsync(SessionFlushingEvent message)
+        public override Task HandleAsync(SessionFlushingEvent message, CancellationToken cancellationToken)
         {
             _validatedEntities.Clear();
             return Task.CompletedTask;
         }
 
-        public void Handle(EntityDeletingEvent message)
+        public override void Handle(EntityDeletingEvent message)
         {
             _validatedEntities.Clear();
         }
 
-        public Task HandleAsync(EntityDeletingEvent message)
+        public override Task HandleAsync(EntityDeletingEvent message, CancellationToken cancellationToken)
         {
             _validatedEntities.Clear();
             return TaskHelper.CompletedTask;
         }
 
-        public void Handle(EntitySavingOrUpdatingEvent message)
+        public override void Handle(EntitySavingOrUpdatingEvent message)
         {
             _validatedEntities.Clear();
         }
 
-        public Task HandleAsync(EntitySavingOrUpdatingEvent message)
+        public override Task HandleAsync(EntitySavingOrUpdatingEvent message, CancellationToken cancellationToken)
         {
             _validatedEntities.Clear();
             return TaskHelper.CompletedTask;

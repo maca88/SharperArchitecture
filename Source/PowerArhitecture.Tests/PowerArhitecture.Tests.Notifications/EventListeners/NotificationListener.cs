@@ -8,7 +8,7 @@ using PowerArhitecture.Notifications.Events;
 
 namespace PowerArhitecture.Tests.Notifications.EventListeners
 {
-    public class NotificationListener : BaseListener<NewNotificationEvent>
+    public class NotificationHandler : BaseEventHandler<NewNotificationEvent>
     {
         public override void Handle(NewNotificationEvent message)
         {

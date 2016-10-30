@@ -1,13 +1,19 @@
 ﻿
+using PowerArhitecture.Common.Specifications;
+
 namespace PowerArhitecture.Common.Events
 {
-    public class BaseEvent<TModel>
+    public abstract class BaseEvent<TModel> : IEvent
     {
-        public BaseEvent(TModel message)
+        protected BaseEvent(TModel message)
         {
             Message = message;
         }
 
         public TModel Message { get; private set; }
+    }
+
+    public abstract class BaseEvent : IEvent
+    {
     }
 }

@@ -2,20 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
+using MediatR;
 using PowerArhitecture.Common.Cryptographics;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.JsonNet;
-using PowerArhitecture.Common.Providers;
 using PowerArhitecture.Common.Publishers;
 using PowerArhitecture.Common.Specifications;
-using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
 using Ninject.Extensions.Conventions;
 using Ninject;
 using Ninject.Modules;
 using Ninject.Parameters;
+using Ninject.Planning.Bindings;
+using PowerArhitecture.Common.Attributes;
+using PowerArhitecture.Common.Commands;
 using PowerArhitecture.Common.Configuration;
+using PowerArhitecture.Common.Enums;
 
 namespace PowerArhitecture.Common
 {
@@ -32,13 +36,8 @@ namespace PowerArhitecture.Common
 
         public override void Load()
         {
-            Bind<IEventAggregator>()
-                .ToProvider<EventAggregatorProvider>().InSingletonScope()
-                .OnActivation(EventAggregatorProvider.OnActivation);
-
             Bind<UnhandledExceptionPublisher>().ToSelf().InSingletonScope();
             Bind<ICryptography>().To<Sha1Cryptography>().InSingletonScope();
-            Bind<IPasswordHasher>().To<PasswordHasher>().InSingletonScope();
 
             //Support for Lazy injections
             Bind(typeof(Lazy<>)).ToMethod(ctx =>
@@ -57,16 +56,6 @@ namespace PowerArhitecture.Common
                 .WhichAreNotGeneric()
                 .BindDefaultInterfaces());
 
-            //Convenction for listeners
-            Kernel.Bind(o => o
-                .From(AppConfiguration.GetDomainAssemblies()
-                    .Where(a => a.GetTypes().Any(t => t.IsAssignableToGenericType(typeof(IListener<>)))))
-                .IncludingNonePublicTypes()
-                .Select(t => !t.IsInterface && !t.IsAbstract && t.IsAssignableToGenericType(typeof(IListener<>)) && 
-                    t != typeof(DelegateListener<>) /*&& t != typeof(DelegateListenerAsync<>)*/ && !Kernel.GetBindings(t).Any())
-                .BindSelection((type, types) => new List<Type> {type}.Union(types))
-                .Configure(syntax => syntax.InSingletonScope()));
-
             //Bind(typeof(Lazy<IUserCache>)).ToMethod(ctx => new Lazy<IUserCache>(() => Kernel.Get<IUserCache>())); //DONE
 
             //Json.Net
@@ -83,17 +72,67 @@ namespace PowerArhitecture.Common
             Bind<JsonSerializer>().ToConstant(jsonNetSerializer);
 
             Bind<ICommonConfiguration>().To<CommonConfiguration>().InSingletonScope();
+
+            // MediatR
+            Kernel.Bind(o => o
+                .From(AppConfiguration.GetDomainAssemblies()
+                    .Where(a => a.GetTypes()
+                        .Any(t =>
+                            t.IsAssignableToGenericType(typeof(IRequestHandler<,>)) ||
+                            t.IsAssignableToGenericType(typeof(IAsyncRequestHandler<,>)) ||
+                            t.IsAssignableToGenericType(typeof(ICancellableAsyncRequestHandler<,>)) ||
+                            t.IsAssignableToGenericType(typeof(INotificationHandler<>)) ||
+                            t.IsAssignableToGenericType(typeof(IAsyncNotificationHandler<>)) ||
+                            t.IsAssignableToGenericType(typeof(ICancellableAsyncNotificationHandler<>))
+                        )))
+                .IncludingNonePublicTypes()
+                .Select(t => 
+                    !t.IsInterface &&
+                    !t.IsAbstract &&
+                    (
+                        t.IsAssignableToGenericType(typeof(IRequestHandler<,>)) ||
+                        t.IsAssignableToGenericType(typeof(IAsyncRequestHandler<,>)) ||
+                        t.IsAssignableToGenericType(typeof(ICancellableAsyncRequestHandler<,>)) ||
+                        t.IsAssignableToGenericType(typeof(INotificationHandler<>)) ||
+                        t.IsAssignableToGenericType(typeof(IAsyncNotificationHandler<>)) ||
+                        t.IsAssignableToGenericType(typeof(ICancellableAsyncNotificationHandler<>))
+                    ) && 
+                    !Kernel.GetBindings(t).Any())
+                .BindSelection((type, types) => new List<Type> { type }.Union(types))
+                .Configure((syntax, type) =>
+                {
+                    if (type.IsAssignableToGenericType(typeof(IRequestHandler<,>)) ||
+                        type.IsAssignableToGenericType(typeof(IAsyncRequestHandler<,>)) ||
+                        type.IsAssignableToGenericType(typeof(ICancellableAsyncRequestHandler<,>)))
+                    {
+                        syntax.InTransientScope();
+                    }
+                    else
+                    {
+                        syntax.InSingletonScope();
+                    }
+                }));
+
+            Bind<SingleInstanceFactory>().ToMethod(ctx => t => ctx.Kernel.Get(t));
+            Bind<MultiInstanceFactory>().ToMethod(ctx => t => ctx.Kernel.GetAll(t).OrderByDescending(o =>
+            {
+                var attr = o.GetType().GetCustomAttribute<PriorityAttribute>();
+                return attr?.Priority ?? 0;
+            }));
+            Bind<IMediator>().To<Mediator>();
+            Bind<IEventPublisher>().To<EventPublisher>().InSingletonScope();
+            Bind<ICommandDispatcher>().To<CommandDispatcher>();
         }
 
         protected Lazy<T> GetLazyProvider<T>(IKernel kernel)
         {
             return new Lazy<T>(() =>
             {
-                var type = typeof (T);
-                if (typeof (IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
+                var type = typeof(T);
+                if (typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
                 {
                     type = type.GetGenericArguments()[0];
-                    return (T)NinjectGetAllMethodInfo.MakeGenericMethod(type).Invoke(null, new object[] { kernel, new IParameter[0] });
+                    return (T) NinjectGetAllMethodInfo.MakeGenericMethod(type).Invoke(null, new object[] {kernel, new IParameter[0]});
                 }
                 return kernel.Get<T>();
             });

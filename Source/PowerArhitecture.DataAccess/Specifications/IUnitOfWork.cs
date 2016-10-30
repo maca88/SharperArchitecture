@@ -46,8 +46,6 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         void Rollback();
 
-        void SetFlushMode(FlushMode mode);
-
         IUnitOfWorkImplementor GetUnitOfWorkImplementation();
 
     }

@@ -20,19 +20,19 @@ namespace PowerArhitecture.Tests.Common
 {
     public abstract class DatabaseBaseTest : BaseTest
     {
-        protected static IFluentDatabaseConfiguration DatabaseConfiguration;
-        protected static AutomappingConfiguration AutomappingConfiguration;
-        protected static List<Assembly> EntityAssemblies = new List<Assembly>
+        protected IFluentDatabaseConfiguration DatabaseConfiguration;
+        protected AutomappingConfiguration AutomappingConfiguration;
+        protected List<Assembly> EntityAssemblies = new List<Assembly>
         {
             Assembly.GetExecutingAssembly(),
             Assembly.GetAssembly(typeof (Entity))
         };
-        protected static List<Assembly> ConventionAssemblies = new List<Assembly>
+        protected List<Assembly> ConventionAssemblies = new List<Assembly>
         {
             Assembly.GetAssembly(typeof (Database)),
-            Assembly.GetAssembly(typeof (Entity)),
+            Assembly.GetAssembly(typeof (Entity))
         };
-        protected static List<ISessionFactory> SessionFactories = new List<ISessionFactory>();
+        protected List<ISessionFactory> SessionFactories = new List<ISessionFactory>();
 
         protected virtual IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
         {
@@ -102,6 +102,7 @@ namespace PowerArhitecture.Tests.Common
             {
                 Database.DropTables(sessionFactory);
             }
+            base.Cleanup();
         }
     }
 }
