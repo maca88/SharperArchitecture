@@ -10,6 +10,8 @@ namespace PowerArhitecture.DataAccess.Specifications
     {
         IQueryable<TModel> Query<TModel>() where TModel : class, IEntity<long>, new();
 
+        IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new();
+
         IRepository<TModel, long> GetRepository<TModel>() where TModel : class, IEntity<long>, new();
 
         IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new();
@@ -18,7 +20,15 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         void Save<TModel>(TModel model) where TModel : IEntity;
 
+        Task SaveAsync<TModel>(TModel model) where TModel : IEntity;
+
         void Save(params object[] models);
+
+        Task SaveAsync(params object[] models);
+
+        void Delete<TModel>(TModel model) where TModel : IEntity;
+
+        Task DeleteAsync<TModel>(TModel model) where TModel : IEntity;
 
         TModel Merge<TModel>(TModel model) where TModel : IEntity;
 
@@ -31,6 +41,8 @@ namespace PowerArhitecture.DataAccess.Specifications
         Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>;
 
         void Refresh<TModel>(TModel model) where TModel : IEntity;
+
+        Task RefreshAsync<TModel>(TModel model) where TModel : IEntity;
 
         IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
 

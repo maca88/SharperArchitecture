@@ -8,6 +8,6 @@ namespace PowerArhitecture.CodeList.Specifications
 {
     public interface IFluentCodeListConfiguration
     {
-        IFluentCodeListConfiguration EnableCache(bool value = true);
+        //IFluentCodeListConfiguration EnableCache(bool value = true);
     }
 }

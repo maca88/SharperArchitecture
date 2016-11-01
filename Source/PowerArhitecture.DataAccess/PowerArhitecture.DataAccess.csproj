@@ -161,6 +161,7 @@
     <Compile Include="Extensions\NhConfigurationExtensions.cs" />
     <Compile Include="Extensions\NinjectModuleExtensions.cs" />
     <Compile Include="Extensions\SessionExtensions.cs" />
+    <Compile Include="Extensions\ValidationContextExtensions.cs" />
     <Compile Include="Factories\RepositoryFactory.cs" />
     <Compile Include="Attributes\NhEventListenerAttribute.cs" />
     <Compile Include="Factories\UnitOfWorkFactory.cs" />

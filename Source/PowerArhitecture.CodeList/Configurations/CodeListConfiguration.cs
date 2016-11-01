@@ -19,7 +19,7 @@ namespace PowerArhitecture.CodeList.Configurations
 
         private void FillFromConfig()
         {
-            EnableCache = AppConfiguration.GetSetting<bool>(CodeListConfigurationKeys.EnableCache);
+            //EnableCache = AppConfiguration.GetSetting<bool>(CodeListConfigurationKeys.EnableCache);
         }
     }
 }

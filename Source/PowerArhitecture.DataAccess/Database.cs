@@ -106,9 +106,9 @@ namespace PowerArhitecture.DataAccess
                                 Directory.CreateDirectory(hbmMappingsPath);
                             autoPestModel.WriteMappingsTo(hbmMappingsPath);
                         }
-                        
+
                     });
-                
+
                 var sessionFactory = fluentConfig.BuildSessionFactory();
                 RegisterSessionFactory(sessionFactory, cfg, autoPestModel, dbConfiguration, name);
                 return sessionFactory;
@@ -122,7 +122,7 @@ namespace PowerArhitecture.DataAccess
                 }
                 if (e.PotentialReasons.Any())
                 {
-                    Logger.Fatal("PotentialReasons: " +  string.Join(System.Environment.NewLine, e.PotentialReasons));
+                    Logger.Fatal("PotentialReasons: " + string.Join(System.Environment.NewLine, e.PotentialReasons));
                 }
                 Logger.Fatal(e.InnerException);
                 throw e.InnerException;
@@ -205,7 +205,12 @@ namespace PowerArhitecture.DataAccess
                     }
                     catch (MissingMethodException e)
                     {
-                        Logger.WarnFormat("Type '{0}' does not have a parameterless constructor defined. Details: {1}", convType, e);
+                        Logger.WarnFormat("Type '{0}' does not have a parameterless constructor defined. Details: {1}",
+                            convType, e);
+                        throw;
+                    }
+                    catch (TargetInvocationException e)
+                    {
                         throw;
                     }
                 }

@@ -40,6 +40,11 @@ namespace PowerArhitecture.DataAccess
             return _session.Query<TModel>();
         }
 
+        public IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new()
+        {
+            return _session.Query<TModel>();
+        }
+
         public IRepository<TModel, long> GetRepository<TModel>() where TModel : class, IEntity<long>, new()
         {
             return _repositoryFactory.GetRepository<TModel, long>(_session);
@@ -60,9 +65,29 @@ namespace PowerArhitecture.DataAccess
             _session.SaveOrUpdate(model);
         }
 
+        public Task SaveAsync<TModel>(TModel model) where TModel : IEntity
+        {
+            return _session.SaveOrUpdateAsync(model);
+        }
+
         public void Save(params object[] models)
         {
             SaveInternal(models);
+        }
+
+        public Task SaveAsync(params object[] models)
+        {
+            return SaveInternalAsync(models);
+        }
+
+        public void Delete<TModel>(TModel model) where TModel : IEntity
+        {
+            _session.Delete(model);
+        }
+
+        public Task DeleteAsync<TModel>(TModel model) where TModel : IEntity
+        {
+            return _session.DeleteAsync(model);
         }
 
         public TModel Merge<TModel>(TModel model) where TModel : IEntity
@@ -98,6 +123,11 @@ namespace PowerArhitecture.DataAccess
         public void Refresh<TModel>(TModel model) where TModel : IEntity
         {
             _session.Refresh(model);
+        }
+
+        public Task RefreshAsync<TModel>(TModel model) where TModel : IEntity
+        {
+            return _session.RefreshAsync(model);
         }
 
         public IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition)
@@ -168,9 +198,14 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
-        public ISession Session
+        private async Task SaveInternalAsync<TModel>(IEnumerable<TModel> models) where TModel : new()
         {
-            get { return _session; }
+            foreach (var model in models)
+            {
+                await _session.SaveOrUpdateAsync(model);
+            }
         }
+
+        public ISession Session => _session;
     }
 }

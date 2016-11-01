@@ -10,20 +10,37 @@ using FluentNHibernate.MappingModel.Identity;
 using PowerArhitecture.CodeList.Attributes;
 using PowerArhitecture.CodeList.Specifications;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.CodeList.EventHandlers
 {
     public class HibernateMappingsBuiltEventHandler : BaseEventHandler<HibernateMappingsBuiltEvent>
     {
-        public void Apply(ClassMappingBase classMapBase)
-        {
-            Type type = classMapBase.Type;
+        // TODO: configurable...COALESCE works everywhere but is slower than ISNULL which is available only for sql server
+        private static readonly string _localizeFormula =
+            "(SELECT COALESCE((SELECT curr.{0} FROM {1} curr WHERE curr.CodeListCode = Code AND curr.LanguageCode = :{3}.{4})," +
+            "(SELECT def.{0} FROM {1} def WHERE def.CodeListCode = Code AND def.LanguageCode = :{3}.{2})))";
 
+        /*
+"(SELECT COALESCE(curr.{0}, def.{0}) " +
+"FROM {1} curr " +
+"LEFT JOIN (" +
+"SELECT def.Id, def.{0} " +
+"FROM {1} def " +
+"WHERE def.CodeListCode = Code and def.LanguageCode = '{2}'" +
+") def ON " +
+"curr.Id <> def.Id " +
+"WHERE curr.CodeListCode = Code and curr.LanguageCode = :{3}.{4})";
+*/
+
+        public void Apply(ClassMappingBase classMapBase, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
+        {
+            var type = classMapBase.Type;
 
             foreach (var reference in classMapBase.References.Where(o => CanManipulateIdentifier(o.Member.PropertyType)))
             {
-                var refColumn = Apply(reference);
+                var refColumn = Apply(reference, lazyTypeMap);
                 var synteticColumn = classMapBase.Properties.SelectMany(o => o.Columns).FirstOrDefault(o => o.Name == refColumn.Name);
                 if (synteticColumn != null)
                 {
@@ -34,41 +51,42 @@ namespace PowerArhitecture.CodeList.EventHandlers
 
             foreach (var collection in classMapBase.Collections.Where(o => CanManipulateIdentifier(o.ContainingEntityType)))
             {
-                Apply(collection);
+                Apply(collection, lazyTypeMap);
             }
 
             foreach (var subClass in classMapBase.Subclasses)
             {
-                Apply(subClass);
+                Apply(subClass, lazyTypeMap);
             }
 
             foreach (var component in classMapBase.Components)
             {
-                Apply(component);
+                Apply(component, lazyTypeMap);
             }
 
-            if (!typeof(ICodeList).IsAssignableFrom(type)) return;
+            if (!typeof(ICodeList).IsAssignableFrom(type) && !typeof(ILocalizableCodeListLanguage).IsAssignableFrom(type))
+            {
+                return;
+            }
 
-            var codeListAttr = type.GetCustomAttribute<CodeListAttribute>(false) ?? new CodeListAttribute();
-            
+            var codeListAttr = type.GetCustomAttribute<ConfigurationAttribute>(false) ?? new ConfigurationAttribute();
             
             var classMap = classMapBase as ClassMapping;
-            if (classMap == null) return;
+            if (classMap == null)
+            {
+                return;
+            }
 
             //Add Table prefix
-            var tableName = classMap.TableName.Trim(new [] { '`' });
-            if (tableName.EndsWith("CodeList"))
-            {
-                tableName = tableName.Substring(0, tableName.IndexOf("CodeList", StringComparison.InvariantCulture));
-                tableName = "CodeList" + tableName;
-            }
-            else if (!tableName.StartsWith("CodeList"))
-            {
-                tableName = "CodeList" + tableName;
-            }
-            if (codeListAttr.AddTablePrefix)
+            var tableName = GetTableName(classMap, codeListAttr);
+            if (!string.IsNullOrEmpty(tableName))
             {
                 classMap.Set(o => o.TableName, Layer.UserSupplied, tableName);
+            }
+
+            if (typeof(ILocalizableCodeListLanguage).IsAssignableFrom(type))
+            {
+                return; // for localization table we set only the table name
             }
 
             //Set View
@@ -90,17 +108,43 @@ namespace PowerArhitecture.CodeList.EventHandlers
                 codeProp.Set(o => o.Formula, Layer.UserSupplied, "(Code)");
             }
 
-            if (codeListAttr.NameLength <= 0) return;
+            foreach (var propMap in classMap.Properties)
+            {
+                var attr = propMap.Member.MemberInfo.GetCustomAttribute<FilterCurrentLanguageAttribute>(false);
+                if (attr != null)
+                {
+                    var names =
+                        classMap.Collections.FirstOrDefault(
+                            o => typeof(ILocalizableCodeListLanguage).IsAssignableFrom(o.ChildType));
+                    if (names == null)
+                    {
+                        throw new PowerArhitectureException("FilterCurrentLanguage must be applied on a type that implements ICodeListLoc<,>");
+                    }
+                    if (!lazyTypeMap.Value.ContainsKey(names.ChildType))
+                    {
+                        throw new PowerArhitectureException($"Mapping for codelist {names.ChildType} was not found, failed to apply the formula for the FilterCurrentLanguage attribute");
+                    }
+                    var childTableName = GetTableName(lazyTypeMap.Value[names.ChildType]);
+                    propMap.Set(o => o.Formula, Layer.UserSupplied,
+                        string.Format(_localizeFormula, attr.ColumnName ?? propMap.Name, childTableName,
+                            attr.FallbackLanguageParameterName, attr.FilterName, attr.CurrentLanguageParameterName));
+                }
+            }
+
+            if (codeListAttr.NameLength <= 0)
+            {
+                return;
+            }
             var nameProp = classMap.Properties.First(o => o.Name == "Name");
             var nameCol = nameProp.Columns.First();
             nameCol.Set(o => o.Length, Layer.UserSupplied, codeListAttr.NameLength);
         }
 
-        public void Apply(IComponentMapping componentMap)
+        public void Apply(IComponentMapping componentMap, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
         {
             foreach (var reference in componentMap.References.Where(o => CanManipulateIdentifier(o.Member.PropertyType)))
             {
-                var refColumn = Apply(reference);
+                var refColumn = Apply(reference, lazyTypeMap);
                 var synteticColumn = componentMap.Properties.SelectMany(o => o.Columns).FirstOrDefault(o => o.Name == refColumn.Name);
                 if (synteticColumn == null) continue;
                 synteticColumn.Set(o => o.Length, Layer.UserSupplied, refColumn.Length);
@@ -109,30 +153,30 @@ namespace PowerArhitecture.CodeList.EventHandlers
 
             foreach (var collection in componentMap.Collections.Where(o => CanManipulateIdentifier(o.ContainingEntityType)))
             {
-                Apply(collection);
+                Apply(collection, lazyTypeMap);
             }
 
             foreach (var component in componentMap.Components)
             {
-                Apply(component);
+                Apply(component, lazyTypeMap);
             }
         }
 
-        public ColumnMapping Apply(CollectionMapping colectionMap)
+        public ColumnMapping Apply(CollectionMapping colectionMap, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
         {
             var keyName = GetKeyName(null, colectionMap.ContainingEntityType);
-            var codeListAttr = colectionMap.ContainingEntityType.GetCustomAttribute<CodeListAttribute>(false);
-            var length = (codeListAttr != null) ? codeListAttr.CodeLength : 20;
+            var codeListAttr = colectionMap.ContainingEntityType.GetCustomAttribute<ConfigurationAttribute>(false);
+            var length = codeListAttr?.CodeLength ?? 20;
             var col = colectionMap.Key.Columns.First();
             col.Set(o => o.Name, Layer.UserSupplied, keyName);
             col.Set(o => o.Length, Layer.UserSupplied, length);
             return col;
         }
 
-        public ColumnMapping Apply(ManyToOneMapping manyToOneMap)
+        public ColumnMapping Apply(ManyToOneMapping manyToOneMap, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
         {
-            var codeListAttr = manyToOneMap.Member.PropertyType.GetCustomAttribute<CodeListAttribute>(false);
-            var length = (codeListAttr != null) ? codeListAttr.CodeLength : 20;
+            var codeListAttr = manyToOneMap.Member.PropertyType.GetCustomAttribute<ConfigurationAttribute>(false);
+            var length = codeListAttr?.CodeLength ?? 20;
             var keyName = GetKeyName(manyToOneMap.Member, manyToOneMap.Class.GetUnderlyingSystemType());
             var col = manyToOneMap.Columns.First();
             col.Set(o => o.Name, Layer.UserSupplied, keyName);
@@ -147,9 +191,13 @@ namespace PowerArhitecture.CodeList.EventHandlers
 
         public override void Handle(HibernateMappingsBuiltEvent e)
         {
+            var lazyTypeMap = new Lazy<Dictionary<Type, ClassMapping>>(() =>
+            {
+                return e.Mappings.SelectMany(o => o.Classes).ToDictionary(o => o.Type);
+            });
             foreach (var classMap in e.Mappings.SelectMany(o => o.Classes))
             {
-                Apply(classMap);
+                Apply(classMap, lazyTypeMap);
             }
         }
 
@@ -157,8 +205,28 @@ namespace PowerArhitecture.CodeList.EventHandlers
         private bool CanManipulateIdentifier(Type type)
         {
             if (!typeof (ICodeList).IsAssignableFrom(type)) return false;
-            var attr = type.GetCustomAttribute<CodeListAttribute>(false);
+            var attr = type.GetCustomAttribute<ConfigurationAttribute>(false);
             return attr == null || attr.ManipulateIdentifier;
+        }
+
+        private string GetTableName(ClassMapping classMap, ConfigurationAttribute attr = null)
+        {
+            attr = attr ?? classMap.Type.GetCustomAttribute<ConfigurationAttribute>(false) ?? new ConfigurationAttribute();
+            if (!attr.AddTablePrefix)
+            {
+                return null;
+            }
+            var tableName = classMap.TableName.Trim('`');
+            if (tableName.EndsWith("CodeList"))
+            {
+                tableName = tableName.Substring(0, tableName.IndexOf("CodeList", StringComparison.InvariantCulture));
+                tableName = "CodeList" + tableName;
+            }
+            else if (!tableName.StartsWith("CodeList"))
+            {
+                tableName = "CodeList" + tableName;
+            }
+            return tableName;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace PowerArhitecture.Validation
                 .BindSelection((type, types) => new List<Type> { type }.Union(types))
                 .Configure(syntax => syntax.InTransientScope()));
 
-            ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory = strings => new PARulesetValidatorSelector(strings); 
+            ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory = strings => new CustomRulesetValidatorSelector(strings); 
         }
     }
 }

@@ -10,9 +10,9 @@ namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract class CodeListLocWithUser<TUser, TCodeList, TCodeListNames> : VersionedEntityWithUser<TUser, string>, ICodeListLoc<TCodeList, TCodeListNames>
-        where TCodeListNames : class, ICodeListLocalization<TCodeList, TCodeListNames>
-        where TCodeList : CodeListLocWithUser<TUser, TCodeList, TCodeListNames>
+    public abstract class LocalizableCodeListWithUser<TUser, TCodeList, TCodeListNames> : VersionedEntityWithUser<TUser, string>, ILocalizableCodeList<TCodeList, TCodeListNames>
+        where TCodeListNames : class, ILocalizableCodeListLanguage<TCodeList, TCodeListNames>
+        where TCodeList : LocalizableCodeListWithUser<TUser, TCodeList, TCodeListNames>
     {
         private ISet<TCodeListNames> _names;
 
@@ -22,10 +22,10 @@ namespace PowerArhitecture.CodeList
             protected set { _names = value; }
         }
 
-        [Ignore]
+        [Formula("Id")]
         public virtual string Code { get { return Id; } set { Id = value; } }
 
-        public virtual bool Active { get; set; }
+        public virtual bool Active { get; set; } = true;
 
         public virtual void AddName(TCodeListNames name)
         {

@@ -1,6 +1,6 @@
 ﻿namespace PowerArhitecture.CodeList.Specifications
 {
-    public interface ICodeListNoLoc : ICodeList
+    public interface INonLocalizableCodeList : ICodeList
     {
         string Name { get; set; }
     }

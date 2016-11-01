@@ -73,7 +73,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 {
                     SetCurrentUser(@event.Entity, GetCurrentUser(@event.Session, userType), reqLastModifiedProp);
                 }
-                EventPublisher.PublishAsync(new EntitySavingEvent(@event));
+                EventPublisher.Publish(new EntitySavingEvent(@event));
             }
             return base.EntityIsTransient(@event);
         }

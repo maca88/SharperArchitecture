@@ -46,6 +46,10 @@
       <HintPath>..\..\packages\FluentNHibernateX.1.2.0-Alpha1\lib\net45\FluentNHibernate.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentValidation.6.4.0-beta6\lib\Net45\FluentValidation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="HibernatingRhinos.Profiler.Appender, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0774796e73ebf640, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NHProf\HibernatingRhinos.Profiler.Appender.dll</HintPath>
@@ -131,13 +135,16 @@
     <Compile Include="Entities\AttrIndexAttribute.cs" />
     <Compile Include="Entities\AttrLazyLoad.cs" />
     <Compile Include="Entities\AttrUniqueAttribute.cs" />
+    <Compile Include="Entities\Country.cs" />
     <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\ValidableEntity.cs" />
     <Compile Include="Entities\Versioning\VersionCar.cs" />
     <Compile Include="Entities\Versioning\VersionCarWithEntityUser.cs" />
     <Compile Include="Entities\Versioning\VersionCarWithStringUser.cs" />
     <Compile Include="Entities\Versioning\VersionWheel.cs" />
     <Compile Include="Entities\Versioning\VersionWheelWithEntityUser.cs" />
     <Compile Include="Entities\Versioning\VersionWheelWithStringUser.cs" />
+    <Compile Include="EntityValidationTests.cs" />
     <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LifecycleTests.cs" />

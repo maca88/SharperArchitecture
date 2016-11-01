@@ -11,14 +11,14 @@ namespace PowerArhitecture.Validation
     /// <summary>
     /// Selects validators that belong to the specified rulesets.
     /// </summary>
-    public class PARulesetValidatorSelector : IValidatorSelector
+    public class CustomRulesetValidatorSelector : IValidatorSelector
     {
         readonly HashSet<string> _rulesetsToExecute;
 
         /// <summary>
         /// Creates a new instance of the RulesetValidatorSelector.
         /// </summary>
-        public PARulesetValidatorSelector(IEnumerable<string> rulesetsToExecute)
+        public CustomRulesetValidatorSelector(IEnumerable<string> rulesetsToExecute)
         {
             _rulesetsToExecute = new HashSet<string>(rulesetsToExecute);
         }

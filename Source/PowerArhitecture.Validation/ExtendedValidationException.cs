@@ -9,11 +9,11 @@ using FluentValidation.Results;
 
 namespace PowerArhitecture.Validation
 {
-    public class PAValidationException : ValidationException
+    public class ExtendedValidationException : ValidationException
     {
         private static readonly FieldInfo MessageField;
 
-        static PAValidationException()
+        static ExtendedValidationException()
         {
             MessageField = typeof (Exception).GetField("_message",
                 BindingFlags.Instance | BindingFlags.NonPublic);
@@ -21,7 +21,7 @@ namespace PowerArhitecture.Validation
                 throw new NullReferenceException("System.Exception does not contains internal field _message");
         }
 
-        public PAValidationException(
+        public ExtendedValidationException(
             IEnumerable<ValidationFailure> errors,
             object entity,
             Type entityType = null,

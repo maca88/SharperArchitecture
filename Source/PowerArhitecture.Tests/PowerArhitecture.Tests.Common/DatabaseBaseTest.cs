@@ -21,7 +21,7 @@ namespace PowerArhitecture.Tests.Common
     public abstract class DatabaseBaseTest : BaseTest
     {
         protected IFluentDatabaseConfiguration DatabaseConfiguration;
-        protected AutomappingConfiguration AutomappingConfiguration;
+        protected AutomappingConfiguration AutomappingConfiguration = new AutomappingConfiguration();
         protected List<Assembly> EntityAssemblies = new List<Assembly>
         {
             Assembly.GetExecutingAssembly(),
@@ -79,7 +79,6 @@ namespace PowerArhitecture.Tests.Common
         {
             Kernel = new MoqMockingKernel();
             NHibernateProfiler.Initialize();
-            AutomappingConfiguration = new AutomappingConfiguration();
             DatabaseConfiguration = GetDatabaseConfiguration();
             Kernel.RegisterDatabaseConfiguration(DatabaseConfiguration.Build());
 
@@ -87,8 +86,15 @@ namespace PowerArhitecture.Tests.Common
 
             if (DatabaseConfiguration != null)
             {
-                SessionFactories.Add(Kernel.Get<ISessionFactory>());
+                var sessionFactory = Kernel.Get<ISessionFactory>();
+                SessionFactories.Add(sessionFactory);
+                FillData(sessionFactory);
             }
+        }
+
+        protected virtual void FillData(ISessionFactory sessionFactory)
+        {
+            
         }
 
         protected override void Cleanup()

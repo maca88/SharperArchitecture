@@ -86,15 +86,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\CodeListAttribute.cs" />
+    <Compile Include="Attributes\ConfigurationAttribute.cs" />
+    <Compile Include="Attributes\FilterCurrentLanguageAttribute.cs" />
     <Compile Include="CodeList.cs" />
-    <Compile Include="CodeListLoc.cs" />
+    <Compile Include="LocalizableCodeList.cs" />
     <Compile Include="CodeListWithUser.cs" />
-    <Compile Include="CodeListLocWithUser.cs" />
-    <Compile Include="CodeListLocalization.cs" />
+    <Compile Include="LocalizableCodeListWithUser.cs" />
+    <Compile Include="LocalizableCodeListLanguage.cs" />
     <Compile Include="Configurations\CodeListConfiguration.cs" />
     <Compile Include="Configurations\CodeListConfigurationKeys.cs" />
     <Compile Include="Configurations\FluentCodeListConfiguration.cs" />
+    <Compile Include="Conventions\FilterCurrentLanguageAttributeConvention.cs" />
     <Compile Include="EventHandlers\HibernateMappingsBuiltEventHandler.cs" />
     <Compile Include="Extensions\IIdentityInstanceExtensions.cs" />
     <Compile Include="MappingSteps\CodeListStep.cs" />
@@ -103,9 +105,9 @@
     <Compile Include="Specifications\ICodeList.cs" />
     <Compile Include="Specifications\ICodeListConfiguration.cs" />
     <Compile Include="Specifications\IFluentCodeListConfiguration.cs" />
-    <Compile Include="Specifications\ICodeListLoc.cs" />
-    <Compile Include="Specifications\ICodeListLocalization.cs" />
-    <Compile Include="Specifications\ICodeListNoLoc.cs" />
+    <Compile Include="Specifications\ILocalizableCodeList.cs" />
+    <Compile Include="Specifications\ILocalizableCodeListLanguage.cs" />
+    <Compile Include="Specifications\INonLocalizableCodeList.cs" />
     <Compile Include="T4FluentNH.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -71,8 +71,8 @@
     <Compile Include="Attributes\RegularExpressionAttribute.cs" />
     <Compile Include="Attributes\ValidationAttribute.cs" />
     <Compile Include="BaseValidationContextFiller.cs" />
-    <Compile Include="PARulesetValidatorSelector.cs" />
-    <Compile Include="PAValidationException.cs" />
+    <Compile Include="CustomRulesetValidatorSelector.cs" />
+    <Compile Include="ExtendedValidationException.cs" />
     <Compile Include="Specifications\IValidatorExtended.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="ValidatorEngine.cs" />
@@ -85,7 +85,6 @@
     <Compile Include="Factories\NinjectValidatorFactory.cs" />
     <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Specifications\IAutoValidated.cs" />
     <Compile Include="Specifications\IValidationContextFiller.cs" />
     <Compile Include="Specifications\IValidatorEngine.cs" />
     <Compile Include="Specifications\IValidatorFactoryExtended.cs" />

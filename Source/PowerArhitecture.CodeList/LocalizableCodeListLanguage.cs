@@ -8,9 +8,9 @@ namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract class CodeListLocalization<TCodeList, TCodeListNames> : Entity, ICodeListLocalization<TCodeList, TCodeListNames>
-        where TCodeList : class, ICodeListLoc<TCodeList, TCodeListNames>
-        where TCodeListNames : class, ICodeListLocalization<TCodeList, TCodeListNames>
+    public abstract class LocalizableCodeListLanguage<TCodeList, TCodeListNames> : Entity, ILocalizableCodeListLanguage<TCodeList, TCodeListNames>
+        where TCodeList : class, ILocalizableCodeList<TCodeList, TCodeListNames>
+        where TCodeListNames : class, ILocalizableCodeListLanguage<TCodeList, TCodeListNames>
     {
         public virtual TCodeList CodeList { get; set; }
 
@@ -18,7 +18,7 @@ namespace PowerArhitecture.CodeList
 
         public virtual string Name { get; set; }
 
-        public object GetCodeList()
+        public virtual object GetCodeList()
         {
             return CodeList;
         }

@@ -2,9 +2,10 @@
 
 namespace PowerArhitecture.CodeList.Attributes
 {
-    public class CodeListAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ConfigurationAttribute : Attribute
     {
-        public CodeListAttribute()
+        public ConfigurationAttribute()
         {
             CodeLength = 20;
             AddTablePrefix = true;
@@ -17,7 +18,7 @@ namespace PowerArhitecture.CodeList.Attributes
 
         public int NameLength { get; set; }
 
-        public bool Cache { get; set; }
+        public bool Cacheable { get; set; }
 
         public bool ManipulateIdentifier { get; set; }
 

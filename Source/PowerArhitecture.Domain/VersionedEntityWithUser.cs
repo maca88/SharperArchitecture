@@ -25,7 +25,7 @@ namespace PowerArhitecture.Domain
         [NotNull]
         public virtual TUser CreatedBy { get; protected set; }
 
-        [NotNull]
+        //[NotNull]
         public virtual TUser LastModifiedBy { get; protected set; }
 
     }

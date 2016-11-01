@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerArhitecture.CodeList.Specifications
+namespace PowerArhitecture.Tests.CodeList.Entities
 {
-    public interface ICodeListConfiguration
+    public class SimpleCodeList : PowerArhitecture.CodeList.CodeList
     {
-        //bool EnableCache { get; }
     }
 }

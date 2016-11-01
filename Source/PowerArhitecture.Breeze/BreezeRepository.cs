@@ -101,7 +101,7 @@ namespace PowerArhitecture.Breeze
 
         protected override bool HandleSaveException(Exception e, SaveWorkState saveWorkState)
         {
-            var ve = e as PAValidationException;
+            var ve = e as ExtendedValidationException;
             if (ve == null)
                 return false;
             var entityErrors = new List<EntityError>();

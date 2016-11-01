@@ -29,15 +29,15 @@ namespace PowerArhitecture.DataAccess.Conventions
         public void Apply(IManyToOneInstance instance)
         {
             if (
-                !instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>)) ||
-                !new List<string>{ "CreatedBy", "LastModifiedBy" }.Contains(instance.Property.Name)
+                !new List<string> { "CreatedBy", "LastModifiedBy" }.Contains(instance.Property.Name) ||
+                !instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>))
             )
             {
                 return;
             }
             instance.Cascade.None(); //CreatedBy LastModifiedBy
 
-            if(_configuration.RequiredLastModifiedProperty && instance.Property.Name == "LastModifiedBy")
+            if (_configuration.RequiredLastModifiedProperty && instance.Property.Name == "LastModifiedBy")
             {
                 instance.Not.Nullable();
             }
@@ -45,9 +45,17 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IPropertyInstance instance)
         {
-            if(_configuration.RequiredLastModifiedProperty && 
-                typeof(IVersionedEntity).IsAssignableFrom(instance.EntityType) && 
-                instance.Property.Name == "LastModifiedDate")
+            if (!_configuration.RequiredLastModifiedProperty || !typeof(IVersionedEntity).IsAssignableFrom(instance.EntityType))
+            {
+                return;
+            }
+            if (
+                instance.Property.Name == "LastModifiedDate" ||
+                (
+                    "LastModifiedBy" == instance.Property.Name && 
+                    instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>))
+                )
+            )
             {
                 instance.Not.Nullable();
             }

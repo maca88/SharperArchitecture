@@ -42,6 +42,14 @@
       <HintPath>..\..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FluentNHibernate, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentNHibernateX.1.2.0-Alpha1\lib\net45\FluentNHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentValidation.6.4.0-beta6\lib\Net45\FluentValidation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
       <Private>True</Private>
@@ -93,8 +101,12 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Entities\CLCarCodeList.cs" />
+    <Compile Include="Attributes\CurrentLanguage.cs" />
+    <Compile Include="Entities\Car.cs" />
     <Compile Include="CodeListTests.cs" />
+    <Compile Include="Entities\CustomLanguageFilter.cs" />
+    <Compile Include="Entities\SimpleCodeList.cs" />
+    <Compile Include="Filters\LanguageFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="T4FluentNH.cs">
       <DependentUpon>T4FluentNH.tt</DependentUpon>
@@ -123,6 +135,10 @@
       <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>
       <Name>PowerArhitecture.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\PowerArhitecture.Validation\PowerArhitecture.Validation.csproj">
+      <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
+      <Name>PowerArhitecture.Validation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerArhitecture.Tests.Common\PowerArhitecture.Tests.Common.csproj">
       <Project>{7b6de807-7ab9-47b6-9289-21cfd6385d36}</Project>
       <Name>PowerArhitecture.Tests.Common</Name>
@@ -142,6 +158,7 @@
   <ItemGroup>
     <Content Include="T4FluentNH.tt.settings.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

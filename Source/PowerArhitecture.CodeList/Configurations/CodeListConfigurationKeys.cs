@@ -8,6 +8,6 @@ namespace PowerArhitecture.CodeList.Configurations
 {
     public class CodeListConfigurationKeys
     {
-        public const string EnableCache = "PowerArhitecture.CodeList.EnableCache:bool";
+        //public const string EnableCache = "PowerArhitecture.CodeList.EnableCache:bool";
     }
 }

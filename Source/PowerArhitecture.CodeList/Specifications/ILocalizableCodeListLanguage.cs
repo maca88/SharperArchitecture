@@ -2,7 +2,7 @@
 
 namespace PowerArhitecture.CodeList.Specifications
 {
-    public interface ICodeListLocalization
+    public interface ILocalizableCodeListLanguage
     {
         string LanguageCode { get; set; }
 
@@ -11,9 +11,9 @@ namespace PowerArhitecture.CodeList.Specifications
         object GetCodeList();
     }
 
-    public interface ICodeListLocalization<TCodeList, TCodeListNames> : ICodeListLocalization, IEntity
+    public interface ILocalizableCodeListLanguage<TCodeList, TCodeListNames> : ILocalizableCodeListLanguage, IEntity
         where TCodeList : ICodeList
-        where TCodeListNames : ICodeListLocalization<TCodeList, TCodeListNames>
+        where TCodeListNames : ILocalizableCodeListLanguage<TCodeList, TCodeListNames>
     {
         TCodeList CodeList { get; set; }
 

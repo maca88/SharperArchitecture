@@ -16,11 +16,11 @@ namespace PowerArhitecture.CodeList.Configurations
             return new FluentCodeListConfiguration();
         }
 
-        public IFluentCodeListConfiguration EnableCache(bool value = true)
-        {
-            _configuration.EnableCache = value;
-            return this;
-        }
+        //public IFluentCodeListConfiguration EnableCache(bool value = true)
+        //{
+        //    _configuration.EnableCache = value;
+        //    return this;
+        //}
 
         public CodeListConfiguration Build()
         {

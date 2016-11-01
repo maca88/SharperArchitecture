@@ -32,7 +32,7 @@ namespace PowerArhitecture.CodeList.MappingSteps
             return
                 member.Name == "Names" &&
                 typeof(ICodeList).IsAssignableFrom(codeListType) &&
-                !typeof(ICodeListNoLoc).IsAssignableFrom(codeListType) &&
+                !typeof(INonLocalizableCodeList).IsAssignableFrom(codeListType) &&
                 member.PropertyType.Namespace.In("System.Collections.Generic", "Iesi.Collections.Generic") &&
                 !member.PropertyType.HasInterface(typeof(IDictionary)) &&
                 !member.PropertyType.ClosesInterface(typeof(IDictionary<,>)) &&

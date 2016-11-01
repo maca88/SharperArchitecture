@@ -11,14 +11,12 @@ namespace PowerArhitecture.CodeList
 {
     [Ignore]
     [Serializable]
-    public abstract class CodeList : VersionedEntity<string>, ICodeListNoLoc
+    public abstract class CodeList : VersionedEntity<string>, INonLocalizableCodeList
     {
         [Formula("Id")]
         public virtual string Code { get { return Id; } set { Id = value; } }
 
-        private bool _active = true;
-
-        public virtual bool Active { get { return _active; } set { _active = value; } }
+        public virtual bool Active { get; set; } = true;
 
         public virtual string Name { get; set; }
 
