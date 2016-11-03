@@ -14,11 +14,11 @@ namespace PowerArhitecture.Common.Events
     {
         public abstract void Handle(TEvent notification);
 
-        public virtual Task HandleAsync(TEvent notification, CancellationToken cancellationToken)
+        public virtual Task HandleAsync(TEvent @event, CancellationToken cancellationToken)
         {
             try
             {
-                Handle(notification);
+                Handle(@event);
                 return Task.CompletedTask;
             }
             catch (Exception e)
@@ -27,9 +27,9 @@ namespace PowerArhitecture.Common.Events
             }
         }
 
-        Task ICancellableAsyncNotificationHandler<TEvent>.Handle(TEvent notification, CancellationToken cancellationToken)
+        Task ICancellableAsyncNotificationHandler<TEvent>.Handle(TEvent @event, CancellationToken cancellationToken)
         {
-            return HandleAsync(notification, cancellationToken);
+            return HandleAsync(@event, cancellationToken);
         }
     }
 }

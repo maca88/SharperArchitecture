@@ -533,12 +533,14 @@ namespace PowerArhitecture.DataAccess.Wrappers
         {
             _eventPublisher.Publish(new SessionFlushingEvent(Session));
             ((ISessionImplementor) Session).Flush();
+            _eventPublisher.Publish(new SessionFlushedEvent(Session));
         }
 
         async Task ISession.FlushAsync()
         {
             await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await ((ISession) Session).FlushAsync();
+            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
         }
 
         public DbConnection Disconnect()
@@ -1077,12 +1079,14 @@ namespace PowerArhitecture.DataAccess.Wrappers
         {
             _eventPublisher.Publish(new SessionFlushingEvent(Session));
             ((ISession) Session).Flush();
+            _eventPublisher.Publish(new SessionFlushedEvent(Session));
         }
 
         async Task ISessionImplementor.FlushAsync()
         {
             await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await ((ISessionImplementor) Session).FlushAsync();
+            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
         }
 
         public int ExecuteNativeUpdate(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
@@ -1257,6 +1261,7 @@ namespace PowerArhitecture.DataAccess.Wrappers
         {
             await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
             await Session.ForceFlushAsync(e);
+            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
         }
 
         public Task MergeAsync(string entityName, object obj, IDictionary copiedAlready)

@@ -107,7 +107,9 @@ namespace PowerArhitecture.Tests.Common
             foreach (var sessionFactory in SessionFactories)
             {
                 Database.DropTables(sessionFactory);
+                Database.RemoveSessionFactory(sessionFactory);
             }
+            
             base.Cleanup();
         }
     }

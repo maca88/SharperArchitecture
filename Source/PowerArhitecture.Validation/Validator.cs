@@ -221,8 +221,12 @@ namespace PowerArhitecture.Validation
                         (func, info) => new LessThanValidator(func, info));
 
                     #endregion
-                    if (propValidator == null) continue;
-                    AddPropertyValidator(propValidator, type, prop, attr);
+
+                    if (propValidator == null)
+                    {
+                        continue;
+                    }
+                    AddAttributePropertyValidator(propValidator, prop, attr.IncludePropertyName);
                 }
             }
         }
@@ -241,7 +245,7 @@ namespace PowerArhitecture.Validation
             if (attr.ComparsionProperty != null)
             {
                 if (propValidator != null)
-                    AddPropertyValidator(propValidator, type, prop, attr);
+                    AddAttributePropertyValidator(propValidator, prop, attr.IncludePropertyName);
 
                 var propInfo = type.GetProperty(attr.ComparsionProperty);
                 if (propInfo == null)
@@ -251,16 +255,20 @@ namespace PowerArhitecture.Validation
                 Func<object, object> fun = propInfo.GetValue;
                 propValidator = ctor2Fun(fun, propInfo);
             }
-            AddPropertyValidator(propValidator, type, prop, attr);
+            AddAttributePropertyValidator(propValidator, prop, attr.IncludePropertyName);
         }
 
-        private void AddPropertyValidator(IPropertyValidator propValidator, Type type, PropertyInfo prop, ValidationAttribute valAttr)
+        private void AddAttributePropertyValidator(IPropertyValidator propValidator, PropertyInfo prop, bool includePropertyName)
         {
-            var rule = CreateRule(type, prop.Name);
-            //rule.RuleSet = ruleSet; //default is for client side (no need to specify ruleset in controller action)
-            rule.RuleSet = ValidationRuleSet.Attribute;
+            AddPropertyValidator(propValidator, prop, ValidationRuleSet.Attribute, includePropertyName);
+        }
+
+        public void AddPropertyValidator(IPropertyValidator propValidator, PropertyInfo prop, string ruleSet, bool includePropertyName)
+        {
+            var rule = CreateRule(typeof(TModel), prop.Name);
+            rule.RuleSet = ruleSet;
             rule.AddValidator(propValidator);
-            rule.SetL10NMessage(valAttr.IncludePropertyName);
+            rule.SetL10NMessage(includePropertyName);
             AddRule(rule);
         }
 

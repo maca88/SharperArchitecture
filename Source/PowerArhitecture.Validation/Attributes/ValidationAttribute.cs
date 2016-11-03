@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArhitecture.Validation.Attributes
 {
-    public class ValidationAttribute : Attribute
+    public abstract class ValidationAttribute : Attribute
     {
         /// <summary>
         /// Whether include property name in error message

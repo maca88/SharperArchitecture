@@ -30,8 +30,6 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task DeleteAsync<TModel>(TModel model) where TModel : IEntity;
 
-        TModel Merge<TModel>(TModel model) where TModel : IEntity;
-
         TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>;
 
         Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>;

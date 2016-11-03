@@ -143,11 +143,13 @@
     <Compile Include="EventListeners\EntityPreUpdateInsertEventListener.cs" />
     <Compile Include="EventListeners\NhConfigurationEventHandler.cs" />
     <Compile Include="EventListeners\TransactionEventListener.cs" />
+    <Compile Include="EventListeners\ValidatorCreatedEventHandler.cs" />
     <Compile Include="Events\EntityDeletingEvent.cs" />
     <Compile Include="Events\EntitySavingEvent.cs" />
     <Compile Include="Events\EntitySavingOrUpdatingEvent.cs" />
     <Compile Include="Events\HibernateMappingsBuiltEvent.cs" />
     <Compile Include="Events\SessionFactoryCreatedEvent.cs" />
+    <Compile Include="Events\SessionFlushedEvent.cs" />
     <Compile Include="Events\SessionFlushingEvent.cs" />
     <Compile Include="Events\TransactionCommittedEvent.cs" />
     <Compile Include="Events\NhConfigurationEvent.cs" />

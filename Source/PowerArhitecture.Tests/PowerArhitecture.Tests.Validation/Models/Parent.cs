@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter;
 using FluentValidation;
 using PowerArhitecture.Validation;
+using PowerArhitecture.Validation.Attributes;
 using PowerArhitecture.Validation.Extensions;
 
 namespace PowerArhitecture.Tests.Validation.Models
@@ -40,15 +41,7 @@ namespace PowerArhitecture.Tests.Validation.Models
 
     public class SubChild
     {
+        [NotNull]
         public string Name { get; set; }
     }
-
-    public class SubChildValidator : Validator<SubChild>
-    {
-        public SubChildValidator()
-        {
-            RuleFor(o => o.Name).NotNull().WithL10NMessage();
-        }
-    }
-
 }

@@ -49,22 +49,31 @@ namespace PowerArhitecture.Tests.Notifications
             listener.Reset();
             using (var unitOfWork = unitOfWorkFactory.GetNew())
             {
-                var repo = unitOfWork.GetRepository<NotificationWithStringRecipient>();
-                var notif = new NotificationWithStringRecipient
+                try
                 {
-                    Type = NotificationType.Success,
-                    Message = "Mesage",
-                };
-                notif.AddRecipient(new NotificationRecipientWithStringRecipient
+                    var repo = unitOfWork.GetRepository<NotificationWithStringRecipient>();
+                    var notif = new NotificationWithStringRecipient
+                    {
+                        Type = NotificationType.Success,
+                        Message = "Mesage",
+                    };
+                    notif.AddRecipient(new NotificationRecipientWithStringRecipient
+                    {
+                        Recipient = "Recipient1"
+                    });
+                    notif.AddRecipient(new NotificationRecipientWithStringRecipient
+                    {
+                        Recipient = "Recipient2"
+                    });
+                    repo.Save(notif);
+                    Assert.IsNull(listener.NotificationEvent);
+                }
+                catch
                 {
-                    Recipient = "Recipient1"
-                });
-                notif.AddRecipient(new NotificationRecipientWithStringRecipient
-                {
-                    Recipient = "Recipient2"
-                });
-                repo.Save(notif);
-                Assert.IsNull(listener.NotificationEvent);
+                    unitOfWork.Rollback();
+                    throw;
+                }
+                unitOfWork.Commit();
             }
             Assert.IsNotNull(listener.NotificationEvent);
         }
@@ -80,29 +89,38 @@ namespace PowerArhitecture.Tests.Notifications
             var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
             var listener = Kernel.Get<NotificationHandler>();
             listener.Reset();
-            using (var unitOfWork = (UnitOfWork)unitOfWorkFactory.GetNew())
+            using (var unitOfWork = unitOfWorkFactory.GetNew())
             {
-                var user1 = new User {UserName = "User1"};
-                var user2 = new User {UserName = "User2"};
-                unitOfWork.Save(user1, user2);
-                Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("User1"), null);
+                try
+                {
+                    var user1 = new User { UserName = "User1" };
+                    var user2 = new User { UserName = "User2" };
+                    unitOfWork.Save(user1, user2);
+                    Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("User1"), null);
 
-                var repo = unitOfWork.GetRepository<NotificationWithEntityRecipient>();
-                var notif = new NotificationWithEntityRecipient
+                    var repo = unitOfWork.GetRepository<NotificationWithEntityRecipient>();
+                    var notif = new NotificationWithEntityRecipient
+                    {
+                        Type = NotificationType.Success,
+                        Message = "Mesage"
+                    };
+                    notif.AddRecipient(new NotificationRecipientWithEntityRecipient
+                    {
+                        Recipient = user1
+                    });
+                    notif.AddRecipient(new NotificationRecipientWithEntityRecipient
+                    {
+                        Recipient = user2
+                    });
+                    repo.Save(notif);
+                    Assert.IsNull(listener.NotificationEvent);
+                }
+                catch
                 {
-                    Type = NotificationType.Success,
-                    Message = "Mesage"
-                };
-                notif.AddRecipient(new NotificationRecipientWithEntityRecipient
-                {
-                    Recipient = user1
-                });
-                notif.AddRecipient(new NotificationRecipientWithEntityRecipient
-                {
-                    Recipient = user2
-                });
-                repo.Save(notif);
-                Assert.IsNull(listener.NotificationEvent);
+                    unitOfWork.Rollback();
+                    throw;
+                }
+                unitOfWork.Commit();
             }
             Assert.IsNotNull(listener.NotificationEvent);
         }

@@ -66,7 +66,8 @@ namespace FluentValidation
             return validator.Validate(context);
         }
 
-        public static Task<ValidationResult> ValidateAsync(IValidator validator, object instance, string[] ruleSets, object contextFiller)
+        public static Task<ValidationResult> ValidateAsync(IValidator validator, object instance, string[] ruleSets, object contextFiller,
+            Dictionary<string, object> extraData = null)
         {
             IValidatorSelector selector = new DefaultValidatorSelector();
             if (ruleSets != null)
@@ -77,6 +78,13 @@ namespace FluentValidation
             if (contextFiller != null)
             {
                 context.RootContextData[DataContextFillerKey] = contextFiller;
+            }
+            if (extraData != null)
+            {
+                foreach (var pair in extraData)
+                {
+                    context.RootContextData[pair.Key] = pair.Value;
+                }
             }
             return validator.ValidateAsync(context);
         }

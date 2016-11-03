@@ -90,11 +90,6 @@ namespace PowerArhitecture.DataAccess
             return _session.DeleteAsync(model);
         }
 
-        public TModel Merge<TModel>(TModel model) where TModel : IEntity
-        {
-            return (TModel)_session.Merge((object)model);
-        }
-
         public TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>
         {
             return _session.Get<TModel>(id);
@@ -186,7 +181,6 @@ namespace PowerArhitecture.DataAccess
 
         public void Dispose()
         {
-            Commit();
             _session.Dispose();
         }
 

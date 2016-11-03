@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,7 +19,8 @@ using Ninject.Extensions.Logging;
 using Ninject.Parameters;
 using Ninject.Syntax;
 using PowerArhitecture.Common.Exceptions;
-using PowerArhitecture.DataAccess.Specifications;
+using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.Domain.Extensions;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation.Specifications;
@@ -34,8 +36,10 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         <
             //Reset cache
             SessionFlushingEvent,
+            SessionFlushedEvent,
             EntityDeletingEvent,
             EntitySavingOrUpdatingEvent,
+            TransactionCommittedEvent,
             //Validation events
             EntitySavingEvent
         >,
@@ -46,7 +50,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     {
         private readonly ILogger _logger;
         private readonly IResolutionRoot _resolutionRoot;
-        private readonly HashSet<IEntity> _validatedEntities = new HashSet<IEntity>(); 
+        private readonly ConcurrentDictionary<ISession, ConcurrentSet<IEntity>> _validatedEntities = new ConcurrentDictionary<ISession, ConcurrentSet<IEntity>>(); 
 
         public ValidatePreInsertUpdateDeleteEventHandler(ILogger logger, IResolutionRoot resolutionRoot)
         {
@@ -97,24 +101,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
         private async Task ValidateAsync(object entity, ISession session, EntityMode mode, string[] ruleSet)
         {
-            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
-            if (valInfo == null)
-            {
-                return;
-            }
-
-            var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
-                valInfo.RuleSets, valInfo.ContextDataFiller);
-            if (!validationResult.IsValid)
-            {
-                _validatedEntities.Clear();
-                throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType, valInfo.RuleSets);
-            }
-            _validatedEntities.Add(valInfo.Model);
-        }
-
-        private void Validate(object entity, ISession session, EntityMode mode, string[] ruleSet)
-        {
+            session = session.Unwrap();
             var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
             if (valInfo == null)
             {
@@ -123,6 +110,39 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
             do
             {
+                _logger.Debug($"Auto validating entity Type:'{valInfo.ModelType}', " +
+                              $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
+                var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
+                    valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
+                    {
+                        { ValidationContextExtensions.RootAutoValidationKey, valInfo.Root },
+                        { ValidationContextExtensions.AutoValidationKey, true }
+                    });
+                if (!validationResult.IsValid)
+                {
+                    Clear(session);
+                    throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
+                        valInfo.RuleSets);
+                }
+                var set = _validatedEntities.GetOrAdd(session, o => new ConcurrentSet<IEntity>());
+                set.Add(valInfo.Model);
+                valInfo = valInfo.Next;
+            } while (valInfo != null);
+        }
+
+        private void Validate(object entity, ISession session, EntityMode mode, string[] ruleSet)
+        {
+            session = session.Unwrap();
+            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
+            if (valInfo == null)
+            {
+                return;
+            }
+
+            do
+            {
+                _logger.Debug($"Auto validating entity Type:'{valInfo.ModelType}', " +
+                              $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
                 var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
                     valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
                     {
@@ -131,18 +151,19 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                     });
                 if (!validationResult.IsValid)
                 {
-                    _validatedEntities.Clear();
+                    Clear(session);
                     throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
                         valInfo.RuleSets);
                 }
-                _validatedEntities.Add(valInfo.Model);
+                var set = _validatedEntities.GetOrAdd(session, o => new ConcurrentSet<IEntity>());
+                set.Add(valInfo.Model);
                 valInfo = valInfo.Next;
             } while (valInfo != null);
         }
 
         private ValidationInfo GetValidationInfo(object item, ISession session, EntityMode mode, string[] ruleSets)
         {
-            if (item == null || mode != EntityMode.Poco)
+            if (item == null || mode != EntityMode.Poco || !session.IsManaged())
             {
                 return null;
             }
@@ -153,86 +174,110 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 _logger.Debug("Skip validation for type '{0}' as is not castable to IEntity", item.GetType());
                 return null;
             }
-            var validableEntity = GetValidableRootEntity(item);
-            if (validableEntity == null)
+            //var validableEntity = item as IAutoValidated;
+            var rootValidableEntity = GetValidableRootEntity(item);
+            if (rootValidableEntity == null)
             {
+                if (!(item is IAggregateChild) || (_validatedEntities.ContainsKey(session) && _validatedEntities[session].Contains(entity)))
+                {
+                    return null;
+                }
+                var validableEntity = item as IAutoValidated;
+                if (validableEntity == null)
+                {
+                    return null;
+                }
                 // When a child is removed from the parent by removing the relation on both sides the Aggregate root will be always null
-                if (item is IAggregateChild && ruleSets.Contains(ValidationRuleSet.Delete))
+                if (validableEntity.ValidateOnDelete && ruleSets.Contains(ValidationRuleSet.Delete))
                 {
                     return GetValidationInfo(entity, session, new[] { ValidationRuleSet.Delete }, false);
                 }
+                // When a child is inserted without a root
+                if (validableEntity.ValidateOnInsert && ruleSets.Contains(ValidationRuleSet.Insert))
+                {
+                    return GetValidationInfo(entity, session, new[] { ValidationRuleSet.Insert }, false);
+                }
+                // When a child without a root is being updated
+                if (validableEntity.ValidateOnUpdate && ruleSets.Contains(ValidationRuleSet.Update))
+                {
+                    return GetValidationInfo(entity, session, new[] { ValidationRuleSet.Update }, false);
+                }
                 return null;
             }
-            var rootEntity = validableEntity as IEntity;
+            var rootEntity = rootValidableEntity as IEntity;
             if (rootEntity == null)
             {
                 throw new PowerArhitectureException(
-                    $"Invalid usage of IAutoValidated interface on the type {validableEntity.GetType()}. " +
+                    $"Invalid usage of IAutoValidated interface on the type {rootValidableEntity.GetType()}. " +
                     "IAutoValidated can be only applied on types that implements IEntity.");
             }
 
             ValidationInfo validationInfo = null;
             // If the changing entity is a child of the validable entity, we need to find out the correct ruleset for the validable entity
-            if (item != validableEntity)
+            if (item != rootValidableEntity)
             {
+                var validableEntity = item as IAutoValidated;
                 var persistenceContext = session.GetSessionImplementation().PersistenceContext;
-                var entry = persistenceContext.GetEntry(validableEntity);
+                var entry = persistenceContext.GetEntry(rootValidableEntity);
+                if (entry == null)
+                {
+                    // A child was linked to a parent that is not registered in the session context
+                    return null;
+                }
                 switch (entry.Status)
                 {
-                    // If the parent will be deleted then a child cannot be inserted or updated
                     case Status.Deleted:
                         ruleSets = new[] {ValidationRuleSet.Delete};
                         break;
-                    // If a child entity will be deleted or inserted we need to validate it separately
                     case Status.Loaded:
                         if (!entry.ExistsInDatabase)
                         {
                             ruleSets = ValidationRuleSet.AttributeInsert;
                             break;
                         }
-                        if (_validatedEntities.Contains(entity))
+                        if (_validatedEntities.ContainsKey(session) && _validatedEntities[session].Contains(entity))
                         {
                             break;
                         }
                         // Validate the child entity only if the root is already inserted and we are appending a new child or
                         // we are removing one
-                        if (ruleSets.Contains(ValidationRuleSet.Insert))
+                        if (validableEntity?.ValidateOnInsert == true && ruleSets.Contains(ValidationRuleSet.Insert))
                         {
                             validationInfo = GetValidationInfo(entity, session, new[] {ValidationRuleSet.Insert}, false);
                         }
-                        else if (ruleSets.Contains(ValidationRuleSet.Delete))
+                        else if (validableEntity?.ValidateOnDelete == true && ruleSets.Contains(ValidationRuleSet.Delete))
                         {
                             validationInfo = GetValidationInfo(entity, session, new[] { ValidationRuleSet.Delete }, false);
                         }
-                        ruleSets = ValidationRuleSet.AttributeUpdate;
-                        break;
-                    // If the parent will be saved then a child cannot be deleted but can be updated (switched from one parent to another)
-                    case Status.Saving:
-                        ruleSets = ValidationRuleSet.AttributeInsert;
-                        if (ruleSets.Contains(ValidationRuleSet.Update) && !_validatedEntities.Contains(entity))
+                        else if (validableEntity?.ValidateOnUpdate == true && 
+                                _validatedEntities.ContainsKey(session) && _validatedEntities[session].Contains(rootEntity) &&
+                                ruleSets.Contains(ValidationRuleSet.Update))
                         {
+                            // There is also a special case when attaching a persistent child to a transient root entity
+                            // The root entity will be validated first
                             validationInfo = GetValidationInfo(entity, session, new[] { ValidationRuleSet.Update }, false);
                         }
+                        ruleSets = ValidationRuleSet.AttributeUpdate;
                         break;
                     case Status.ReadOnly:
                         throw new PowerArhitectureException(
-                            $"Changing a child entity of a readonly auto validable parent is not permitted (Child: {item}, Parent: {validableEntity}).");
+                            $"Changing a child entity of a readonly auto validable parent is not permitted (Child: {item}, Parent: {rootValidableEntity}).");
                     default:
                         throw new PowerArhitectureException(
-                            $"Unsupported entity entry status {entry.Status} while auto validating the entity {validableEntity}");
+                            $"Unsupported entity entry status {entry.Status} while auto validating the entity {rootValidableEntity}");
                 }
             }
 
-            if (_validatedEntities.Contains(rootEntity))
+            if (_validatedEntities.ContainsKey(session) && _validatedEntities[session].Contains(rootEntity))
             {
                 _logger.Debug("Entity of type '{0}' was already validated", item.GetType());
                 return validationInfo;
             }
 
             if (
-                    (ruleSets.Contains(ValidationRuleSet.Update) && !validableEntity.ValidateOnUpdate) ||
-                    (ruleSets.Contains(ValidationRuleSet.Delete) && !validableEntity.ValidateOnDelete) ||
-                    (ruleSets.Contains(ValidationRuleSet.Insert) && !validableEntity.ValidateOnInsert)
+                    (ruleSets.Contains(ValidationRuleSet.Update) && !rootValidableEntity.ValidateOnUpdate) ||
+                    (ruleSets.Contains(ValidationRuleSet.Delete) && !rootValidableEntity.ValidateOnDelete) ||
+                    (ruleSets.Contains(ValidationRuleSet.Insert) && !rootValidableEntity.ValidateOnInsert)
                 )
             {
                 return null;
@@ -289,6 +334,11 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             while (currentChild != null)
             {
                 var root = currentChild.AggregateRoot;
+                // Check whether the root is the same as the child in order to prevent a stackoverflow exception
+                if (currentChild == root)
+                {
+                    return root as IAutoValidated;
+                }
                 return root == null ? null : GetValidableRootEntity(root);
             }
 
@@ -351,39 +401,73 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             return false;
         }
 
-
-        public override void Handle(SessionFlushingEvent message)
+        public override void Handle(SessionFlushingEvent e)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
         }
 
-        public override Task HandleAsync(SessionFlushingEvent message, CancellationToken cancellationToken)
+        public override Task HandleAsync(SessionFlushingEvent e, CancellationToken cancellationToken)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
             return Task.CompletedTask;
         }
 
-        public override void Handle(EntityDeletingEvent message)
+        public override void Handle(SessionFlushedEvent e)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
         }
 
-        public override Task HandleAsync(EntityDeletingEvent message, CancellationToken cancellationToken)
+        public override Task HandleAsync(SessionFlushedEvent e, CancellationToken cancellationToken)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
+            return Task.CompletedTask;
+        }
+
+        public override void Handle(TransactionCommittedEvent e)
+        {
+            Clear(e.Session);
+        }
+
+        public override Task HandleAsync(TransactionCommittedEvent e, CancellationToken cancellationToken)
+        {
+            Clear(e.Session);
+            return Task.CompletedTask;
+        }
+
+        public override void Handle(EntityDeletingEvent e)
+        {
+            Clear(e.Session);
+        }
+
+        public override Task HandleAsync(EntityDeletingEvent e, CancellationToken cancellationToken)
+        {
+            Clear(e.Session);
             return TaskHelper.CompletedTask;
         }
 
-        public override void Handle(EntitySavingOrUpdatingEvent message)
+        public override void Handle(EntitySavingOrUpdatingEvent e)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
         }
 
-        public override Task HandleAsync(EntitySavingOrUpdatingEvent message, CancellationToken cancellationToken)
+        public override Task HandleAsync(EntitySavingOrUpdatingEvent e, CancellationToken cancellationToken)
         {
-            _validatedEntities.Clear();
+            Clear(e.Session);
             return TaskHelper.CompletedTask;
         }
 
+        private void Clear(ISession session)
+        {
+            if (!_validatedEntities.Any())
+            {
+                return;
+            }
+            session = session.Unwrap();
+            ConcurrentSet<IEntity> set;
+            if (_validatedEntities.TryRemove(session, out set))
+            {
+                set.Clear();
+            }
+        }
     }
 }

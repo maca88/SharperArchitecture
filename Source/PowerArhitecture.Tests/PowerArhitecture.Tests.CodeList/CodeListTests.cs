@@ -45,12 +45,21 @@ namespace PowerArhitecture.Tests.CodeList
         {
             using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
-                unitOfWork.Session.EnableFilter("Language")
-                    .SetParameter("Current", "sl")
-                    .SetParameter("Fallback", "en");
-                var bmw = unitOfWork.Query<Car, string>()
-                    .First(o => o.Code == "BMW");
-                Assert.AreEqual("BMW Slo", bmw.Name);
+                try
+                {
+                    unitOfWork.Session.EnableFilter("Language")
+                        .SetParameter("Current", "sl")
+                        .SetParameter("Fallback", "en");
+                    var bmw = unitOfWork.Query<Car, string>()
+                        .First(o => o.Code == "BMW");
+                    Assert.AreEqual("BMW Slo", bmw.Name);
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+                unitOfWork.Commit();
             }
         }
 
@@ -59,20 +68,29 @@ namespace PowerArhitecture.Tests.CodeList
         {
             using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
-                unitOfWork.Session.EnableFilter("Language")
-                    .SetParameter("Current", "sl")
-                    .SetParameter("Fallback", "en");
-                var cl = unitOfWork.Query<CustomLanguageFilter, string>()
-                    .First(o => o.Code == "Code1");
-                Assert.AreEqual("SL", cl.Name);
-                Assert.AreEqual("CustomSL", cl.Custom);
-                Assert.AreEqual("Custom2SL", cl.CurrentCustom2);
+                try
+                {
+                    unitOfWork.Session.EnableFilter("Language")
+                        .SetParameter("Current", "sl")
+                        .SetParameter("Fallback", "en");
+                    var cl = unitOfWork.Query<CustomLanguageFilter, string>()
+                        .First(o => o.Code == "Code1");
+                    Assert.AreEqual("SL", cl.Name);
+                    Assert.AreEqual("CustomSL", cl.Custom);
+                    Assert.AreEqual("Custom2SL", cl.CurrentCustom2);
 
-                // Fallback
-                cl = unitOfWork.Query<CustomLanguageFilter, string>()
-                    .First(o => o.Code == "Code2");
-                Assert.AreEqual("EN", cl.Name);
-                Assert.AreEqual("Custom2EN", cl.CurrentCustom2);
+                    // Fallback
+                    cl = unitOfWork.Query<CustomLanguageFilter, string>()
+                        .First(o => o.Code == "Code2");
+                    Assert.AreEqual("EN", cl.Name);
+                    Assert.AreEqual("Custom2EN", cl.CurrentCustom2);
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+                unitOfWork.Commit();
             }
         }
 
@@ -99,10 +117,12 @@ namespace PowerArhitecture.Tests.CodeList
                 {
                     unitOfWork.Save(entities.ToArray());
                 }
-                catch (Exception e)
+                catch
                 {
-                    
+                    unitOfWork.Rollback();
+                    throw;
                 }
+                unitOfWork.Commit();
             }
         }
 

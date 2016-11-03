@@ -29,7 +29,7 @@ namespace PowerArhitecture.Common.Configuration
 
         public static IEnumerable<Assembly> GetDomainAssemblies()
         {
-            return _domainAssembliesFunc();
+            return _domainAssembliesFunc().Where(o => !o.IsDynamic);
         } 
 
         public static Dictionary<string, object> GetSettings(string prefix = "")

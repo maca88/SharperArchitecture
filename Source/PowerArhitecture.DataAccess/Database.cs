@@ -129,6 +129,12 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
+        public static void RemoveSessionFactory(ISessionFactory sessionFactory)
+        {
+            sessionFactory.Dispose();
+            SessionFactories.Remove(sessionFactory);
+        }
+
         public static void DropTables(ISessionFactory sessionFactory)
         {
             if(!SessionFactories.ContainsKey(sessionFactory))
@@ -151,6 +157,22 @@ namespace PowerArhitecture.DataAccess
         public static SessionFactoryInfo GetSessionFactoryInfo(ISession session)
         {
             return GetSessionFactoryInfo(session.SessionFactory);
+        }
+
+        public static DatabaseConfiguration GetDatabaseConfigurationForModel(Type modelType)
+        {
+            if (modelType == null)
+            {
+                return null;
+            }
+            foreach (var pair in SessionFactories)
+            {
+                if (pair.Value.Configuration.ClassMappings.Any(o => o.MappedClass == modelType))
+                {
+                    return pair.Value.DatabaseConfiguration;
+                }
+            }
+            return null;
         }
 
         public static SessionFactoryInfo GetSessionFactoryInfo(ISessionFactory sessionFactory)

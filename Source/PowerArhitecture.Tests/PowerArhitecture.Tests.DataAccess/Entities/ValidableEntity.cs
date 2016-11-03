@@ -11,6 +11,7 @@ using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Extensions;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation;
+using PowerArhitecture.Validation.Extensions;
 using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
@@ -19,17 +20,23 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
     {
         public virtual string Name { get; set; }
 
-        public virtual bool ValidateOnUpdate { get; set; } = true;
-        public virtual bool ValidateOnInsert { get; set; } = true;
-        public virtual bool ValidateOnDelete { get; set; } = true;
+        public virtual bool ValidateOnUpdate => true;
+        public virtual bool ValidateOnInsert => true;
+        public virtual bool ValidateOnDelete => true;
 
         public virtual ISet<ValidableEntityChild> Children { get; set; } = new HashSet<ValidableEntityChild>();
     }
 
 
-    public class ValidableEntityChild : Entity, IAggregateChild
+    public class ValidableEntityChild : Entity, IAggregateChild, IAutoValidated
     {
         public virtual ValidableEntity ValidableEntity { get; set; }
+
+        public virtual bool ValidateOnUpdate => true;
+
+        public virtual bool ValidateOnInsert => true;
+
+        public virtual bool ValidateOnDelete => true;
 
         public virtual string CountryCode { get; set; }
 
@@ -38,9 +45,15 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         public virtual ISet<ValidableEntitySubChild> Children { get; set; } = new HashSet<ValidableEntitySubChild>();
     }
 
-    public class ValidableEntitySubChild : Entity, IAggregateChild
+    public class ValidableEntitySubChild : Entity, IAggregateChild, IAutoValidated
     {
         public virtual ValidableEntityChild ValidableEntityChild { get; set; }
+
+        public virtual bool ValidateOnUpdate => true;
+
+        public virtual bool ValidateOnInsert => true;
+
+        public virtual bool ValidateOnDelete => true;
 
         public virtual string Name { get; set; }
 
@@ -51,7 +64,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
     {
         public ValidableEntityValidator(IValidator<ValidableEntityChild> childValidator)
         {
-            RuleSet(ValidationRuleSet.AttributeInsertUpdateDefault, () =>
+            RuleSet(ValidationRuleSet.InsertUpdate, () =>
             {
                 RuleFor(o => o.Children).SetCollectionValidator(childValidator);
                 RuleFor(o => o.Name).NotEmpty();
@@ -75,7 +88,10 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
             FilledCount++;
             var codes = model.Children.Select(o => o.CountryCode).Distinct().ToList();
             contextData["validCodes"] =
-                new HashSet<string>(_session.Query<Country>().Where(o => codes.Contains(o.Code)).Select(o => o.Code));
+                new HashSet<string>(_session.Query<Country>().Where(o => codes.Contains(o.Code)).Select(o => o.Code))
+                {
+                    "CannotUpdate"
+                };
         }
     }
 
@@ -83,7 +99,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
     {
         public ValidableEntityChildValidator(IValidator<ValidableEntitySubChild> subChildValidator)
         {
-            RuleSet(ValidationRuleSet.AttributeInsertUpdateDefault, () =>
+            RuleSet(ValidationRuleSet.InsertUpdate, () =>
             {
                 RuleFor(o => o.Children).SetCollectionValidator(subChildValidator);
                 RuleFor(o => o.CountryCode).Must((child, code, ctx) =>
@@ -94,7 +110,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
                     }
                     var codes = (HashSet<string>) ctx.ParentContext.RootContextData["validCodes"];
                     return codes.Contains(code);
-                });
+                }).WithL10NMessage("Code does not exist");
             });
             RuleSet(ValidationRuleSet.Delete, () =>
             {
@@ -104,6 +120,10 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
             {
                 RuleFor(o => o.CountryCode).NotEqual("CannotInsert");
             });
+            RuleSet(ValidationRuleSet.Update, () =>
+            {
+                RuleFor(o => o.CountryCode).NotEqual("CannotUpdate");
+            });
         }
     }
 
@@ -111,7 +131,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
     {
         public ValidableEntitySubChildValidator()
         {
-            RuleSet(ValidationRuleSet.AttributeInsertUpdateDefault, () =>
+            RuleSet(ValidationRuleSet.InsertUpdate, () =>
             {
                 RuleFor(o => o.Name).NotEmpty();
             });

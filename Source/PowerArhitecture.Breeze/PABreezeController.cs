@@ -29,7 +29,7 @@ namespace PowerArhitecture.Breeze
 
         public void RollbackTransaction()
         {
-            if (Session.Transaction == null || Session.Transaction.WasRolledBack || !Session.Transaction.IsActive)
+            if (Session.Transaction.WasRolledBack || !Session.Transaction.IsActive)
                 return;
             Session.Transaction.Rollback();
             Session.Transaction.Dispose();

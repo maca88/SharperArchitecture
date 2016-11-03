@@ -7,6 +7,9 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Internal;
+using FluentValidation.Validators;
 using NHibernate;
 using Ninject;
 using NUnit.Framework;
@@ -17,6 +20,7 @@ using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
 using PowerArhitecture.Tests.DataAccess.Entities.Versioning;
+using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
@@ -44,26 +48,50 @@ namespace PowerArhitecture.Tests.DataAccess
         #region VersionEntity
 
         [Test]
-        public void save_version_entity()
+        public void ValidatorForVersionEntityMustHaveRequiredLastModified()
+        {
+            var validator = Kernel.Get<AbstractValidator<VersionCar>>();
+
+            var lastModifiedDateRules = validator.OfType<PropertyRule>()
+                .Where(o => o.PropertyName == "LastModifiedDate")
+                .ToList();
+
+            Assert.AreEqual(1, lastModifiedDateRules.Count);
+            Assert.AreEqual(ValidationRuleSet.Attribute, lastModifiedDateRules[0].RuleSet);
+            Assert.AreEqual(1, lastModifiedDateRules[0].Validators.Count());
+            Assert.AreEqual(typeof(NotNullValidator), lastModifiedDateRules[0].Validators.First().GetType());
+        }
+
+        [Test]
+        public void SaveVersionEntity()
         {
             var car = new VersionCar { Model = "BMW" };
             using (var unitOfWork = Kernel.Get<IUnitOfWorkFactory>().GetNew())
             {
-                unitOfWork.Save(car); //A flush will happen as we set the id generator to indentity
-                Assert.AreEqual(1, car.Id);
-                Assert.AreEqual(1, car.Version);
-                Assert.AreEqual(car.LastModifiedDate, car.CreatedDate);
-                car.Model = "Audi";
-                unitOfWork.Save(car);
-                unitOfWork.Flush();
-                Assert.AreEqual(2, car.Version);
-                Assert.AreNotEqual(car.LastModifiedDate, car.CreatedDate);
+                try
+                {
+                    unitOfWork.Save(car); //A flush will happen as we set the id generator to indentity
+                    Assert.AreEqual(1, car.Id);
+                    Assert.AreEqual(1, car.Version);
+                    Assert.AreEqual(car.LastModifiedDate, car.CreatedDate);
+                    car.Model = "Audi";
+                    unitOfWork.Save(car);
+                    unitOfWork.Flush();
+                    Assert.AreEqual(2, car.Version);
+                    Assert.AreNotEqual(car.LastModifiedDate, car.CreatedDate);
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+                unitOfWork.Commit();
             }
             Assert.AreEqual(2, car.Version);
         }
 
         [Test]
-        public void save_version_entity_nested()
+        public void SaveVersionEntityNested()
         {
             var bmw = new VersionCar { Model = "BMW" };
             var bmwWheel1 = new VersionWheel { Dimension = 17 };
@@ -130,7 +158,30 @@ namespace PowerArhitecture.Tests.DataAccess
         #region VersionEntityWithStringUser
 
         [Test]
-        public void save_version_entity_with_string_user()
+        public void ValidatorForVersionEntityWithStringUserMustHaveRequiredLastModified()
+        {
+            var validator = Kernel.Get<AbstractValidator<VersionCarWithStringUser>>();
+
+            var lastModifiedDateRules = validator.OfType<PropertyRule>()
+                .Where(o => o.PropertyName == "LastModifiedDate")
+                .ToList();
+            var lastModifiedByRules = validator.OfType<PropertyRule>()
+                .Where(o => o.PropertyName == "LastModifiedBy")
+                .ToList();
+
+            Assert.AreEqual(1, lastModifiedDateRules.Count);
+            Assert.AreEqual(ValidationRuleSet.Attribute, lastModifiedDateRules[0].RuleSet);
+            Assert.AreEqual(1, lastModifiedDateRules[0].Validators.Count());
+            Assert.AreEqual(typeof(NotNullValidator), lastModifiedDateRules[0].Validators.First().GetType());
+
+            Assert.AreEqual(1, lastModifiedByRules.Count);
+            Assert.AreEqual(ValidationRuleSet.Attribute, lastModifiedByRules[0].RuleSet);
+            Assert.AreEqual(1, lastModifiedByRules[0].Validators.Count());
+            Assert.AreEqual(typeof(NotNullValidator), lastModifiedByRules[0].Validators.First().GetType());
+        }
+
+        [Test]
+        public void SaveVersionEntityWithStringUser()
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
             var car = new VersionCarWithStringUser { Model = "BMW" };
@@ -160,7 +211,7 @@ namespace PowerArhitecture.Tests.DataAccess
         }
 
         [Test]
-        public void save_version_entity_with_string_user_nested()
+        public void SaveVersionEntityWithStringUserNested()
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
             string newCurrentUser;
@@ -251,7 +302,30 @@ namespace PowerArhitecture.Tests.DataAccess
         #region VersionEntityWithEntityUser
 
         [Test]
-        public void save_version_entity_with_entity_user()
+        public void ValidatorForVersionEntityWithEntityUserMustHaveRequiredLastModified()
+        {
+            var validator = Kernel.Get<AbstractValidator<VersionCarWithEntityUser>>();
+
+            var lastModifiedDateRules = validator.OfType<PropertyRule>()
+                .Where(o => o.PropertyName == "LastModifiedDate")
+                .ToList();
+            var lastModifiedByRules = validator.OfType<PropertyRule>()
+                .Where(o => o.PropertyName == "LastModifiedBy")
+                .ToList();
+
+            Assert.AreEqual(1, lastModifiedDateRules.Count);
+            Assert.AreEqual(ValidationRuleSet.Attribute, lastModifiedDateRules[0].RuleSet);
+            Assert.AreEqual(1, lastModifiedDateRules[0].Validators.Count());
+            Assert.AreEqual(typeof(NotNullValidator), lastModifiedDateRules[0].Validators.First().GetType());
+
+            Assert.AreEqual(1, lastModifiedByRules.Count);
+            Assert.AreEqual(ValidationRuleSet.Attribute, lastModifiedByRules[0].RuleSet);
+            Assert.AreEqual(1, lastModifiedByRules[0].Validators.Count());
+            Assert.AreEqual(typeof(NotNullValidator), lastModifiedByRules[0].Validators.First().GetType());
+        }
+
+        [Test]
+        public void SaveVersionEntityWithEntityUser()
         {
             var currentUser = new GenericPrincipal(new GenericIdentity("Current"), new[] { "Role1" });
             var currentUserName = currentUser.Identity.Name;
@@ -293,7 +367,7 @@ namespace PowerArhitecture.Tests.DataAccess
         }
 
         [Test]
-        public void save_version_entity_with_entity_user_nested()
+        public void SaveVersionEntityWithEntityUserNested()
         {
             var currentUser = new GenericIdentity("Current");
             var currentUserName = currentUser.Name;

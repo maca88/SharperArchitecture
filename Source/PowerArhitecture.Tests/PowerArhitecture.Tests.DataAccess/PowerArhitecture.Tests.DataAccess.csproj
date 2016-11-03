@@ -58,6 +58,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
     </Reference>
+    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -136,8 +140,10 @@
     <Compile Include="Entities\AttrLazyLoad.cs" />
     <Compile Include="Entities\AttrUniqueAttribute.cs" />
     <Compile Include="Entities\Country.cs" />
+    <Compile Include="Entities\IdentityValidableEntity.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Entities\ValidableEntity.cs" />
+    <Compile Include="Entities\ValidableRootChild.cs" />
     <Compile Include="Entities\Versioning\VersionCar.cs" />
     <Compile Include="Entities\Versioning\VersionCarWithEntityUser.cs" />
     <Compile Include="Entities\Versioning\VersionCarWithStringUser.cs" />
