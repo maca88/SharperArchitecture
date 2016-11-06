@@ -8,11 +8,13 @@ using FluentNHibernate.Cfg.Db;
 using HibernatingRhinos.Profiler.Appender.NHibernate;
 using NHibernate;
 using NHibernate.Cfg;
+using NHibernate.Param;
 using Ninject;
 using Ninject.MockingKernel.Moq;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Extensions;
+using PowerArhitecture.DataAccess.Parameters;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 
@@ -20,8 +22,7 @@ namespace PowerArhitecture.Tests.Common
 {
     public abstract class DatabaseBaseTest : BaseTest
     {
-        protected IFluentDatabaseConfiguration DatabaseConfiguration;
-        protected AutomappingConfiguration AutomappingConfiguration = new AutomappingConfiguration();
+        protected List<IFluentDatabaseConfiguration> DatabaseConfigurations = new List<IFluentDatabaseConfiguration>();
         protected List<Assembly> EntityAssemblies = new List<Assembly>
         {
             Assembly.GetExecutingAssembly(),
@@ -33,10 +34,10 @@ namespace PowerArhitecture.Tests.Common
             Assembly.GetAssembly(typeof (Entity))
         };
         protected List<ISessionFactory> SessionFactories = new List<ISessionFactory>();
-
-        protected virtual IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
+        
+        protected virtual IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
         {
-            return FluentDatabaseConfiguration.Create(new Configuration())
+            return FluentDatabaseConfiguration.Create(new Configuration(), name)
                 .AddConventionAssemblies(ConventionAssemblies)
                 .AddEntityAssemblies(EntityAssemblies)
                 .FluentNHibernate(f => f
@@ -51,8 +52,7 @@ namespace PowerArhitecture.Tests.Common
                     )
                 )
                 .RecreateAtStartup()
-                .AutomappingConfiguration(AutomappingConfiguration)
-                .HbmMappingsPath(".\\Mappings")
+                .HbmMappingsPath($".\\Mappings{name}")
                 .Conventions(c => c
                     .IdDescending()
                     .UniqueWithMultipleNulls()
@@ -64,29 +64,32 @@ namespace PowerArhitecture.Tests.Common
                 );
         }
 
-        protected virtual IFluentDatabaseConfiguration GetDatabaseConfiguration()
+        protected virtual IEnumerable<IFluentDatabaseConfiguration> GetDatabaseConfigurations()
         {
-            return CreateDatabaseConfiguration();
+            yield return CreateDatabaseConfiguration();
         }
 
-        //No need to add reference to FluentNhibernate
-        protected void AddMappingStepAssembly(Assembly assembly)
+        protected virtual void ConfigureDatabaseConfiguration(DatabaseConfiguration configuration)
         {
-            AutomappingConfiguration.AddStepAssembly(assembly);
         }
 
         protected override void Configure()
         {
             Kernel = new MoqMockingKernel();
             NHibernateProfiler.Initialize();
-            DatabaseConfiguration = GetDatabaseConfiguration();
-            Kernel.RegisterDatabaseConfiguration(DatabaseConfiguration.Build());
+            foreach (var config in GetDatabaseConfigurations())
+            {
+                DatabaseConfigurations.Add(config);
+                var dbConfig = config.Build();
+                ConfigureDatabaseConfiguration(dbConfig);
+                Kernel.RegisterDatabaseConfiguration(dbConfig);
+            }
 
             base.Configure();
 
-            if (DatabaseConfiguration != null)
+            foreach (var config in DatabaseConfigurations)
             {
-                var sessionFactory = Kernel.Get<ISessionFactory>();
+                var sessionFactory = Kernel.Get<ISessionFactory>(new DatabaseConfigurationParameter(config.Name));
                 SessionFactories.Add(sessionFactory);
                 FillData(sessionFactory);
             }

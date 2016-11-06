@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using NHibernate;
 using NHibernate.Cfg;
-using NHibernate.Mapping;
 using Ninject;
 using Ninject.Activation;
+using Ninject.Extensions.Conventions;
 using Ninject.Extensions.NamedScope;
 using Ninject.Modules;
 using Ninject.Planning.Bindings;
 using Ninject.Web.Common;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Extensions;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Configurations;
@@ -28,9 +28,12 @@ namespace PowerArhitecture.DataAccess.Extensions
         private static IBinding _defaultDbSettingsBinding;
         private static readonly IList<IBinding> DefaultSessionBindings = new List<IBinding>();
 
-        public static void RegisterDatabaseConfiguration(this IKernel kernel, DatabaseConfiguration dbConfiguration, string name = null)
+        public const string DatabaseConfigurationMedatadataKey = "DatabaseConfigurationName";
+
+        public static void RegisterDatabaseConfiguration(this IKernel kernel, DatabaseConfiguration dbConfiguration)
         {
-            if (name == null && _defaultDbSettingsBinding != null)
+            var name = dbConfiguration.Name;
+            if (name == DatabaseConfiguration.DefaultName && _defaultDbSettingsBinding != null)
                 kernel.RemoveBinding(_defaultDbSettingsBinding);
 
             var bindingBuilder = (BindingBuilder<DatabaseConfiguration>)kernel.Bind<DatabaseConfiguration>();
@@ -38,21 +41,22 @@ namespace PowerArhitecture.DataAccess.Extensions
                 .When(CheckSessionFactoryName(name))
                 .InSingletonScope();
 
-            if (name == null)
+            if (name == DatabaseConfiguration.DefaultName)
                 _defaultDbSettingsBinding = bindingBuilder.Binding;
 
-            syntaxBinding.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
             kernel.RegisterNhConfiguration(dbConfiguration.NHibernateConfiguration, name);
+            Database.RegisteredDatabaseConfigurations.AddOrUpdate(name, dbConfiguration, (k, v) => dbConfiguration);
         }
 
-        public static void RegisterDatabaseConfiguration(this NinjectModule module, DatabaseConfiguration configuration, string name = null)
+        public static void RegisterDatabaseConfiguration(this NinjectModule module, DatabaseConfiguration configuration)
         {
-            module.Kernel.RegisterDatabaseConfiguration(configuration, name);
+            module.Kernel.RegisterDatabaseConfiguration(configuration);
         }
 
-        private static void RegisterNhConfiguration(this IKernel kernel, Configuration cfg, string name = null)
+        private static void RegisterNhConfiguration(this IKernel kernel, Configuration cfg, string name)
         {
-            if (name == null && _defaultNhConfigurationBinding != null)
+            if (name == DatabaseConfiguration.DefaultName && _defaultNhConfigurationBinding != null)
                 kernel.RemoveBinding(_defaultNhConfigurationBinding);
 
             var bindingBuilder = (BindingBuilder<Configuration>)kernel.Bind<Configuration>();
@@ -60,15 +64,15 @@ namespace PowerArhitecture.DataAccess.Extensions
                 .When(CheckSessionFactoryName(name))
                 .InSingletonScope();
 
-            if (name == null)
+            if (name == DatabaseConfiguration.DefaultName)
                 _defaultNhConfigurationBinding = bindingBuilder.Binding;
-            syntaxBinding.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
             kernel.RegisterSessionFactory(name);
         }
 
-        private static void RegisterSession(this IKernel kernel, string name = null)
+        private static void RegisterSession(this IKernel kernel, string name)
         {
-            if (name == null && DefaultSessionBindings.Any())
+            if (name == DatabaseConfiguration.DefaultName && DefaultSessionBindings.Any())
             {
                 foreach (var binding in DefaultSessionBindings)
                 {
@@ -85,32 +89,82 @@ namespace PowerArhitecture.DataAccess.Extensions
                 .ToProvider<SessionProvider>()
                 .WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
                 .InRequestScope();
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
 
-            var syntaxBinding2 = bindingBuilder2
+            syntaxBinding = bindingBuilder2
                 .ToProvider<SessionProvider>()
                 .WhenRequestScopeNotExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
                 .InCallScope();
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
 
-            var syntaxBinding3 = bindingBuilder3
+            syntaxBinding = bindingBuilder3
                 .ToProvider<SessionProvider>()
-                .WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryNameForContext(name))
+                .WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
                 .InNamedScope(ResolutionScopes.UnitOfWork);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
 
-            if (name == null)
+            if (name == DatabaseConfiguration.DefaultName)
             {
                 DefaultSessionBindings.Add(bindingBuilder.Binding);
                 DefaultSessionBindings.Add(bindingBuilder2.Binding);
                 DefaultSessionBindings.Add(bindingBuilder3.Binding);
             }
-
-            syntaxBinding.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
-            syntaxBinding2.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
-            syntaxBinding3.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
+            kernel.RegisterRepositores(name);
         }
 
-        private static void RegisterSessionFactory(this IKernel kernel, string name = null)
+        private static void RegisterRepositores(this IKernel kernel, string name)
         {
-            if (name == null && _defaultSessionFactoryBinding != null)
+            kernel.Bind(o => o
+                .From(AppConfiguration.GetDomainAssemblies()
+                    .Where(a => a.GetTypes().Any(t => typeof(IRepository).IsAssignableFrom(t))))
+                .IncludingNonePublicTypes()
+                .Select(CanBindCustomRepository)
+                .BindSelection((type, types) => new List<Type> { type }.Union(types))
+                .Configure(c =>
+                {
+                    c.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+                    c.WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork,
+                        CheckSessionFactoryName(name))
+                        .InNamedScope(ResolutionScopes.UnitOfWork);
+                }));
+            kernel.Bind(o => o
+                .From(AppConfiguration.GetDomainAssemblies()
+                    .Where(a => a.GetTypes().Any(t => typeof(IRepository).IsAssignableFrom(t))))
+                .IncludingNonePublicTypes()
+                .Select(CanBindCustomRepository)
+                .BindSelection((type, types) => new List<Type> { type }.Union(types))
+                .Configure(c =>
+                {
+                    c.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+                    c.WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork,
+                        CheckSessionFactoryName(name))
+                        .InRequestScope();
+                }));
+
+            var syntaxBinding = kernel.Bind(typeof(IRepository<>)).To(typeof(Repository<>))
+                .WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
+                .InNamedScope(ResolutionScopes.UnitOfWork);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+
+            syntaxBinding = kernel.Bind(typeof(IRepository<>)).To(typeof(Repository<>))
+                .WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
+                .InRequestScope();
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+
+            syntaxBinding = kernel.Bind(typeof(IRepository<,>)).To(typeof(Repository<,>))
+                .WhenAnyAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
+                .InNamedScope(ResolutionScopes.UnitOfWork);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+
+            syntaxBinding = kernel.Bind(typeof(IRepository<,>)).To(typeof(Repository<,>))
+                .WhenRequestScopeExistsAndNoAncestorOrCurrentNamedAnd(ResolutionScopes.UnitOfWork, CheckSessionFactoryName(name))
+                .InRequestScope();
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
+        }
+
+        private static void RegisterSessionFactory(this IKernel kernel, string name)
+        {
+            if (name == DatabaseConfiguration.DefaultName && _defaultSessionFactoryBinding != null)
                 kernel.RemoveBinding(_defaultSessionFactoryBinding);
 
             var bindingBuilder = (BindingBuilder<ISessionFactory>)kernel.Bind<ISessionFactory>();
@@ -119,34 +173,37 @@ namespace PowerArhitecture.DataAccess.Extensions
                 .InSingletonScope()
                 .OnActivation(SessionFactoryProvider.PopulateData);
 
-            if (name == null)
+            if (name == DatabaseConfiguration.DefaultName)
                 _defaultSessionFactoryBinding = bindingBuilder.Binding;
 
-            syntaxBinding.BindingConfiguration.Metadata.Set("SessionFactoryName", name);
+            syntaxBinding.BindingConfiguration.Metadata.Set(DatabaseConfigurationMedatadataKey, name);
             kernel.RegisterSession(name);
         }
 
-        
-
-        private static Func<IContext, bool> CheckSessionFactoryNameForContext(string name)
+        private static bool CanBindCustomRepository(Type t)
         {
-            return ctx => CheckSessionFactoryName(name)(ctx.Request);
+            if (!t.IsClass || t.IsAbstract || t.IsGenericType || !typeof(IRepository).IsAssignableFrom(t))
+            {
+                return false;
+            }
+            var repoAttr = t.GetCustomAttribute<RepositoryAttribute>();
+            return repoAttr == null || repoAttr.AutoBind;
         }
 
-        private static Func<IRequest, bool> CheckSessionFactoryName(string name)
+        internal static Func<IRequest, bool> CheckSessionFactoryName(string name)
         {
             return r =>
             {
                 if (r.Target != null) //null can be when injecting like: kernel.Get<ISession>()
                 {
-                    var attr = (NamedSessionFactoryAttribute)r.Target.GetCustomAttributes(typeof(NamedSessionFactoryAttribute), true).FirstOrDefault();
+                    var attr = (DatabaseAttribute)r.Target.GetCustomAttributes(typeof(DatabaseAttribute), true).FirstOrDefault();
                     if (attr != null)
-                        return attr.Name == name;
+                        return attr.ConfigurationName == name;
                 }
-                var param = r.Parameters.OfType<NamedSessionFactoryParameter>().FirstOrDefault();
+                var param = r.Parameters.OfType<DatabaseConfigurationParameter>().FirstOrDefault();
                 if (param != null)
                     return param.Name == name;
-                return name == null;
+                return name == DatabaseConfiguration.DefaultName;
             };
         } 
     }

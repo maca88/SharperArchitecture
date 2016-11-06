@@ -13,12 +13,12 @@ using FluentNHibernate.Utils;
 
 namespace PowerArhitecture.DataAccess.MappingSteps
 {
-    public class PAPropertyStep : IAutomappingStep
+    public class CustomPropertyStep : IAutomappingStep
     {
         private readonly IConventionFinder conventionFinder;
         private readonly IAutomappingConfiguration cfg;
 
-        public PAPropertyStep(IConventionFinder conventionFinder, IAutomappingConfiguration cfg)
+        public CustomPropertyStep(IConventionFinder conventionFinder, IAutomappingConfiguration cfg)
         {
             this.conventionFinder = conventionFinder;
             this.cfg = cfg;

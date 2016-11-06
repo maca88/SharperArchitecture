@@ -30,34 +30,10 @@ namespace PowerArhitecture.DataAccess
 {
     public class NinjectRegistration : NinjectModule
     {
+        
+
         public override void Load()
         {
-            //Default configuration
-            //var dbSettings = FluentDatabaseConfiguration.Create(new Configuration().Configure())
-            //    .FillFromConfig()
-            //    .Build();
-            //this.RegisterDatabaseConfiguration(dbSettings);
-
-            Bind(typeof (IRepository<>)).To(typeof (Repository<>))
-                .WhenAnyAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InNamedScope(ResolutionScopes.UnitOfWork);
-            Bind(typeof (IRepository<>)).To(typeof (Repository<>))
-                .WhenNoAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InRequestScope();
-            Bind(typeof(IRepository<,>)).To(typeof(Repository<,>))
-                .WhenAnyAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InNamedScope(ResolutionScopes.UnitOfWork);
-            Bind(typeof(IRepository<,>)).To(typeof(Repository<,>))
-                .WhenNoAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InRequestScope();
-
-            Bind<IRepositoryFactory>().To<RepositoryFactory>()
-                .WhenAnyAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InNamedScope(ResolutionScopes.UnitOfWork);
-            Bind<IRepositoryFactory>().To<RepositoryFactory>()
-                .WhenNoAncestorOrCurrentNamed(ResolutionScopes.UnitOfWork)
-                .InSingletonScope();
-
             Bind<IUnitOfWorkFactory>().To<UnitOfWorkFactory>();
             Bind<IUnitOfWork, IUnitOfWorkImplementor>()
                 .To<UnitOfWork>()
@@ -72,22 +48,6 @@ namespace PowerArhitecture.DataAccess
                     return level;
                 })
                 .DefinesNamedScope(ResolutionScopes.UnitOfWork);
-
-            //Convention for custom repositories
-            Kernel.Bind(o => o
-                .From(AppConfiguration.GetDomainAssemblies()
-                    .Where(a => a.GetTypes().Any(t => typeof (IRepository).IsAssignableFrom(t))))
-                .IncludingNonePublicTypes()
-                .Select(t =>
-                {
-                    if (!t.IsClass || t.IsAbstract || t.IsGenericType || !typeof(IRepository).IsAssignableFrom(t))
-                    {
-                        return false;
-                    }
-                    var repoAttr = t.GetCustomAttribute<RepositoryAttribute>();
-                    return repoAttr == null || repoAttr.AutoBind;
-                })
-                .BindAllInterfaces());
 
             //Events
             Bind<ISaveOrUpdateEventListener>().To<NhSaveOrUpdateEventListener>().InSingletonScope();

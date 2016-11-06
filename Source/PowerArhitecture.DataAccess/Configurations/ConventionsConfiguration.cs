@@ -14,11 +14,11 @@ namespace PowerArhitecture.DataAccess.Configurations
             HiLoId = new HiLoIdConfiguration();
         }
 
-        public virtual HiLoIdConfiguration HiLoId { get; private set; }
-        public virtual bool IdDescending { get; set; }
-        public virtual bool UniqueWithMultipleNulls { get; set; }
-        public virtual bool RequiredLastModifiedProperty { get; set; }
-        public virtual string DateTimeZone { get; set; }
+        public virtual HiLoIdConfiguration HiLoId { get; }
+        public virtual bool IdDescending { get; internal set; }
+        public virtual bool UniqueWithMultipleNulls { get; internal set; }
+        public virtual bool RequiredLastModifiedProperty { get; internal set; }
+        public virtual string DateTimeZone { get; internal set; }
 
         internal void FillFromConfig()
         {

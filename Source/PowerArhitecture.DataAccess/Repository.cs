@@ -114,12 +114,12 @@ namespace PowerArhitecture.DataAccess
             return Session.GetAsync<T>(id);
         }
 
-        public virtual void Save(object model)
+        public virtual void Save(IEntity model)
         {
             Session.Save(model);
         }
 
-        public virtual Task SaveAsync(object model)
+        public virtual Task SaveAsync(IEntity model)
         {
             return Session.SaveAsync(model);
         }

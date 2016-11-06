@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate.Automapping;
+using NHibernate;
+using Ninject.Extensions.Logging;
+using PowerArhitecture.DataAccess;
+using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
 {
@@ -15,5 +19,17 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
         [LazyLoad]
         public virtual string Xml { get; set; }
+    }
+
+    public interface IAttrLazyLoadRepository : IRepository
+    {
+        
+    }
+
+    public class AttrLazyLoadRepository : Repository<AttrLazyLoad>, IAttrLazyLoadRepository
+    {
+        public AttrLazyLoadRepository(ISession session, ILogger logger) : base(session, logger)
+        {
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace PowerArhitecture.Tests.Breeze
     [TestFixture]
     public class MetadataTests
     {
-        [Test]
+        //[Test]
         public void Deserialize()
         {
             var assembly = Assembly.GetExecutingAssembly();

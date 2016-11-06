@@ -8,6 +8,7 @@ using Ninject;
 using Ninject.Extensions.NamedScope;
 using Ninject.Parameters;
 using Ninject.Syntax;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Parameters;
 using PowerArhitecture.DataAccess.Specifications;
 
@@ -22,15 +23,12 @@ namespace PowerArhitecture.DataAccess.Factories
             _resolutionRoot = resolutionRoot;
         }
 
-        public IUnitOfWork GetNew(IsolationLevel isolationLevel = IsolationLevel.Unspecified, string sessionFactoryName = null)
+        public IUnitOfWork GetNew(IsolationLevel isolationLevel = IsolationLevel.Unspecified, string dbConfigName = null)
         {
-            if (!string.IsNullOrEmpty(sessionFactoryName))
-                return _resolutionRoot.Get<IUnitOfWork>(
-                    new ConstructorArgument("isolationLevel", isolationLevel), 
-                    new NamedSessionFactoryParameter(sessionFactoryName));
-
+            dbConfigName = dbConfigName ?? DatabaseConfiguration.DefaultName;
             return _resolutionRoot.Get<IUnitOfWork>(
-                new ConstructorArgument("isolationLevel", isolationLevel));
+                new ConstructorArgument("isolationLevel", isolationLevel),
+                new DatabaseConfigurationParameter(dbConfigName));
         }
     }
 }

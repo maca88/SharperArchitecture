@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Web;
 using FluentNHibernate;
 using FluentNHibernate.Mapping;
@@ -28,6 +30,7 @@ using NHibernate.Cfg;
 using NHibernate.Connection;
 using NHibernate.Tool.hbm2ddl;
 using log4net;
+using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess
@@ -35,34 +38,40 @@ namespace PowerArhitecture.DataAccess
     public class Database
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Database));
-        private static readonly Dictionary<ISessionFactory, SessionFactoryInfo> SessionFactories = new Dictionary<ISessionFactory, SessionFactoryInfo>();
+        internal static readonly ConcurrentDictionary<string, DatabaseConfiguration> RegisteredDatabaseConfigurations = 
+            new ConcurrentDictionary<string, DatabaseConfiguration>();
+        private static readonly ConcurrentDictionary<ISessionFactory, SessionFactoryInfo> SessionFactories = 
+            new ConcurrentDictionary<ISessionFactory, SessionFactoryInfo>();
+        private static readonly ConcurrentDictionary<Type, IReadOnlyCollection<DatabaseConfiguration>>
+            CachedConfigurationsForModels = new ConcurrentDictionary<Type, IReadOnlyCollection<DatabaseConfiguration>>();
         private static IEventPublisher _eventPublisher;
 
         static Database(){}
 
+        #region Public members
+
         public static ISessionFactory CreateSessionFactory(
             IEventPublisher eventPublisher,
-            DatabaseConfiguration dbConfiguration,
-            string name = null)
+            DatabaseConfiguration dbConfiguration)
         {
             var cfg = dbConfiguration.NHibernateConfiguration;
             var entityAssemblies = dbConfiguration.EntityAssemblies.Any()
                 ? dbConfiguration.EntityAssemblies
                 : AppConfiguration.GetDomainAssemblies()
-                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IEntity)).IsAssignableFrom(o))).ToList();
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof (IEntity).IsAssignableFrom(o))).ToList();
 
             var conventionAssemblies = dbConfiguration.ConventionAssemblies.Any()
                 ? dbConfiguration.ConventionAssemblies
                 : AppConfiguration.GetDomainAssemblies()
                     .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
-                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IConvention)).IsAssignableFrom(o)))
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof (IConvention).IsAssignableFrom(o)))
                     .ToList();
 
-            var automappingConfiguration = dbConfiguration.AutomappingConfiguration ?? new AutomappingConfiguration()
-                .AddStepAssemblies(AppConfiguration.GetDomainAssemblies()
-                    .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
+            var automappingConfiguration = dbConfiguration.AutoMappingConfiguration;
+            automappingConfiguration.AddStepAssemblies(AppConfiguration.GetDomainAssemblies()
+                    .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
                     .Where(assembly => assembly != Assembly.GetExecutingAssembly())
-                    .Where(assembly => assembly.GetTypes().Any(o => (typeof (IAutomappingStep)).IsAssignableFrom(o)))
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof(IAutomappingStep).IsAssignableFrom(o)))
                     .ToList());
 
             var hbmMappingsPath = dbConfiguration.HbmMappingsPath;
@@ -100,17 +109,19 @@ namespace PowerArhitecture.DataAccess
                         if (dbConfiguration.ValidateSchema)
                             ValidateSchema(configuration);
 
-                        if (!string.IsNullOrEmpty(hbmMappingsPath))
+                        if (string.IsNullOrEmpty(hbmMappingsPath))
                         {
-                            if (!Directory.Exists(hbmMappingsPath))
-                                Directory.CreateDirectory(hbmMappingsPath);
-                            autoPestModel.WriteMappingsTo(hbmMappingsPath);
+                            return;
                         }
-
+                        if (!Directory.Exists(hbmMappingsPath))
+                        {
+                            Directory.CreateDirectory(hbmMappingsPath);
+                        }
+                        autoPestModel.WriteMappingsTo(hbmMappingsPath);
                     });
 
                 var sessionFactory = fluentConfig.BuildSessionFactory();
-                RegisterSessionFactory(sessionFactory, cfg, autoPestModel, dbConfiguration, name);
+                RegisterSessionFactory(sessionFactory, cfg, autoPestModel, dbConfiguration);
                 return sessionFactory;
             }
             catch (FluentConfigurationException e)
@@ -125,14 +136,29 @@ namespace PowerArhitecture.DataAccess
                     Logger.Fatal("PotentialReasons: " + string.Join(System.Environment.NewLine, e.PotentialReasons));
                 }
                 Logger.Fatal(e.InnerException);
-                throw e.InnerException;
+                ExceptionDispatchInfo.Capture(e.InnerException).Throw();
             }
+            return null;
         }
 
-        public static void RemoveSessionFactory(ISessionFactory sessionFactory)
+        public static bool MultipleDatabases => RegisteredDatabaseConfigurations.Count > 1;
+
+        public static bool HasDefaultDatabase => RegisteredDatabaseConfigurations.ContainsKey(DatabaseConfiguration.DefaultName);
+
+        public static bool ContainsDatabaseConfiguration(string name)
         {
+            return RegisteredDatabaseConfigurations.ContainsKey(name);
+        }
+
+        public static bool RemoveSessionFactory(ISessionFactory sessionFactory)
+        {
+            SessionFactoryInfo info;
+            if (!SessionFactories.TryRemove(sessionFactory, out info))
+            {
+                return false;
+            }
             sessionFactory.Dispose();
-            SessionFactories.Remove(sessionFactory);
+            return true;
         }
 
         public static void DropTables(ISessionFactory sessionFactory)
@@ -159,33 +185,71 @@ namespace PowerArhitecture.DataAccess
             return GetSessionFactoryInfo(session.SessionFactory);
         }
 
-        public static DatabaseConfiguration GetDatabaseConfigurationForModel(Type modelType)
+        public static IEnumerable<DatabaseConfiguration> GetDatabaseConfigurationsForModel<T>()
+        {
+            return GetDatabaseConfigurationsForModel(typeof(T));
+        }
+
+        public static IEnumerable<DatabaseConfiguration> GetDatabaseConfigurationsForModel(Type modelType)
         {
             if (modelType == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(modelType));
             }
-            foreach (var pair in SessionFactories)
+            IReadOnlyCollection<DatabaseConfiguration> result;
+            if (CachedConfigurationsForModels.TryGetValue(modelType, out result))
             {
-                if (pair.Value.Configuration.ClassMappings.Any(o => o.MappedClass == modelType))
+                return result;
+            }
+            var list = new List<DatabaseConfiguration>();
+            foreach (var info in SessionFactories.Values)
+            {
+                if (info.Configuration.ClassMappings.Any(o => o.MappedClass == modelType))
                 {
-                    return pair.Value.DatabaseConfiguration;
+                    list.Add(info.DatabaseConfiguration);
                 }
             }
-            return null;
+            result = list.AsReadOnly();
+            CachedConfigurationsForModels.TryAdd(modelType, result);
+            return result;
         }
 
-        public static SessionFactoryInfo GetSessionFactoryInfo(ISessionFactory sessionFactory)
+        public static string GetDatabaseConfigurationName(Type modelType)
+        {
+            if (!MultipleDatabases && HasDefaultDatabase)
+            {
+                return DatabaseConfiguration.DefaultName;
+            }
+            var configs = GetDatabaseConfigurationsForModel(modelType).ToList();
+            if (!configs.Any())
+            {
+                throw new PowerArhitectureException($"No database configuration found for type {modelType}.");
+            }
+            if (configs.Count > 1)
+            {
+                if (configs.Any(o => o.Name == DatabaseConfiguration.DefaultName))
+                {
+                    return DatabaseConfiguration.DefaultName;
+                }
+                throw new PowerArhitectureException($"There are multiple database configurations that contain type {modelType}. " +
+                    "Hint: Use the overload with a database configuration name");
+            }
+            return configs.First().Name;
+        }
+
+        #endregion
+
+        internal static SessionFactoryInfo GetSessionFactoryInfo(ISessionFactory sessionFactory)
         {
             return SessionFactories[sessionFactory];
         }
 
         private static void RegisterSessionFactory(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 
-            DatabaseConfiguration dbConfiguration, string name = null)
+            DatabaseConfiguration dbConfiguration)
         {
-            var sessionFactoryInfo = new SessionFactoryInfo(sessionFactory, configuration, autoPersistenceModel, dbConfiguration, name);
+            var sessionFactoryInfo = new SessionFactoryInfo(sessionFactory, configuration, autoPersistenceModel, dbConfiguration);
             sessionFactoryInfo.ValidateSettings();
-            SessionFactories.Add(sessionFactory, sessionFactoryInfo);
+            SessionFactories.AddOrUpdate(sessionFactory, sessionFactoryInfo, (k, v) => sessionFactoryInfo);
         }
 
         private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration, ICollection<Assembly> assemblies, 
@@ -233,7 +297,8 @@ namespace PowerArhitecture.DataAccess
                     }
                     catch (TargetInvocationException e)
                     {
-                        throw;
+                        ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+                        return null;
                     }
                 }
                     

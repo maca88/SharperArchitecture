@@ -577,7 +577,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     {
                         var entity = unitOfWork.Query<ValidableEntity>()
                             .First(o => o.Name == "Generated1");
-                        unitOfWork.Session.SetReadOnly(entity, true);
+                        unitOfWork.DefaultSession.SetReadOnly(entity, true);
                         var child = entity.Children.First();
                         child.CountryCode = "Code2";
                     }
@@ -605,7 +605,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     {
                         var entity = unitOfWork.Query<ValidableEntity>()
                             .First(o => o.Name == "Generated1");
-                        unitOfWork.Session.SetReadOnly(entity, true);
+                        unitOfWork.DefaultSession.SetReadOnly(entity, true);
                         var child = entity.Children.First();
                         child.CountryCode = "Code2";
                     }
@@ -888,7 +888,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     {
                         var entity = unitOfWork.Query<ValidableEntity>()
                             .First(o => o.Name == "Generated1");
-                        unitOfWork.Session.SetReadOnly(entity, true);
+                        unitOfWork.DefaultSession.SetReadOnly(entity, true);
                         var child = entity.Children.First().Children.First();
                         child.Name = "New name";
                     }

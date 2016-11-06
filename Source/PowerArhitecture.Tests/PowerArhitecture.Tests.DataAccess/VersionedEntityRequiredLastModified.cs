@@ -36,12 +36,12 @@ namespace PowerArhitecture.Tests.DataAccess
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
         }
 
-        protected override IFluentDatabaseConfiguration GetDatabaseConfiguration()
+        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
         {
-            return base.GetDatabaseConfiguration().Conventions(c => c
-                .HiLoId(o => o.Enabled(false)
-                )
-                .RequiredLastModifiedProperty()
+            return base.CreateDatabaseConfiguration(dbName, name)
+                .Conventions(c => c
+                    .HiLoId(o => o.Enabled(false))
+                    .RequiredLastModifiedProperty()
                 );
         }
 
@@ -109,7 +109,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
             using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
-                unitOfWork.Session.FlushMode = FlushMode.Never;
+                unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 //Save only the root entity (because the default conventions the children will be saved too)
                 unitOfWork.Save(bmw); //A flush will happen as we set the id generator to indentity
 
@@ -224,7 +224,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
             using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
-                unitOfWork.Session.FlushMode = FlushMode.Never;
+                unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 
                 bmw.AddWheel(bmwWheel1);
                 bmw.AddWheel(bmwWheel2);
@@ -397,7 +397,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 genIndentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user2.Id.ToString(CultureInfo.InvariantCulture)));
                 var newUser = new GenericPrincipal(genIndentity, new[] { "Role1" });
 
-                unitOfWork.Session.FlushMode = FlushMode.Never;
+                unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 
                 bmw.AddWheel(bmwWheel1);
                 bmw.AddWheel(bmwWheel2);

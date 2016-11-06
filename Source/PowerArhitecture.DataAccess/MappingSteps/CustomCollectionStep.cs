@@ -18,12 +18,12 @@ namespace PowerArhitecture.DataAccess.MappingSteps
     /// <summary>
     /// Copied from nh with a minor modification
     /// </summary>
-    internal class PACollectionStep : IAutomappingStep
+    internal class CustomCollectionStep : IAutomappingStep
     {
         private readonly IAutomappingConfiguration _cfg;
         private readonly AutoKeyMapper _keys;
 
-        public PACollectionStep(IAutomappingConfiguration cfg)
+        public CustomCollectionStep(IAutomappingConfiguration cfg)
         {
             _cfg = cfg;
             _keys = new AutoKeyMapper();

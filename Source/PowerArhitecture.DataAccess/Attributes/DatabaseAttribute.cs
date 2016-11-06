@@ -5,21 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using Ninject;
 using Ninject.Planning.Bindings;
+using PowerArhitecture.DataAccess.Extensions;
 
 namespace PowerArhitecture.DataAccess.Attributes
 {
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-    public class NamedSessionFactoryAttribute : ConstraintAttribute
+    public class DatabaseAttribute : ConstraintAttribute
     {
-        public NamedSessionFactoryAttribute(string name)
+        public DatabaseAttribute(string configurationName)
         {
-            Name = name;
+            ConfigurationName = configurationName;
         }
-        public string Name { get; private set; }
+        public string ConfigurationName { get; }
 
         public override bool Matches(IBindingMetadata metadata)
         {
-            return metadata.Get<string>("SessionFactoryName", null) == Name;
+            return metadata.Get<string>(NinjectModuleExtensions.DatabaseConfigurationMedatadataKey, null) == ConfigurationName;
         }
     }
 }

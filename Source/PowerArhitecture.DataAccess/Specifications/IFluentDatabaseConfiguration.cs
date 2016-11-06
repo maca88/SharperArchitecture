@@ -13,11 +13,12 @@ namespace PowerArhitecture.DataAccess.Specifications
 {
     public interface IFluentDatabaseConfiguration
     {
+        string Name { get; }
         IFluentDatabaseConfiguration ValidateSchema(bool value = true);
         IFluentDatabaseConfiguration RecreateAtStartup(bool value = true);
         IFluentDatabaseConfiguration UpdateSchemaAtStartup(bool value = true);
         IFluentDatabaseConfiguration AllowOneToOneWithoutLazyLoading(bool value = true);
-        IFluentDatabaseConfiguration AutomappingConfiguration(IAutomappingConfiguration value);
+        IFluentDatabaseConfiguration AutomappingConfiguration(Action<IFluentAutoMappingConfiguration> action);
         IFluentDatabaseConfiguration AddEntityAssembly(Assembly assembly);
         IFluentDatabaseConfiguration AddEntityAssemblies(IEnumerable<Assembly> assemblies);
         IFluentDatabaseConfiguration AddConventionAssembly(Assembly assembly);

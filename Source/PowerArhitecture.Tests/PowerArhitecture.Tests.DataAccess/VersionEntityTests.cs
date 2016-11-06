@@ -36,12 +36,11 @@ namespace PowerArhitecture.Tests.DataAccess
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
         }
 
-        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
+        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
         {
-            return base.CreateDatabaseConfiguration(dbName)
+            return base.CreateDatabaseConfiguration(dbName, name)
                 .Conventions(c => c
-                    .HiLoId(o => o.Enabled(false)
-                    )
+                    .HiLoId(o => o.Enabled(false))
                 );
         }
 

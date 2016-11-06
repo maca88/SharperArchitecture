@@ -15,6 +15,7 @@ using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.CodeList.Entities;
 using NUnit.Framework;
 using PowerArhitecture.DataAccess;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation.Specifications;
@@ -33,11 +34,16 @@ namespace PowerArhitecture.Tests.CodeList
             EntityAssemblies.Add(Assembly.GetAssembly(typeof(ICodeList)));
             EntityAssemblies.Add(Assembly.GetAssembly(typeof(CodeListTests)));
             ConventionAssemblies.Add(Assembly.GetAssembly(typeof(ICodeList)));
-            AddMappingStepAssembly(Assembly.GetAssembly(typeof(ICodeList)));
             TestAssemblies.Add(typeof(CodeListTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+        }
+
+        protected override void ConfigureDatabaseConfiguration(DatabaseConfiguration configuration)
+        {
+            ((AutoMappingConfiguration) configuration.AutoMappingConfiguration).AddStepAssembly(
+                Assembly.GetAssembly(typeof(ICodeList)));
         }
 
         [Test]
@@ -47,7 +53,7 @@ namespace PowerArhitecture.Tests.CodeList
             {
                 try
                 {
-                    unitOfWork.Session.EnableFilter("Language")
+                    unitOfWork.DefaultSession.EnableFilter("Language")
                         .SetParameter("Current", "sl")
                         .SetParameter("Fallback", "en");
                     var bmw = unitOfWork.Query<Car, string>()
@@ -70,7 +76,7 @@ namespace PowerArhitecture.Tests.CodeList
             {
                 try
                 {
-                    unitOfWork.Session.EnableFilter("Language")
+                    unitOfWork.DefaultSession.EnableFilter("Language")
                         .SetParameter("Current", "sl")
                         .SetParameter("Fallback", "en");
                     var cl = unitOfWork.Query<CustomLanguageFilter, string>()
@@ -94,9 +100,9 @@ namespace PowerArhitecture.Tests.CodeList
             }
         }
 
-        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "Test")
+        protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
         {
-            return base.CreateDatabaseConfiguration(dbName)
+            return base.CreateDatabaseConfiguration(dbName, name)
                 .Conventions(c => c
                     .HiLoId(o => o.Enabled(false)
                     )
@@ -105,7 +111,7 @@ namespace PowerArhitecture.Tests.CodeList
 
         protected override void FillData(ISessionFactory sessionFactory)
         {
-            var entities = new List<object>();
+            var entities = new List<IEntity>();
 
             FillCars(entities);
             FillCustomLanguageFilters(entities);
@@ -128,7 +134,7 @@ namespace PowerArhitecture.Tests.CodeList
 
         #region Car
 
-        private void FillSimpleCodeList(List<object> entities)
+        private void FillSimpleCodeList(List<IEntity> entities)
         {
             var cl = new SimpleCodeList
             {
@@ -149,7 +155,7 @@ namespace PowerArhitecture.Tests.CodeList
 
         #region Car
 
-        private void FillCars(List<object> entities)
+        private void FillCars(List<IEntity> entities)
         {
             var car1 = new Car { Code = "BMW" };
             car1.AddName(new CarLanguage
@@ -184,7 +190,7 @@ namespace PowerArhitecture.Tests.CodeList
 
         #region CustomLanguageFilter
 
-        private void FillCustomLanguageFilters(List<object> entities)
+        private void FillCustomLanguageFilters(List<IEntity> entities)
         {
             var cl1 = new CustomLanguageFilter { Code = "Code1" };
             cl1.AddName(new CustomLanguageFilterLanguage

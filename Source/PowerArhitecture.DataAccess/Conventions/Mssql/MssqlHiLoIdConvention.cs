@@ -50,6 +50,12 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
 
         public void Setup(Configuration config)
         {
+            var entityNames = config.ClassMappings.Select(m => m.MappedClass?.Name ?? m.Table.Name).Distinct().ToList();
+            if (!entityNames.Any())
+            {
+                return;
+            }
+
             var createScript = new StringBuilder();
             createScript.AppendFormat("DELETE FROM {0};", _hiLoIdentityTableName);
             createScript.AppendLine();
@@ -59,9 +65,10 @@ namespace PowerArhitecture.DataAccess.Conventions.Mssql
             createScript.AppendLine();
             createScript.AppendLine("GO");
             createScript.AppendLine();
-            foreach (var entityName in config.ClassMappings.Select(m => m.MappedClass != null ? m.MappedClass.Name : m.Table.Name).Distinct())
+            foreach (var entityName in entityNames)
             {
-                createScript.AppendFormat("INSERT INTO [{0}] ({1}, {2}) VALUES ('[{3}]', 0);", _hiLoIdentityTableName, TableColumnName, NextHiValueColumnName, entityName);
+                createScript.AppendFormat("INSERT INTO [{0}] ({1}, {2}) VALUES ('[{3}]', 0);", _hiLoIdentityTableName, TableColumnName, 
+                    NextHiValueColumnName, entityName);
                 createScript.AppendLine();
             }
             config.AddAuxiliaryDatabaseObject(new SimpleAuxiliaryDatabaseObject(createScript.ToString(), null, _validDialects));

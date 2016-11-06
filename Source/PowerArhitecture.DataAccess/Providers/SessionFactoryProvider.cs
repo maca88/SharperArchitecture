@@ -26,7 +26,6 @@ namespace PowerArhitecture.DataAccess.Providers
         private readonly IEventPublisher _eventPublisher;
         private readonly IResolutionRoot _resolutionRoot;
         private static readonly Dictionary<string, ISessionFactory> Factories = new Dictionary<string, ISessionFactory>();
-        private const string DefaultName = "Default";
 
         public SessionFactoryProvider(IEventPublisher eventPublisher, IResolutionRoot resolutionRoot)
         {
@@ -39,14 +38,14 @@ namespace PowerArhitecture.DataAccess.Providers
             string name = null;
             if (context.Request.Target != null)
             {
-                var attr = (NamedSessionFactoryAttribute)context.Request.Target.GetCustomAttributes(typeof(NamedSessionFactoryAttribute), true).FirstOrDefault();
-                name = attr?.Name;
+                var attr = (DatabaseAttribute)context.Request.Target.GetCustomAttributes(typeof(DatabaseAttribute), true).FirstOrDefault();
+                name = attr?.ConfigurationName;
             }
-           
-            //If there is no NamedSessionFactoryAttribute check if there is NamedSessionFactoryParameter
+
+            //If there is no DatabaseAttribute check if there is DatabaseConfigurationParameter
             if (name == null)
             {
-                var param = context.Request.Parameters.OfType<NamedSessionFactoryParameter>().FirstOrDefault();
+                var param = context.Request.Parameters.OfType<DatabaseConfigurationParameter>().FirstOrDefault();
                 name = param?.Name;
             }
 
@@ -54,18 +53,18 @@ namespace PowerArhitecture.DataAccess.Providers
 
             if (name != null)
             {
-                dbConfiguration = _resolutionRoot.TryGet<DatabaseConfiguration>(new NamedSessionFactoryParameter(name));
+                dbConfiguration = _resolutionRoot.TryGet<DatabaseConfiguration>(new DatabaseConfigurationParameter(name));
                 if(dbConfiguration == null)
-                    throw new HibernateConfigException($"IDatabaseConfiguration is not registered for named session factory '{name}'");
+                    throw new HibernateConfigException($"DatabaseConfiguration is not registered for name '{name}'");
             }
             else
             {
                 dbConfiguration = _resolutionRoot.Get<DatabaseConfiguration>();
             }
 
-            var sessionFactory = Database.CreateSessionFactory(_eventPublisher, dbConfiguration, name);
+            var sessionFactory = Database.CreateSessionFactory(_eventPublisher, dbConfiguration);
             _eventPublisher.Publish(new SessionFactoryCreatedEvent(sessionFactory));
-            Factories[name ?? DefaultName] = sessionFactory;
+            Factories[dbConfiguration.Name] = sessionFactory;
 
             Type = sessionFactory.GetType();
             return sessionFactory;
@@ -80,12 +79,13 @@ namespace PowerArhitecture.DataAccess.Providers
             if (pair.Value == null)
                 throw new PowerArhitectureException(
                     "Database population is not supported when SessionFactory is created manualy");
-            var name = pair.Key == DefaultName ? null : pair.Key;
-            var settings = string.IsNullOrEmpty(name)
-                ? context.Kernel.Get<DatabaseConfiguration>()
-                : context.Kernel.Get<DatabaseConfiguration>(new NamedSessionFactoryParameter(name));
+            var name = pair.Key;
+            var settings = context.Kernel.Get<DatabaseConfiguration>(new DatabaseConfigurationParameter(name));
 
-            if (!settings.RecreateAtStartup) return;
+            if (!settings.RecreateAtStartup)
+            {
+                return;
+            }
             using (var unitOfWork = context.Kernel.Get<IUnitOfWorkFactory>().GetNew(IsolationLevel.Unspecified, name))
             {
                 try

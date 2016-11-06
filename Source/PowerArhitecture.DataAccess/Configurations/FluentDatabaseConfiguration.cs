@@ -15,14 +15,16 @@ namespace PowerArhitecture.DataAccess.Configurations
     {
         private readonly DatabaseConfiguration _configuration;
 
-        public static IFluentDatabaseConfiguration Create(Configuration configuration)
+        public string Name => _configuration.Name;
+
+        public static IFluentDatabaseConfiguration Create(Configuration configuration, string name = null)
         {
-            return new FluentDatabaseConfiguration(configuration);
+            return new FluentDatabaseConfiguration(configuration, name);
         }
 
-        internal FluentDatabaseConfiguration(Configuration configuration)
+        internal FluentDatabaseConfiguration(Configuration configuration, string name = null)
         {
-            _configuration = new DatabaseConfiguration(configuration);
+            _configuration = new DatabaseConfiguration(configuration, name);
         }
 
         public IFluentDatabaseConfiguration ValidateSchema(bool value = true)
@@ -49,9 +51,9 @@ namespace PowerArhitecture.DataAccess.Configurations
             return this;
         }
 
-        public IFluentDatabaseConfiguration AutomappingConfiguration(IAutomappingConfiguration value)
+        public IFluentDatabaseConfiguration AutomappingConfiguration(Action<IFluentAutoMappingConfiguration> action)
         {
-            _configuration.AutomappingConfiguration = value;
+            _configuration.AutoMappingConfigurationAction = action;
             return this;
         }
 
@@ -105,6 +107,7 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public DatabaseConfiguration Build()
         {
+            _configuration.AutoMappingConfigurationAction?.Invoke(_configuration.AutoMappingConfiguration);
             return _configuration;
         }
     }

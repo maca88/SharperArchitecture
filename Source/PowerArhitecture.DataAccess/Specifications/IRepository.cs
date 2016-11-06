@@ -19,9 +19,9 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task<T> GetAsync<T>(object id);
 
-        void Save(object model);
+        void Save(IEntity model);
 
-        Task SaveAsync(object model);
+        Task SaveAsync(IEntity model);
 
         IQueryable<T> Query<T>() where T : IEntity;
 

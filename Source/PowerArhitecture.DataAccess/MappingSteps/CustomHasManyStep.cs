@@ -13,16 +13,16 @@ namespace PowerArhitecture.DataAccess.MappingSteps
     /// <summary>
     /// Copied from nhiberate with a minor modification
     /// </summary>
-    public class PAHasManyStep : IAutomappingStep
+    public class CustomHasManyStep : IAutomappingStep
     {
         private readonly SimpleTypeCollectionStep _simpleTypeCollectionStepStep;
-        private readonly PACollectionStep _collectionStep;
+        private readonly CustomCollectionStep _collectionStep;
         private readonly IAutomappingConfiguration _cfg;
 
-        public PAHasManyStep(IAutomappingConfiguration cfg)
+        public CustomHasManyStep(IAutomappingConfiguration cfg)
         {
             _simpleTypeCollectionStepStep = new SimpleTypeCollectionStep(cfg);
-            _collectionStep = new PACollectionStep(cfg);
+            _collectionStep = new CustomCollectionStep(cfg);
             _cfg = cfg;
         }
 

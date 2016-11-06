@@ -44,20 +44,20 @@ namespace PowerArhitecture.DataAccess.Providers
             string sfName = null;
             if (context.Request.Target != null)
             {
-                var attr = (NamedSessionFactoryAttribute)context.Request.Target.GetCustomAttributes(typeof(NamedSessionFactoryAttribute), true).FirstOrDefault();
-                sfName = attr?.Name;
+                var attr = (DatabaseAttribute)context.Request.Target.GetCustomAttributes(typeof(DatabaseAttribute), true).FirstOrDefault();
+                sfName = attr?.ConfigurationName;
             }
-            
-            //If there is no NamedSessionFactoryAttribute check if there is NamedSessionFactoryParameter
+
+            //If there is no DatabaseAttribute check if there is DatabaseConfigurationParameter
             if (sfName == null)
             {
-                var param = context.Request.Parameters.OfType<NamedSessionFactoryParameter>().FirstOrDefault();
+                var param = context.Request.Parameters.OfType<DatabaseConfigurationParameter>().FirstOrDefault();
                 sfName = param?.Name;
             }
 
             if (sfName != null)
             {
-                sessionFactory = _resolutionRoot.Get<ISessionFactory>(new NamedSessionFactoryParameter(sfName));
+                sessionFactory = _resolutionRoot.Get<ISessionFactory>(new DatabaseConfigurationParameter(sfName));
             }
             var sessionContext = new SessionContext
             {

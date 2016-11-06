@@ -13,14 +13,13 @@ namespace PowerArhitecture.DataAccess
     public class SessionFactoryInfo
     {
         public SessionFactoryInfo(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 
-            DatabaseConfiguration databaseConfiguration, string name)
+            DatabaseConfiguration databaseConfiguration)
             : this()
         {
             SessionFactory = sessionFactory;
             Configuration = configuration;
             AutoPersistenceModel = autoPersistenceModel;
             DatabaseConfiguration = databaseConfiguration;
-            Name = name;
             Initialize();
         }
 
@@ -29,17 +28,17 @@ namespace PowerArhitecture.DataAccess
             OneToOneWithoutLazyLoading = new Dictionary<string, List<string>>();
         }
 
-        public string Name { get; set; }
+        public string Name => DatabaseConfiguration.Name;
 
-        public ISessionFactory SessionFactory { get; private set; }
+        public ISessionFactory SessionFactory { get; }
 
-        public Configuration Configuration { get; private set; }
+        public Configuration Configuration { get; }
 
-        public DatabaseConfiguration DatabaseConfiguration { get; private set; }
+        public DatabaseConfiguration DatabaseConfiguration { get; }
 
-        public AutoPersistenceModel AutoPersistenceModel { get; private set; }
+        public AutoPersistenceModel AutoPersistenceModel { get; }
 
-        public Dictionary<string, List<string>> OneToOneWithoutLazyLoading { get; private set; } 
+        public Dictionary<string, List<string>> OneToOneWithoutLazyLoading { get; } 
 
         public bool IsLazyLoadEnabled(Type type, string propertyName)
         {

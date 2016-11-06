@@ -40,12 +40,17 @@ namespace PowerArhitecture.Tests.DataAccess
             using (var unitOfWork = unitOfWorkFactory.GetNew().GetUnitOfWorkImplementation())
             {  
                 var repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
-                var repo2 = (Repository<AttrLazyLoad, long>)unitOfWork.GetRepository<AttrLazyLoad>();
+                var repo2 = (AttrLazyLoadRepository)unitOfWork.GetRepository<AttrLazyLoad>();
+                var repo3 = (AttrLazyLoadRepository)unitOfWork.GetCustomRepository<IAttrLazyLoadRepository>();
+                var repo4 = (AttrLazyLoadRepository)unitOfWork.GetCustomRepository<IAttrLazyLoadRepository>();
+
+                Assert.AreEqual(repo2, repo3);
+                Assert.AreEqual(repo3, repo4);
                 var session = unitOfWork.ResolutionRoot.Get<ISession>();
 
-                Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
-                Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
-                Assert.AreEqual(unitOfWork.Session, session);
+                Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
+                Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
+                Assert.AreEqual(unitOfWork.DefaultSession, session);
             }
         }
 
@@ -62,9 +67,9 @@ namespace PowerArhitecture.Tests.DataAccess
                     var repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
                     var session = unitOfWork.ResolutionRoot.Get<ISession>();
 
-                    Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
-                    Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
-                    Assert.AreEqual(unitOfWork.Session, session);
+                    Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
+                    Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
+                    Assert.AreEqual(unitOfWork.DefaultSession, session);
 
                     var id = Thread.CurrentThread.ManagedThreadId;
                     await Task.Delay(100).ConfigureAwait(false);
@@ -74,9 +79,9 @@ namespace PowerArhitecture.Tests.DataAccess
                     repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
                     session = unitOfWork.ResolutionRoot.Get<ISession>();
 
-                    Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
-                    Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
-                    Assert.AreEqual(unitOfWork.Session, session);
+                    Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
+                    Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
+                    Assert.AreEqual(unitOfWork.DefaultSession, session);
                 }
             });
         }
@@ -92,11 +97,16 @@ namespace PowerArhitecture.Tests.DataAccess
             {
                 var repo1 = (Repository<AttrIndexAttribute, long>)unitOfWork.GetRepository<AttrIndexAttribute>();
                 var repo2 = (Repository<AttrLazyLoad, long>)unitOfWork.GetRepository<AttrLazyLoad>();
+                var repo3 = (AttrLazyLoadRepository)unitOfWork.GetCustomRepository<IAttrLazyLoadRepository>();
+                var repo4 = (AttrLazyLoadRepository)unitOfWork.GetCustomRepository<IAttrLazyLoadRepository>();
+
+                Assert.AreEqual(repo2, repo3);
+                Assert.AreEqual(repo3, repo4);
                 var session = unitOfWork.ResolutionRoot.Get<ISession>();
 
-                Assert.AreEqual(unitOfWork.Session, repo1.GetSession());
-                Assert.AreEqual(unitOfWork.Session, repo2.GetSession());
-                Assert.AreEqual(unitOfWork.Session, session);
+                Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
+                Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
+                Assert.AreEqual(unitOfWork.DefaultSession, session);
                 Assert.AreNotEqual(reqSession, session);
             }
         }
@@ -108,8 +118,15 @@ namespace PowerArhitecture.Tests.DataAccess
             var session = Kernel.Get<ISession>();
             var repo1 = (Repository<AttrIndexAttribute, long>)Kernel.Get<IRepository<AttrIndexAttribute, long>>();
             var repo2 = (Repository<AttrLazyLoad, long>)Kernel.Get<IRepository<AttrLazyLoad, long>>();
+            var repo3 = Kernel.Get<IAttrLazyLoadRepository>();
+            var repo4 = Kernel.Get<IAttrLazyLoadRepository>();
+
+            Assert.AreEqual(repo2, repo3);
+            Assert.AreEqual(repo3, repo4);
             Assert.AreEqual(session, repo1.GetSession());
             Assert.AreEqual(session, repo2.GetSession());
+            Assert.AreEqual(session, repo3.GetSession());
+            Assert.AreEqual(session, repo4.GetSession());
         }
 
         [Test]

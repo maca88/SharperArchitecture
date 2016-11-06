@@ -4,36 +4,42 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using FluentNHibernate.Automapping;
 using FluentNHibernate.Cfg;
 using NHibernate.Cfg;
 using PowerArhitecture.Common.Configuration;
+using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.DataAccess.Configurations
 {
     public class DatabaseConfiguration
     {
-        public DatabaseConfiguration(Configuration configuration)
+        public const string DefaultName = "default";
+
+        public DatabaseConfiguration(Configuration configuration, string name = null)
         {
+            Name = name ?? DefaultName;
             Conventions = new ConventionsConfiguration();
+            AutoMappingConfiguration = new AutoMappingConfiguration();
             EntityAssemblies = new List<Assembly>();
             ConventionAssemblies = new List<Assembly>();
             NHibernateConfiguration = configuration;
             FillFromConfig();
         }
 
-        public virtual bool ValidateSchema { get; set; }
-        public virtual bool RecreateAtStartup { get; set; }
-        public virtual bool UpdateSchemaAtStartup { get; set; }
-        public virtual bool AllowOneToOneWithoutLazyLoading { get; set; }
-        public virtual List<Assembly> EntityAssemblies { get; private set; }
-        public virtual ConventionsConfiguration Conventions { get; private set; }
-        public virtual List<Assembly> ConventionAssemblies { get; private set; }
-        public virtual IAutomappingConfiguration AutomappingConfiguration { get; set; }
-        public virtual string HbmMappingsPath { get; set; }
-        public virtual Action<FluentConfiguration> FluentConfigurationAction { get; set; }
-        public virtual Configuration NHibernateConfiguration { get; private set; }
-        public virtual Action<Configuration> ConfigurationCompletedAction { get; set; }
+        public string Name { get; }
+        public virtual List<Assembly> EntityAssemblies { get; }
+        public virtual ConventionsConfiguration Conventions { get; }
+        public virtual List<Assembly> ConventionAssemblies { get; }
+        public virtual AutoMappingConfiguration AutoMappingConfiguration { get; }
+        public virtual Configuration NHibernateConfiguration { get; }
+        public virtual bool ValidateSchema { get; internal set; }
+        public virtual bool RecreateAtStartup { get; internal set; }
+        public virtual bool UpdateSchemaAtStartup { get; internal set; }
+        public virtual bool AllowOneToOneWithoutLazyLoading { get; internal set; }
+        public virtual string HbmMappingsPath { get; internal set; }
+        public virtual Action<FluentConfiguration> FluentConfigurationAction { get; internal set; }
+        public virtual Action<Configuration> ConfigurationCompletedAction { get; internal set; }
+        public virtual Action<IFluentAutoMappingConfiguration> AutoMappingConfigurationAction { get; internal set; }
 
         private void FillFromConfig()
         {

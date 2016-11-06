@@ -9,11 +9,11 @@ namespace PowerArhitecture.DataAccess.Configurations
 {
     public class HiLoIdConfiguration
     {
-        public virtual bool Enabled { get; set; }
+        public virtual bool Enabled { get; internal set; }
 
-        public virtual string TableName { get; set; }
+        public virtual string TableName { get; internal set; }
 
-        public virtual int MaxLo { get; set; }
+        public virtual int MaxLo { get; internal set; }
 
         internal void FillFromConfig()
         {

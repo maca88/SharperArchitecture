@@ -23,7 +23,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
             {
                 return;
             }
-            var config = Database.GetDatabaseConfigurationForModel(e.ModelType);
+            var config = Database.GetDatabaseConfigurationsForModel(e.ModelType).FirstOrDefault(); // TODO: handle multi db
             if (config == null)
             {
                 throw new PowerArhitectureException($"An entity validator for type {e.ModelType} was instantiated before session factory was created");

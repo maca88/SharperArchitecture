@@ -95,6 +95,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -106,7 +107,7 @@
     <Compile Include="Attributes\IsolationLevelAttribute.cs" />
     <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
     <Compile Include="Attributes\RepositoryAttribute.cs" />
-    <Compile Include="Attributes\NamedSessionFactoryAttribute.cs" />
+    <Compile Include="Attributes\DatabaseAttribute.cs" />
     <Compile Include="Comparers\EntityEqualComparer.cs" />
     <Compile Include="Configurations\ConventionsConfiguration.cs" />
     <Compile Include="Configurations\DatabaseConfigurationKeys.cs" />
@@ -124,13 +125,14 @@
     <Compile Include="Conventions\Mssql\MssqlDataTypesConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlIdDescendingConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlHiLoIdConvention.cs" />
-    <Compile Include="Configurations\AutomappingConfiguration.cs" />
+    <Compile Include="Configurations\AutoMappingConfiguration.cs" />
     <Compile Include="Conventions\CascadeConvention.cs" />
     <Compile Include="Conventions\EnumConvention.cs" />
     <Compile Include="Conventions\LazyLoadAttributeConvention.cs" />
     <Compile Include="Conventions\LazyLoadingConvention.cs" />
     <Compile Include="Conventions\ManyToManyConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlIndexNamingConvention.cs" />
+    <Compile Include="Conventions\NotEmptyAttributeConvention.cs" />
     <Compile Include="Conventions\NotNullAttributeConvention.cs" />
     <Compile Include="Conventions\NotNullConvention.cs" />
     <Compile Include="Conventions\PropertyConvention.cs" />
@@ -164,14 +166,13 @@
     <Compile Include="Extensions\NinjectModuleExtensions.cs" />
     <Compile Include="Extensions\SessionExtensions.cs" />
     <Compile Include="Extensions\ValidationContextExtensions.cs" />
-    <Compile Include="Factories\RepositoryFactory.cs" />
     <Compile Include="Attributes\NhEventListenerAttribute.cs" />
     <Compile Include="Factories\UnitOfWorkFactory.cs" />
     <Compile Include="Interceptors\NhibernateInterceptor.cs" />
     <Compile Include="Internal\AsyncHelpers.cs" />
-    <Compile Include="MappingSteps\PACollectionStep.cs" />
-    <Compile Include="MappingSteps\PAHasManyStep.cs" />
-    <Compile Include="MappingSteps\PAPropertyStep.cs" />
+    <Compile Include="MappingSteps\CustomCollectionStep.cs" />
+    <Compile Include="MappingSteps\CustomHasManyStep.cs" />
+    <Compile Include="MappingSteps\CustomPropertyStep.cs" />
     <Compile Include="NHEventListeners\AuditEntityEventListener.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -180,12 +181,13 @@
     <Compile Include="NHEventListeners\NhUpdateEventListener.cs" />
     <Compile Include="NHEventListeners\RootAggregatePreUpdateInsertEventListener.cs" />
     <Compile Include="NHEventListeners\ValidatePreInsertUpdateDeleteEventListener.cs" />
-    <Compile Include="Parameters\NamedSessionFactoryParameter.cs" />
+    <Compile Include="Parameters\DatabaseConfigurationParameter.cs" />
     <Compile Include="Providers\AuditUserProvider.cs" />
     <Compile Include="ResolutionScopes.cs" />
     <Compile Include="SessionContext.cs" />
     <Compile Include="Specifications\IAuditUserProvider.cs" />
     <Compile Include="Specifications\IFluentConventionsConfiguration.cs" />
+    <Compile Include="Specifications\IFluentAutoMappingConfiguration.cs" />
     <Compile Include="Specifications\IFluentDatabaseConfiguration.cs" />
     <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
     <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
@@ -201,7 +203,6 @@
     <Compile Include="Specifications\ICreateSchemaConvention.cs" />
     <Compile Include="Specifications\ISchemaConvention.cs" />
     <Compile Include="Specifications\IRepository.cs" />
-    <Compile Include="Specifications\IRepositoryFactory.cs" />
     <Compile Include="Specifications\IUpdateSchemaConvention.cs" />
     <Compile Include="Specifications\IUnitOfWork.cs" />
     <Compile Include="Specifications\IUnitOfWorkFactory.cs" />

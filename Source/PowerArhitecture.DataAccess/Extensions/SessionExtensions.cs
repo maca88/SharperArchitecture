@@ -36,7 +36,7 @@ namespace NHibernate
         public static long GetCreatedTimestamp(this ISession session)
         {
             var sessionImpl = (SessionImpl)session.GetSessionImplementation();
-            return sessionImpl == null ? 0 : sessionImpl.Timestamp;
+            return sessionImpl?.Timestamp ?? 0;
         }
 
         public static void RollbackTransaction(this ISession session)
@@ -59,47 +59,23 @@ namespace NHibernate
         {
             if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
-            try
-            {
-                session.Transaction.Commit();
-                return true;
-            }
-            catch (Exception)
-            {
-                RollbackTransaction(session);
-                throw;
-            }
+            session.Transaction.Commit();
+            return true;
         }
         public static async Task<bool> CommitTransactionAsync(this ISession session)
         {
             if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
-            try
-            {
-                await session.Transaction.CommitAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                RollbackTransaction(session);
-                throw;
-            }
+            await session.Transaction.CommitAsync();
+            return true;
         }
 
         public static bool CommitTransaction(this IStatelessSession session)
         {
             if (session.Transaction.WasRolledBack || !session.Transaction.IsActive)
                 return false;
-            try
-            {
-                session.Transaction.Commit();
-                return true;
-            }
-            catch (Exception)
-            {
-                RollbackTransaction(session);
-                throw;
-            }
+            session.Transaction.Commit();
+            return true;
         }
 
         internal static ISession Unwrap(this ISession session)

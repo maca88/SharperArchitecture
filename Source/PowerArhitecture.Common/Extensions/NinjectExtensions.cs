@@ -15,12 +15,14 @@ namespace PowerArhitecture.Common.Extensions
     {
         public static IBindingInNamedWithOrOnSyntax<T> WhenAnyAncestorOrCurrentNamed<T>(this IBindingWhenSyntax<T> binding, string name)
         {
-            return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name));
+            //return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name));
+            return binding.When(r => DoesAnyAncestorMatch(r, ctx => ctx.AncestorOrCurrentNamed(name)));
         }
 
-        public static IBindingInNamedWithOrOnSyntax<T> WhenAnyAncestorOrCurrentNamedAnd<T>(this IBindingWhenSyntax<T> binding, string name, Func<IContext, bool> and)
+        public static IBindingInNamedWithOrOnSyntax<T> WhenAnyAncestorOrCurrentNamedAnd<T>(this IBindingWhenSyntax<T> binding, string name, Func<IRequest, bool> and)
         {
-            return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name) && and(ctx));
+           //return binding.WhenAnyAncestorMatches(ctx => ctx.AncestorOrCurrentNamed(name) && and(ctx));
+            return binding.When(r => DoesAnyAncestorMatch(r, ctx => ctx.AncestorOrCurrentNamed(name) && and(r)));
         }
 
         public static IBindingInNamedWithOrOnSyntax<T> WhenNoAncestorOrCurrentNamed<T>(this IBindingWhenSyntax<T> binding, string name)

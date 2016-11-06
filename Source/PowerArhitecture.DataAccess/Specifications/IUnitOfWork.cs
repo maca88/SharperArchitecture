@@ -10,21 +10,31 @@ namespace PowerArhitecture.DataAccess.Specifications
     {
         IQueryable<TModel> Query<TModel>() where TModel : class, IEntity<long>, new();
 
+        IQueryable<TModel> Query<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new();
+
         IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new();
+
+        IQueryable<TModel> Query<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new();
 
         IRepository<TModel, long> GetRepository<TModel>() where TModel : class, IEntity<long>, new();
 
+        IRepository<TModel, long> GetRepository<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new();
+
         IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new();
 
+        IRepository<TModel, TId> GetRepository<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new();
+
         TRepo GetCustomRepository<TRepo>() where TRepo : IRepository;
+
+        TRepo GetCustomRepository<TRepo>(string dbConfigName) where TRepo : IRepository;
 
         void Save<TModel>(TModel model) where TModel : IEntity;
 
         Task SaveAsync<TModel>(TModel model) where TModel : IEntity;
 
-        void Save(params object[] models);
+        void Save(params IEntity[] models);
 
-        Task SaveAsync(params object[] models);
+        Task SaveAsync(params IEntity[] models);
 
         void Delete<TModel>(TModel model) where TModel : IEntity;
 
@@ -42,7 +52,7 @@ namespace PowerArhitecture.DataAccess.Specifications
 
         Task RefreshAsync<TModel>(TModel model) where TModel : IEntity;
 
-        IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
+        //IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
 
         void Flush();
 

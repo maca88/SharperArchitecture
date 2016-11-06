@@ -9,25 +9,40 @@ using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate;
 using FluentNHibernate.Automapping;
 using FluentNHibernate.Automapping.Steps;
+using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.DataAccess.Configurations
 {
-    public class AutomappingConfiguration : DefaultAutomappingConfiguration
+    public class AutoMappingConfiguration : DefaultAutomappingConfiguration, IFluentAutoMappingConfiguration
     {
         private readonly List<Assembly> _mappingStepsAssembiles;
+        private Predicate<Type> _shouldMapTypePredicate;
+        private Predicate<Member> _shouldMapMemberPredicate;
 
-        public AutomappingConfiguration()
+        public AutoMappingConfiguration()
         {
             _mappingStepsAssembiles = new List<Assembly>();
         }
 
-        public AutomappingConfiguration AddStepAssembly(Assembly assembly)
+        public IFluentAutoMappingConfiguration ShouldMap(Predicate<Type> predicate)
+        {
+            _shouldMapTypePredicate = predicate;
+            return this;
+        }
+
+        public IFluentAutoMappingConfiguration ShouldMap(Predicate<Member> predicate)
+        {
+            _shouldMapMemberPredicate = predicate;
+            return this;
+        }
+
+        public IFluentAutoMappingConfiguration AddStepAssembly(Assembly assembly)
         {
             _mappingStepsAssembiles.Add(assembly);
             return this;
         }
 
-        public AutomappingConfiguration AddStepAssemblies(IEnumerable<Assembly> assemblies)
+        public IFluentAutoMappingConfiguration AddStepAssemblies(IEnumerable<Assembly> assemblies)
         {
             _mappingStepsAssembiles.AddRange(assemblies);
             return this;
@@ -35,8 +50,15 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Type type)
         {
+            if (_shouldMapTypePredicate != null && !_shouldMapTypePredicate(type))
+            {
+                return false;
+            }
             if (type.GetCustomAttribute<IncludeAttribute>() != null)
+            {
                 return true;
+            }
+                
             return base.ShouldMap(type) && typeof(IEntity).IsAssignableFrom(type) && type.GetCustomAttribute<IgnoreAttribute>(false) == null;
         }
 
@@ -47,6 +69,11 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Member member)
         {
+            if (_shouldMapTypePredicate != null && !_shouldMapMemberPredicate(member))
+            {
+                return false;
+            }
+
             if (member.IsProperty)
             {
                 var propInfo = (PropertyInfo)member.MemberInfo;
@@ -70,10 +97,10 @@ namespace PowerArhitecture.DataAccess.Configurations
                     new IdentityStep(this),
                     new VersionStep(this),
                     new ComponentStep(this),
-                    new PAPropertyStep(conventionFinder, this), //support overrides
+                    new CustomPropertyStep(conventionFinder, this), //support overrides
                     new CustomHasManyToManyStep(this),
                     new ReferenceStep(this),
-                    new PAHasManyStep(this)
+                    new CustomHasManyStep(this)
                 };
             steps.AddRange(basicSteps);
             return steps;
