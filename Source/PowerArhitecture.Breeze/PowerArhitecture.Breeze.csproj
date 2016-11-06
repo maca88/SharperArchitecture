@@ -57,6 +57,10 @@
     <Reference Include="Iesi.Collections">
       <HintPath>..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
     </Reference>
+    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
@@ -126,8 +130,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\InversePropertyName.cs" />
-    <Compile Include="PABreezeConfig.cs" />
-    <Compile Include="PABreezeController.cs" />
+    <Compile Include="EventHandlers\SessionFactoryCreatedEventHandler.cs" />
+    <Compile Include="CustomBreezeConfig.cs" />
     <Compile Include="BreezeMetadataConfigurator.cs" />
     <Compile Include="BreezeRepository.cs" />
     <Compile Include="BreezeTypeHelper.cs" />
@@ -154,9 +158,9 @@
     <Compile Include="Metadata\Validator.cs" />
     <Compile Include="Metadata\Validators.cs" />
     <Compile Include="NinjectRegistration.cs" />
-    <Compile Include="PABreezeNHControllerAttribute.cs" />
-    <Compile Include="PABreezeNHQueryableAttribute.cs" />
-    <Compile Include="PANHQueryHelper.cs" />
+    <Compile Include="CustomBreezeNHControllerAttribute.cs" />
+    <Compile Include="CustomBreezeNHQueryableAttribute.cs" />
+    <Compile Include="CustomNHQueryHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Metadata\StructuralTypes.cs" />
     <Compile Include="BreezeModelConfiguratorBase.cs" />
@@ -176,6 +180,10 @@
     <ProjectReference Include="..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">
       <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
       <Name>PowerArhitecture.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerArhitecture.DataAccess\PowerArhitecture.DataAccess.csproj">
+      <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
+      <Name>PowerArhitecture.DataAccess</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerArhitecture.Domain\PowerArhitecture.Domain.csproj">
       <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>

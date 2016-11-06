@@ -9,14 +9,14 @@ using NHibernate.Linq;
 
 namespace PowerArhitecture.Breeze
 {
-    public class PANHQueryHelper : NHQueryHelper
+    public class CustomNHQueryHelper : NHQueryHelper
     {
-        public PANHQueryHelper(ODataQuerySettings querySettings)
+        public CustomNHQueryHelper(ODataQuerySettings querySettings)
             : base(querySettings)
         {
         }
 
-        public PANHQueryHelper()
+        public CustomNHQueryHelper()
         {
         }
 

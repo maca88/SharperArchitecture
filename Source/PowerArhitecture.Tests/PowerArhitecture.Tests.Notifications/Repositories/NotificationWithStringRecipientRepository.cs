@@ -14,7 +14,7 @@ namespace PowerArhitecture.Tests.Notifications.Repositories
     public class NotificationWithStringRecipientRepository
         : NotificationRepository<string, NotificationWithStringRecipient, NotificationRecipientWithStringRecipient>
     {
-        public NotificationWithStringRecipientRepository(ISession session, ILogger logger) 
+        public NotificationWithStringRecipientRepository(Lazy<ISession> session, ILogger logger) 
             : base(session, logger)
         {
         }

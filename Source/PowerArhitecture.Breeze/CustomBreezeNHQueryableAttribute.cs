@@ -17,11 +17,11 @@ using PowerArhitecture.Domain;
 namespace PowerArhitecture.Breeze
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-    public class PABreezeNHQueryableAttribute : BreezeNHQueryableAttribute
+    public class CustomBreezeNHQueryableAttribute : BreezeNHQueryableAttribute
     {
         private static readonly MethodInfo DistinctMethodInfo;
 
-        static PABreezeNHQueryableAttribute()
+        static CustomBreezeNHQueryableAttribute()
         {
             DistinctMethodInfo =
                 typeof (Queryable).GetMethods().First(o => o.Name == "Distinct" && o.GetParameters().Length == 1);
@@ -31,14 +31,14 @@ namespace PowerArhitecture.Breeze
         /// Sets HandleNullPropagation = false on the base class.  Otherwise it's true for non-EF, and that
         /// complicates the query expressions and breaks NH's query parser.
         /// </summary>
-        public PABreezeNHQueryableAttribute()
+        public CustomBreezeNHQueryableAttribute()
         {
             HandleNullPropagation = HandleNullPropagationOption.False;
         }
 
         protected override QueryHelper NewQueryHelper()
         {
-            return new PANHQueryHelper(GetODataQuerySettings());
+            return new CustomNHQueryHelper(GetODataQuerySettings());
         }
 
         //TODO: TEST AND REMOVE

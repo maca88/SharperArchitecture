@@ -12,7 +12,7 @@ namespace PowerArhitecture.Common.Events
     public abstract class BaseEventHandler<TEvent> : IEventHandler<TEvent>
         where TEvent : IEvent
     {
-        public abstract void Handle(TEvent notification);
+        public abstract void Handle(TEvent @event);
 
         public virtual Task HandleAsync(TEvent @event, CancellationToken cancellationToken)
         {

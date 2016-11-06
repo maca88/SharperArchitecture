@@ -28,7 +28,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
     public class AttrLazyLoadRepository : Repository<AttrLazyLoad>, IAttrLazyLoadRepository
     {
-        public AttrLazyLoadRepository(ISession session, ILogger logger) : base(session, logger)
+        public AttrLazyLoadRepository(Lazy<ISession> session, ILogger logger) : base(session, logger)
         {
         }
     }

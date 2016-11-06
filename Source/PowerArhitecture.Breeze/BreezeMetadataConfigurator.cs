@@ -9,7 +9,6 @@ using FluentValidation;
 using FluentValidation.Validators;
 using NHibernate;
 using PowerArhitecture.Breeze.Metadata;
-using PowerArhitecture.Breeze.Specification;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
@@ -25,8 +24,7 @@ namespace PowerArhitecture.Breeze
     {
         private readonly IValidatorFactoryExtended _validatorFactory;
         private readonly object _lock = new object();
-
-        public readonly static HashSet<string> NullableProperties = new HashSet<string>();
+        private static readonly HashSet<string> NullableProperties = new HashSet<string>();
 
         public BreezeMetadataConfigurator(IValidatorFactoryExtended validatorFactory)
         {
@@ -67,9 +65,7 @@ namespace PowerArhitecture.Breeze
                                     .Any(fk => fk == dataProp.NameOnServer)))
                         {
                             newValidator = new Validator {Name = "fvNotEmpty"};
-                            var defVal = dataProp.PropertyInfo != null
-                                ? dataProp.PropertyInfo.PropertyType.GetDefaultValue()
-                                : null;
+                            var defVal = dataProp.PropertyInfo?.PropertyType.GetDefaultValue();
                             newValidator.MergeLeft(FluentValidators.GetParamaters(new NotEmptyValidator(defVal)));
                         }
                         else
@@ -170,7 +166,7 @@ namespace PowerArhitecture.Breeze
                             {
                                 property = new DataProperty
                                 {
-                                    ComplexTypeName = string.Format("{0}:#{1}", prop.PropertyType.Name, prop.PropertyType.Namespace),
+                                    ComplexTypeName = $"{prop.PropertyType.Name}:#{prop.PropertyType.Namespace}",
                                     NameOnServer = prop.Name,
                                     IsNullable = true,
                                 };
@@ -195,13 +191,13 @@ namespace PowerArhitecture.Breeze
                             var navProp = new NavigationProperty
                             {
                                 IsScalar = true,
-                                EntityTypeName = string.Format("{0}:#{1}", prop.PropertyType.Name, prop.PropertyType.Namespace),
+                                EntityTypeName = $"{prop.PropertyType.Name}:#{prop.PropertyType.Namespace}",
                                 NameOnServer = prop.Name,
-                                AssociationName = string.Format("AN_{0}_{1}_{2}", prop.PropertyType.Name, prop.Name, syntheticPropName),
+                                AssociationName = $"AN_{prop.PropertyType.Name}_{prop.Name}_{syntheticPropName}",
                                 ForeignKeyNamesOnServer = new List<string> { syntheticPropName }
                             };
                             entityType.NavigationProperties.Add(navProp);
-                            metadataSchema.FkMap[string.Format("{0}.{1}", clientModelType.FullName, prop.Name)] = syntheticPropName;
+                            metadataSchema.FkMap[$"{clientModelType.FullName}.{prop.Name}"] = syntheticPropName;
                         }
                         else if (
                             typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) &&
@@ -214,7 +210,7 @@ namespace PowerArhitecture.Breeze
 
                             //We need to find the related property on the otherside of the relation
                             var invPropNameAttr = prop.GetCustomAttribute<InversePropertyName>();
-                            var invPropName = invPropNameAttr != null ? invPropNameAttr.PropertyName : null;
+                            var invPropName = invPropNameAttr?.PropertyName;
 
                             var invProperties = string.IsNullOrEmpty(invPropName)
                                 ? invEntityType.GetProperties().Where(o => o.PropertyType == clientModelType).ToList()
@@ -261,9 +257,9 @@ namespace PowerArhitecture.Breeze
                             var navProp = new NavigationProperty
                             {
                                 IsScalar = false,
-                                EntityTypeName = string.Format("{0}:#{1}", invEntityType.Name, invEntityType.Namespace),
+                                EntityTypeName = $"{invEntityType.Name}:#{invEntityType.Namespace}",
                                 NameOnServer = prop.Name,
-                                AssociationName = string.Format("AN_{0}_{1}_{2}", clientModelType.Name, invPropertyName, invSyntheticPropName),
+                                AssociationName = $"AN_{clientModelType.Name}_{invPropertyName}_{invSyntheticPropName}",
                                 InvForeignKeyNamesOnServer = new List<string> { invSyntheticPropName }
                             };
                             entityType.NavigationProperties.Add(navProp);

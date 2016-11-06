@@ -7,17 +7,18 @@ using Breeze.ContextProvider;
 
 namespace PowerArhitecture.Breeze.Specification
 {
-    public interface IBreezeInterceptor<TType> : IBreezeInterceptor
-    {
-
-    }
-
     public interface IBreezeInterceptor
     {
-        Task BeforeSave(List<EntityInfo> entitiesToPersist);
+        void BeforeSave(List<EntityInfo> entitiesToPersist);
 
-        Task AfterFlush(List<EntityInfo> entitiesToPersist);
+        Task BeforeSaveAsync(List<EntityInfo> entitiesToPersist);
 
-        Task BeforeFlush(List<EntityInfo> entitiesToPersist);
+        void AfterFlush(List<EntityInfo> entitiesToPersist);
+
+        Task AfterFlushAsync(List<EntityInfo> entitiesToPersist);
+
+        void BeforeFlush(List<EntityInfo> entitiesToPersist);
+
+        Task BeforeFlushAsync(List<EntityInfo> entitiesToPersist);
     }
 }

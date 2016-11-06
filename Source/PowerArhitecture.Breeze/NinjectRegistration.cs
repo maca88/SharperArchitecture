@@ -28,14 +28,16 @@ namespace PowerArhitecture.Breeze
                 .WhichAreNotGeneric()
                 .BindAllInterfaces()
                 .Configure(c => c.InSingletonScope()));
-            //BreezeModelConfigurator.SerializationMemberRuleCreated += (rule =>
-            //{
-            //    rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
-            //});
-            //BreezeModelConfigurator.ModelConfigurationCreated += (rule =>
-            //{
-            //    rule.Data["IUserCache"] = Kernel.Get<IUserCache>();
-            //});
+
+            Kernel.Bind(o => o
+                .From(AppConfiguration.GetDomainAssemblies()
+                    .Where(a => a.GetTypes().Any(t => typeof(IBreezeInterceptor).IsAssignableFrom(t))))
+                .IncludingNonePublicTypes()
+                .SelectAllClasses()
+                .InheritedFrom<IBreezeInterceptor>()
+                .WhichAreNotGeneric()
+                .BindAllInterfaces()
+                .Configure(c => c.InSingletonScope()));
         }
     }
 }

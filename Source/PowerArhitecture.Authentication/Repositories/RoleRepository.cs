@@ -19,7 +19,7 @@ namespace PowerArhitecture.Authentication.Repositories
     public class RoleRepository<TRole> : Repository<TRole>, IRoleRepository<TRole>
          where TRole : class, IRole, IEntity<long>, new()
     {
-        public RoleRepository(ISession session, ILogger logger) 
+        public RoleRepository(Lazy<ISession> session, ILogger logger) 
             : base(session, logger)
         {
         }

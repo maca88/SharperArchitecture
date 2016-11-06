@@ -15,11 +15,11 @@ using NHibernate;
 namespace PowerArhitecture.Breeze
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class PABreezeNHControllerAttribute : BreezeNHControllerAttribute
+    public class CustomBreezeNHControllerAttribute : BreezeNHControllerAttribute
     {
-        public PABreezeNHControllerAttribute()
+        public CustomBreezeNHControllerAttribute()
         {
-            this._queryableFilter = new PABreezeNHQueryableAttribute();
+            this._queryableFilter = new CustomBreezeNHQueryableAttribute();
         }
     }
 }

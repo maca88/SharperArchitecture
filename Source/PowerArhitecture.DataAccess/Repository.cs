@@ -21,7 +21,7 @@ namespace PowerArhitecture.DataAccess
 {
     public class Repository<TModel> : Repository<TModel, long>, IRepository<TModel> where TModel : class, IEntity<long>, new()
     {
-        public Repository(ISession session, ILogger logger) //TODO: Session Lazy - need to test perserving context!
+        public Repository(Lazy<ISession> session, ILogger logger)
             : base(session, logger)
         {
         }
@@ -34,15 +34,17 @@ namespace PowerArhitecture.DataAccess
     /// <typeparam name="TId"></typeparam>
     public class Repository<TModel, TId> : IRepository<TModel, TId> where TModel : class, IEntity<TId>, new()
     {
-        public Repository(ISession session, ILogger logger)
+        private readonly Lazy<ISession> _lazySession;
+
+        public Repository(Lazy<ISession> session, ILogger logger)
         {
             Logger = logger;
-            Session = session;
+            _lazySession = session;
         }
 
         protected ILogger Logger { get; }
 
-        protected ISession Session { get; }
+        protected ISession Session => _lazySession.Value;
 
         public virtual IPrincipal User // TODO: Verify if needed
         {

@@ -10,7 +10,7 @@ using Newtonsoft.Json.Converters;
 
 namespace PowerArhitecture.Breeze
 {
-    public class PABreezeConfig : BreezeConfig
+    public class CustomBreezeConfig : BreezeConfig
     {
         protected override JsonSerializerSettings CreateJsonSerializerSettings()
         {

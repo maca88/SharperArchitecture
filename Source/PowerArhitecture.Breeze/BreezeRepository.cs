@@ -20,13 +20,16 @@ namespace PowerArhitecture.Breeze
     public class BreezeRepository : NHContext, IBreezeRepository
     {
         private readonly BreezeMetadataConfigurator _metadataConfigurator;
-        private readonly IResolutionRoot _resolutionRoot;
-        private readonly List<IBreezeInterceptor> _interceptors = new List<IBreezeInterceptor>();
+        private readonly List<IBreezeInterceptor> _interceptors;
+        private readonly object _saveLock = new object();
+        private readonly AsyncLock _asyncSavelock = new AsyncLock();
+        private Action<List<EntityInfo>> _beforeSaveAction;
+        private Func<List<EntityInfo>, Task> _beforeSaveFunc;
 
-        public BreezeRepository(IResolutionRoot resolutionRoot, ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
+        public BreezeRepository(List<IBreezeInterceptor> interceptors, ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
         {
             _metadataConfigurator = metadataConfigurator;
-            _resolutionRoot = resolutionRoot;
+            _interceptors = interceptors;
         }
 
         protected override void CloseDbConnection()
@@ -41,48 +44,54 @@ namespace PowerArhitecture.Breeze
             return json;
         }
 
-        public new void Dispose()
+        public override void Dispose()
         {
         }
 
-        protected override Task BeforeSaveAsync(SaveWorkState saveWorkState)
+        public override List<EntityInfo> BeforeSaveEntityGraph(List<EntityInfo> entitiesToPersist)
         {
-            _interceptors.Clear();
-            var genInterceptorType = typeof(IBreezeInterceptor<>);
-            foreach (var type in saveWorkState.SaveMap.Keys)
+            _beforeSaveAction?.Invoke(entitiesToPersist);
+            foreach (var interceptor in _interceptors)
             {
-                var interceptorType = genInterceptorType.MakeGenericType(type);
-                var interceptor = _resolutionRoot.TryGet(interceptorType) as IBreezeInterceptor;
-                if (interceptor == null) continue;
-                _interceptors.Add(interceptor);
+                interceptor.BeforeSave(entitiesToPersist);
             }
-            return TaskHelper.CompletedTask;
-        }
-
-        protected override Task AfterSaveAsync(SaveWorkState saveWorkState)
-        {
-            foreach (var interceptor in _interceptors.OfType<IDisposable>())
-            {
-                interceptor.Dispose();
-            }
-            _interceptors.Clear();
-            return TaskHelper.CompletedTask;
+            return entitiesToPersist;
         }
 
         public override async Task<List<EntityInfo>> BeforeSaveEntityGraphAsync(List<EntityInfo> entitiesToPersist)
         {
+            if (_beforeSaveFunc != null)
+            {
+                await _beforeSaveFunc(entitiesToPersist);
+            }
             foreach (var interceptor in _interceptors)
             {
-                await interceptor.BeforeSave(entitiesToPersist);
+                await interceptor.BeforeSaveAsync(entitiesToPersist);
             }
             return entitiesToPersist;
+        }
+
+        protected override void BeforeFlush(List<EntityInfo> entitiesToPersist)
+        {
+            foreach (var interceptor in _interceptors)
+            {
+                interceptor.BeforeFlush(entitiesToPersist);
+            }
         }
 
         protected override async Task BeforeFlushAsync(List<EntityInfo> entitiesToPersist)
         {
             foreach (var interceptor in _interceptors)
             {
-                await interceptor.BeforeFlush(entitiesToPersist);
+                await interceptor.BeforeFlushAsync(entitiesToPersist);
+            }
+        }
+
+        protected override void AfterFlush(List<EntityInfo> entitiesToPersist)
+        {
+            foreach (var interceptor in _interceptors)
+            {
+                interceptor.AfterFlush(entitiesToPersist);
             }
         }
 
@@ -90,13 +99,62 @@ namespace PowerArhitecture.Breeze
         {
             foreach (var interceptor in _interceptors)
             {
-                await interceptor.AfterFlush(entitiesToPersist);
+                await interceptor.AfterFlushAsync(entitiesToPersist);
             }
         }
 
-        public Task<SaveResult> SaveChangesAsync(JObject saveBundle, Func<List<EntityInfo>, Task> beforeSaveFunc = null)
+        public SaveResult SaveChanges(JObject saveBundle, TransactionSettings transactionSettings, Action<List<EntityInfo>> beforeSaveAction)
         {
-            return SaveChangesAsync(saveBundle, null, beforeSaveFunc);
+            lock (_saveLock)
+            {
+                _beforeSaveAction = beforeSaveAction;
+                var result = SaveChanges(saveBundle, transactionSettings);
+                _beforeSaveAction = null;
+                return result;
+            }
+        }
+
+        public async Task<SaveResult> SaveChangesAsync(JObject saveBundle, TransactionSettings transactionSettings, Func<List<EntityInfo>, Task> beforeSaveFunc)
+        {
+            using (await _asyncSavelock.LockAsync())
+            {
+                _beforeSaveFunc = beforeSaveFunc;
+                var result =  await SaveChangesAsync(saveBundle, transactionSettings);
+                _beforeSaveFunc = null;
+                return result;
+            }
+        }
+
+        public SaveResult SaveChanges(JObject saveBundle)
+        {
+            return base.SaveChanges(saveBundle);
+        }
+
+        public SaveResult SaveChanges(JObject saveBundle, Action<List<EntityInfo>> beforeSaveAction)
+        {
+            lock (_saveLock)
+            {
+                _beforeSaveAction = beforeSaveAction;
+                var result = SaveChanges(saveBundle);
+                _beforeSaveAction = null;
+                return result;
+            }
+        }
+
+        public Task<SaveResult> SaveChangesAsync(JObject saveBundle)
+        {
+            return base.SaveChangesAsync(saveBundle);
+        }
+
+        public async Task<SaveResult> SaveChangesAsync(JObject saveBundle, Func<List<EntityInfo>, Task> beforeSaveFunc)
+        {
+            using (await _asyncSavelock.LockAsync())
+            {
+                _beforeSaveFunc = beforeSaveFunc;
+                var result = await SaveChangesAsync(saveBundle);
+                _beforeSaveFunc = null;
+                return result;
+            }
         }
 
         protected override bool HandleSaveException(Exception e, SaveWorkState saveWorkState)

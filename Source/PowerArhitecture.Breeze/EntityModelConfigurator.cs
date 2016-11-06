@@ -21,10 +21,10 @@ namespace PowerArhitecture.Breeze
                 .ForMember<long>(o => o.Id, o => o.Writable(true));
 
             BreezeModelConfigurator.Configure<Entity<long>>()
-                .ForMember<long>(o => o.Id, o => o.Writable(true));
+                .ForMember(o => o.Id, o => o.Writable(true));
 
             BreezeModelConfigurator.Configure<Entity<string>>()
-                .ForMember<string>(o => o.Id, o => o.Writable(true));
+                .ForMember(o => o.Id, o => o.Writable(true));
 
             BreezeModelConfigurator.Configure<IVersionedEntity>()
                 .ForMember(o => o.Version, o => o.Writable(true))

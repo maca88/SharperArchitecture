@@ -13,9 +13,11 @@ using PowerArhitecture.Common.Specifications;
 using Newtonsoft.Json;
 using Ninject.Extensions.Conventions;
 using Ninject;
+using Ninject.Extensions.ContextPreservation;
 using Ninject.Modules;
 using Ninject.Parameters;
 using Ninject.Planning.Bindings;
+using Ninject.Syntax;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Commands;
 using PowerArhitecture.Common.Configuration;
@@ -44,7 +46,7 @@ namespace PowerArhitecture.Common
                 GetType()
                     .GetMethod("GetLazyProvider", BindingFlags.Instance | BindingFlags.NonPublic)
                     .MakeGenericMethod(ctx.GenericArguments[0])
-                    .Invoke(this, new object[] { ctx.Kernel }));
+                    .Invoke(this, new object[] { ctx.GetContextPreservingResolutionRoot() }));
 
             //Convenction for tasks
             Kernel.Bind(o => o
@@ -56,20 +58,9 @@ namespace PowerArhitecture.Common
                 .WhichAreNotGeneric()
                 .BindDefaultInterfaces());
 
-            //Bind(typeof(Lazy<IUserCache>)).ToMethod(ctx => new Lazy<IUserCache>(() => Kernel.Get<IUserCache>())); //DONE
-
             //Json.Net
             var contractResolver = new MultipleContractResolver();
-            contractResolver.SetDefaultResolver(ContractResolvers.CamelCasePropertyNamesResolver);
-            var serializerSettings = new JsonSerializerSettings
-            {
-                ContractResolver = contractResolver
-            };
-            var jsonNetSerializer = JsonSerializer.Create(serializerSettings);
-
             Bind<IMultipleContractResolver>().ToConstant(contractResolver);
-            Bind<JsonSerializerSettings>().ToConstant(serializerSettings);
-            Bind<JsonSerializer>().ToConstant(jsonNetSerializer);
 
             Bind<ICommonConfiguration>().To<CommonConfiguration>().InSingletonScope();
 
@@ -124,17 +115,17 @@ namespace PowerArhitecture.Common
             Bind<ICommandDispatcher>().To<CommandDispatcher>();
         }
 
-        protected Lazy<T> GetLazyProvider<T>(IKernel kernel)
+        protected Lazy<T> GetLazyProvider<T>(IResolutionRoot resolutionRoot)
         {
             return new Lazy<T>(() =>
             {
                 var type = typeof(T);
                 if (typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
                 {
-                    type = type.GetGenericArguments()[0];
-                    return (T) NinjectGetAllMethodInfo.MakeGenericMethod(type).Invoke(null, new object[] {kernel, new IParameter[0]});
+                    return (T) NinjectGetAllMethodInfo.MakeGenericMethod(type.GetGenericArguments()[0])
+                        .Invoke(null, new object[] {resolutionRoot, new IParameter[0]});
                 }
-                return kernel.Get<T>();
+                return resolutionRoot.Get<T>();
             });
         }
     }

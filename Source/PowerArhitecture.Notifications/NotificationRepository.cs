@@ -27,7 +27,7 @@ namespace PowerArhitecture.Notifications
         //Create a fake notification instance as the instance contains the recipient compare expression
         private readonly TNotification _notification = new TNotification();
 
-        protected NotificationRepository(ISession session, ILogger logger) 
+        protected NotificationRepository(Lazy<ISession> session, ILogger logger) 
             : base(session, logger)
         {
         }

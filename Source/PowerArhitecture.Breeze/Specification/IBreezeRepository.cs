@@ -21,8 +21,20 @@ namespace PowerArhitecture.Breeze.Specification
 
         SaveOptions SaveOptions { get; set; }
 
-        Task<SaveResult> SaveChangesAsync(JObject saveBundle, TransactionSettings transactionSettings, Func<List<EntityInfo>, Task> beforeSaveFunc = null);
+        SaveResult SaveChanges(JObject saveBundle, TransactionSettings transactionSettings);
 
-        Task<SaveResult> SaveChangesAsync(JObject saveBundle, Func<List<EntityInfo>, Task> beforeSaveFunc = null);
+        SaveResult SaveChanges(JObject saveBundle, TransactionSettings transactionSettings, Action<List<EntityInfo>> beforeSaveFunc);
+
+        Task<SaveResult> SaveChangesAsync(JObject saveBundle, TransactionSettings transactionSettings);
+
+        Task<SaveResult> SaveChangesAsync(JObject saveBundle, TransactionSettings transactionSettings, Func<List<EntityInfo>, Task> beforeSaveFunc);
+
+        SaveResult SaveChanges(JObject saveBundle);
+
+        SaveResult SaveChanges(JObject saveBundle, Action<List<EntityInfo>> beforeSaveFunc);
+
+        Task<SaveResult> SaveChangesAsync(JObject saveBundle);
+
+        Task<SaveResult> SaveChangesAsync(JObject saveBundle, Func<List<EntityInfo>, Task> beforeSaveFunc);
     }
 }
