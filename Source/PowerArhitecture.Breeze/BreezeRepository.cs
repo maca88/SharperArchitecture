@@ -9,9 +9,8 @@ using Newtonsoft.Json.Linq;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Util;
-using Ninject;
-using Ninject.Syntax;
 using PowerArhitecture.Breeze.Specification;
+using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation;
 

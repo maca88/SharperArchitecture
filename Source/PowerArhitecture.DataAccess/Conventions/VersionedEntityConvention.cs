@@ -36,8 +36,11 @@ namespace PowerArhitecture.DataAccess.Conventions
                 return;
             }
             instance.Cascade.None(); //CreatedBy LastModifiedBy
-
-            if (_configuration.RequiredLastModifiedProperty && instance.Property.Name == "LastModifiedBy")
+            if (instance.Property.Name == "CreatedBy")
+            {
+                instance.Not.Nullable();
+            }
+            else if (_configuration.RequiredLastModifiedProperty && instance.Property.Name == "LastModifiedBy")
             {
                 instance.Not.Nullable();
             }
@@ -45,14 +48,25 @@ namespace PowerArhitecture.DataAccess.Conventions
 
         public void Apply(IPropertyInstance instance)
         {
-            if (!_configuration.RequiredLastModifiedProperty || !typeof(IVersionedEntity).IsAssignableFrom(instance.EntityType))
+            if (!typeof(IVersionedEntity).IsAssignableFrom(instance.EntityType) ||
+                !new List<string> {"CreatedBy", "LastModifiedBy", "LastModifiedDate" }.Contains(instance.Property.Name))
+            {
+                return;
+            }
+            if (instance.Property.Name == "CreatedBy" &&
+                instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>)))
+            {
+                instance.Not.Nullable();
+            }
+
+            if (!_configuration.RequiredLastModifiedProperty)
             {
                 return;
             }
             if (
                 instance.Property.Name == "LastModifiedDate" ||
                 (
-                    "LastModifiedBy" == instance.Property.Name && 
+                    instance.Property.Name == "LastModifiedBy" && 
                     instance.EntityType.IsAssignableToGenericType(typeof(IVersionedEntityWithUser<>))
                 )
             )

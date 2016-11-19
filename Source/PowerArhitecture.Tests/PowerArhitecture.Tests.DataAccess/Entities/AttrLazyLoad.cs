@@ -7,7 +7,7 @@ using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using FluentNHibernate.Automapping;
 using NHibernate;
-using Ninject.Extensions.Logging;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
 
@@ -28,7 +28,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
     public class AttrLazyLoadRepository : Repository<AttrLazyLoad>, IAttrLazyLoadRepository
     {
-        public AttrLazyLoadRepository(Lazy<ISession> session, ILogger logger) : base(session, logger)
+        public AttrLazyLoadRepository(ISession session, ILogger logger) : base(session, logger)
         {
         }
     }

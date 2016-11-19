@@ -18,7 +18,6 @@ using Microsoft.AspNet.Identity;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
-using Ninject.Extensions.Logging;
 using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
@@ -31,7 +30,7 @@ namespace PowerArhitecture.Authentication.Repositories
     {
         protected readonly IAuthenticationConfiguration Configuration;
 
-        protected UserRepository(Lazy<ISession> session, ILogger logger, IAuthenticationConfiguration configuration) 
+        protected UserRepository(ISession session, ILogger logger, IAuthenticationConfiguration configuration) 
             : base(session, logger)
         {
             Configuration = configuration;
@@ -186,13 +185,13 @@ namespace PowerArhitecture.Authentication.Repositories
                 .UniqueResultAsync();
         }
 
-        public virtual async Task<TUser> GetCurrentAsync()
-        {
-            var userName = User?.Identity?.Name;
-            if (string.IsNullOrEmpty(userName))
-                return null;
-            return await GetUserAsync(userName);
-        }
+        //public virtual async Task<TUser> GetCurrentAsync()
+        //{
+        //    var userName = User?.Identity?.Name;
+        //    if (string.IsNullOrEmpty(userName))
+        //        return null;
+        //    return await GetUserAsync(userName);
+        //}
 
         public virtual Task<TUser> GetSystemUserAsync()
         {
@@ -209,7 +208,7 @@ namespace PowerArhitecture.Authentication.Repositories
         IUserPasswordStore<TUser, long>, IUserSecurityStampStore<TUser, long>
         where TUser : class, IUser, IEntity<long>, new()
     {
-        Task<TUser> GetCurrentAsync();
+        //Task<TUser> GetCurrentAsync();
 
         Task<TUser> GetSystemUserAsync();
 

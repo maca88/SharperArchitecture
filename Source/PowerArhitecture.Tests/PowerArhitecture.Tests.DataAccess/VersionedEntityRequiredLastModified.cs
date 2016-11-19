@@ -11,7 +11,6 @@ using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Validators;
 using NHibernate;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Providers;
@@ -21,7 +20,6 @@ using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
 using PowerArhitecture.Tests.DataAccess.Entities.Versioning;
 using PowerArhitecture.Validation;
-using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
@@ -33,7 +31,7 @@ namespace PowerArhitecture.Tests.DataAccess
             EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
         }
 
         protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
@@ -50,7 +48,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityMustHaveRequiredLastModified()
         {
-            var validator = Kernel.Get<AbstractValidator<VersionCar>>();
+            var validator = Container.GetInstance<Validator<VersionCar>>();
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")
@@ -66,7 +64,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void SaveVersionEntity()
         {
             var car = new VersionCar { Model = "BMW" };
-            using (var unitOfWork = Kernel.Get<IUnitOfWorkFactory>().GetNew())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().GetNew())
             {
                 try
                 {
@@ -107,7 +105,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
             bmw.Child = audi;
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 //Save only the root entity (because the default conventions the children will be saved too)
@@ -160,7 +158,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityWithStringUserMustHaveRequiredLastModified()
         {
-            var validator = Kernel.Get<AbstractValidator<VersionCarWithStringUser>>();
+            var validator = Container.GetInstance<Validator<VersionCarWithStringUser>>();
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")
@@ -185,7 +183,7 @@ namespace PowerArhitecture.Tests.DataAccess
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
             var car = new VersionCarWithStringUser { Model = "BMW" };
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
             {
                 unitOfWork.Save(car); //A flush will happen as we set the id generator to indentity
                 Assert.AreEqual(1, car.Id);
@@ -222,7 +220,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var audiWheel1 = new VersionWheelWithStringUser { Dimension = 18 };
             var audiWheel2 = new VersionWheelWithStringUser { Dimension = 18 };
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 
@@ -304,7 +302,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityWithEntityUserMustHaveRequiredLastModified()
         {
-            var validator = Kernel.Get<AbstractValidator<VersionCarWithEntityUser>>();
+            var validator = Container.GetInstance<Validator<VersionCarWithEntityUser>>();
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")
@@ -335,7 +333,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var user = new User { UserName = currentUserName };
             var user2 = new User { UserName = newUserName };
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
             {
                 //Create two users
                 unitOfWork.Save(user);
@@ -379,7 +377,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var audiWheel1 = new VersionWheelWithEntityUser { Dimension = 18 };
             var audiWheel2 = new VersionWheelWithEntityUser { Dimension = 18 };
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 AuditUserProvider.CacheUserIds = true; //Will reduce the number of total queries from 15 to 10
                 

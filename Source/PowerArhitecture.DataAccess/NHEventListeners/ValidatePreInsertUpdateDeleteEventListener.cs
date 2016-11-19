@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
@@ -14,24 +15,25 @@ using NHibernate;
 using NHibernate.Engine;
 using NHibernate.Event;
 using NHibernate.Util;
-using Ninject;
-using Ninject.Extensions.Logging;
-using Ninject.Parameters;
-using Ninject.Syntax;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.SimpleInjector;
 using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.EventListeners;
-using PowerArhitecture.Domain.Extensions;
+using PowerArhitecture.DataAccess.Extensions;
+using PowerArhitecture.DataAccess.Providers;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation.Specifications;
+using SimpleInjector;
+using SimpleInjector.Extensions;
+using SimpleInjector.Extensions.ExecutionContextScoping;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
 {
     [NhEventListener(Order = int.MaxValue)] //Validation must be executed as last
-    [NhEventListenerType(typeof(IFlushEventListener), Order = int.MinValue)]
-    [NhEventListenerType(typeof(IAutoFlushEventListener), Order = int.MinValue)]
-    [NhEventListenerType(typeof(ISaveOrUpdateEventListener), Order = int.MinValue)]
-    [NhEventListenerType(typeof(IDeleteEventListener), Order = int.MinValue)]
+    [NhEventListenerType(typeof(IPreCollectionUpdateEventListener), Order = int.MinValue)]
+    [NhEventListenerType(typeof(IPreUpdateEventListener), Order = int.MinValue)]
+    [NhEventListenerType(typeof(IPreDeleteEventListener), Order = int.MinValue)]
     public class ValidatePreInsertUpdateDeleteEventHandler : BaseEventsHandler
         <
             //Reset cache
@@ -49,21 +51,20 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         IPreDeleteEventListener
     {
         private readonly ILogger _logger;
-        private readonly IResolutionRoot _resolutionRoot;
+        private readonly Container _container;
         private readonly ConcurrentDictionary<ISession, ConcurrentSet<IEntity>> _validatedEntities = new ConcurrentDictionary<ISession, ConcurrentSet<IEntity>>(); 
 
-        public ValidatePreInsertUpdateDeleteEventHandler(ILogger logger, IResolutionRoot resolutionRoot)
+        public ValidatePreInsertUpdateDeleteEventHandler(ILogger logger, Container container)
         {
             _logger = logger;
-            _resolutionRoot = resolutionRoot;
+            _container = container;
         }
 
         private class ValidationInfo
         {
-            public ValidationInfo(ISession childSession, IValidator validator, IEntity model, Type modelType, 
+            public ValidationInfo(IValidator validator, IEntity model, Type modelType, 
                 bool root, string[] ruleSets, object contextDataFiller)
             {
-                ChildSession = childSession;
                 Validator = validator;
                 RuleSets = ruleSets;
                 Model = model;
@@ -71,8 +72,6 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 Root = root;
                 ContextDataFiller = contextDataFiller;
             }
-
-            public ISession ChildSession { get; }
 
             public IValidator Validator { get; }
 
@@ -111,18 +110,29 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             do
             {
                 _logger.Debug($"Auto validating entity Type:'{valInfo.ModelType}', " +
-                              $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
-                var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
+                                $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
+                // We need set flush mode to never in order to prevert a stackoverflow in certain scenario when a flush is occured
+                var origFlushMode = session.FlushMode;
+                session.FlushMode = FlushMode.Never;
+                try
+                {
+                    var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
                     valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
                     {
-                        { ValidationContextExtensions.RootAutoValidationKey, valInfo.Root },
-                        { ValidationContextExtensions.AutoValidationKey, true }
+                        {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
+                        {ValidationContextExtensions.AutoValidationKey, true}
                     });
-                if (!validationResult.IsValid)
+                    
+                    if (!validationResult.IsValid)
+                    {
+                        Clear(session);
+                        throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
+                            valInfo.RuleSets);
+                    }
+                }
+                finally
                 {
-                    Clear(session);
-                    throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
-                        valInfo.RuleSets);
+                    session.FlushMode = origFlushMode;
                 }
                 var set = _validatedEntities.GetOrAdd(session, o => new ConcurrentSet<IEntity>());
                 set.Add(valInfo.Model);
@@ -142,18 +152,28 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             do
             {
                 _logger.Debug($"Auto validating entity Type:'{valInfo.ModelType}', " +
-                              $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
-                var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
+                                $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
+                // We need set flush mode to never in order to prevert a stackoverflow in certain scenario when a flush is occured
+                var origFlushMode = session.FlushMode;
+                session.FlushMode = FlushMode.Never;
+                try
+                {
+                    var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
                     valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
                     {
-                        { ValidationContextExtensions.RootAutoValidationKey, valInfo.Root },
-                        { ValidationContextExtensions.AutoValidationKey, true }
+                        {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
+                        {ValidationContextExtensions.AutoValidationKey, true}
                     });
-                if (!validationResult.IsValid)
+                    if (!validationResult.IsValid)
+                    {
+                        Clear(session);
+                        throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
+                            valInfo.RuleSets);
+                    }
+                }
+                finally
                 {
-                    Clear(session);
-                    throw new ExtendedValidationException(validationResult.Errors, entity, valInfo.ModelType,
-                        valInfo.RuleSets);
+                    session.FlushMode = origFlushMode;
                 }
                 var set = _validatedEntities.GetOrAdd(session, o => new ConcurrentSet<IEntity>());
                 set.Add(valInfo.Model);
@@ -163,7 +183,12 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
         private ValidationInfo GetValidationInfo(object item, ISession session, EntityMode mode, string[] ruleSets)
         {
-            if (item == null || mode != EntityMode.Poco || !session.IsManaged())
+            if (!session.IsManaged())
+            {
+                _logger.Warn("Automatic entity validation is not supported for unmanaged sessions");
+                return null;
+            }
+            if (item == null || mode != EntityMode.Poco)
             {
                 return null;
             }
@@ -289,37 +314,24 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         private ValidationInfo GetValidationInfo(IEntity entity, ISession session, string[] ruleSets, bool root, ValidationInfo valInfo = null)
         {
             var type = entity.GetTypeUnproxied();
-            // Validators are singleton
-            var validator = (IValidator)_resolutionRoot.Get(typeof(IValidator<>).MakeGenericType(type));
-            var validatorEx = validator as IValidatorExtended;
-            var sessionContext = session.GetSessionImplementation().UserData as SessionContext;
+            var validator = (IValidator)_container.GetInstance(typeof(IValidator<>).MakeGenericType(type));
+            //var validatorEx = validator as IValidatorExtended;
             object contextFiller = null;
 
-            if (sessionContext == null && validatorEx != null && !validatorEx.CanValidateWithoutContextFiller && validatorEx.HasValidationContextFiller)
+            //if (validatorEx != null && !validatorEx.CanValidateWithoutContextFiller && validatorEx.HasValidationContextFiller)
+            //{
+            //    throw new PowerArhitectureException(
+            //        $"Entity of type '{type}' cannot be auto validated as ISession is not managed and a IValidationContextFiller<> is required. " +
+            //        "Hint: use a managed ISession or remove IAutoValidate from the type or set CanValidateWithoutContextFiller on the type validator to false");
+            //}
+
+            var info = Database.GetSessionFactoryInfo(session);
+            if (info != null)
             {
-                throw new PowerArhitectureException(
-                    $"Entity of type '{type}' cannot be auto validated as ISession is not managed and a IValidationContextFiller<> is required. " +
-                    "Hint: use a managed ISession or remove IAutoValidate from the type or set CanValidateWithoutContextFiller on the type validator to false");
+                contextFiller = _container.TryGetInstance(typeof(IValidationContextFiller<>).MakeGenericType(type));
             }
 
-            // For validation we want to have a clean session (cache lvl 1) that share the same connection and transaction from the current one
-            // so that autoflush mode will not flush before querying in the validator (i.e. check if user exists).
-            // FlushMode is set to Never to ensure that validation process will not trigger any update/insert statements
-            var childSession = valInfo?.ChildSession;
-            if (childSession == null)
-            {
-                childSession = session.GetSession(EntityMode.Poco);
-                childSession.FlushMode = FlushMode.Never;
-            }
-
-            if (sessionContext != null)
-            {
-                contextFiller = sessionContext.ResolutionRoot.TryGet(
-                    typeof(IValidationContextFiller<>).MakeGenericType(type),
-                    new TypeMatchingConstructorArgument(typeof(ISession), (context, target) => childSession, true));
-            }
-
-            var newValInfo = new ValidationInfo(childSession, validator, entity, type, root, ruleSets, contextFiller);
+            var newValInfo = new ValidationInfo(validator, entity, type, root, ruleSets, contextFiller);
             if (valInfo == null)
             {
                 return newValInfo;

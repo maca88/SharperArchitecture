@@ -13,8 +13,8 @@ namespace PowerArhitecture.Domain.Attributes
         { 
         }
 
-        public string KeyName { get; private set; }
+        public string KeyName { get; }
 
-        public bool IsKeySet { get { return !string.IsNullOrEmpty(KeyName); } }
+        public bool IsKeySet => !string.IsNullOrEmpty(KeyName);
     }
 }

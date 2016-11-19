@@ -2,21 +2,29 @@
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using FluentNHibernate.MappingModel.Collections;
-using Ninject;
+using NHibernate;
+using NHibernate.Impl;
 using NUnit.Framework;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.SimpleInjector;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Configurations;
+using PowerArhitecture.DataAccess.Providers;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
 using PowerArhitecture.Tests.DataAccess.Extensions;
 using PowerArhitecture.Tests.DataAccess.MultiDatabase;
-using PowerArhitecture.Validation.Specifications;
+using PowerArhitecture.Tests.DataAccess.MultiDatabase.BazModels;
+using PowerArhitecture.Validation;
+using SimpleInjector;
+using SimpleInjector.Extensions.ExecutionContextScoping;
+using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
@@ -28,22 +36,30 @@ namespace PowerArhitecture.Tests.DataAccess
             EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
+            TestAssemblies.Add(typeof(MultiDatabasesTests).Assembly);
+        }
+
+        protected override void ConfigureContainer(Container container)
+        {
+            container.Options.DependencyInjectionBehavior = new KeyedDependencyInjectionBehavior(container);
+            base.ConfigureContainer(container);
         }
 
         protected override IEnumerable<IFluentDatabaseConfiguration> GetDatabaseConfigurations()
         {
-            foreach (var config in base.GetDatabaseConfigurations())
-            {
-                yield return config;
-            }
-            yield return CreateDatabaseConfiguration("bar", "bar");
+            yield return CreateDatabaseConfiguration()
+                .AutomappingConfiguration(o => o.ShouldMapType(t => !t.Namespace.Contains("BazModel")));
+            yield return CreateDatabaseConfiguration("bar", "bar")
+                .AutomappingConfiguration(o => o.ShouldMapType(t => !t.Namespace.Contains("BazModel")));
+            yield return CreateDatabaseConfiguration("baz", "baz")
+                .AutomappingConfiguration(o => o.ShouldMapType(t => t.Namespace.Contains("BazModel")));
         }
 
         [Test]
-        public void EachDatabaseMustHaveItsOwnSessionFacotry()
+        public void EachDatabaseMustHaveItsOwnSessionFactory()
         {
-            var multiSf = Kernel.Get<MultiSessionFactories>();
+            var multiSf = Container.GetInstance<MultiSessionFactories>();
 
             Assert.NotNull(multiSf.DefaultSessionFactory);
             Assert.NotNull(multiSf.BarSessionFactory);
@@ -51,33 +67,111 @@ namespace PowerArhitecture.Tests.DataAccess
         }
 
         [Test]
+        public void BazModelShouldHaveOnlyOneDatabaseConfiguration()
+        {
+            var configs = Database.GetDatabaseConfigurationsForModel<BazModel>();
+            Assert.AreEqual(1, configs.Count);
+            Assert.AreEqual("baz", configs.First().Name);
+        }
+
+        [Test]
+        public void ShouldThrowIfIncorrectDatabaseConfigurationNameIsPovidedForRepository()
+        {
+            Assert.Throws<ActivationException>(() =>
+            {
+                using (Container.BeginExecutionContextScope())
+                {
+                    Container.GetInstance<IRepository<BazModel>>("foo");
+                }
+            });
+        }
+
+        [Test]
+        public void BazModelRepositoryShouldHaveCorrectSession()
+        {
+            using (Container.BeginExecutionContextScope())
+            {
+                var bazRepo = Container.GetInstance<IRepository<BazModel>>();
+                var bazRepo2 = Container.GetInstance<IRepository<BazModel>>("baz");
+                var sf = bazRepo.GetSession().SessionFactory;
+
+                Assert.AreEqual(sf, bazRepo2.GetSession().SessionFactory);
+                Assert.AreEqual(bazRepo.GetSession(), bazRepo2.GetSession());
+                Assert.IsTrue(bazRepo.GetSession().Connection.ConnectionString.Contains("baz"));
+            }
+        }
+
+        [Test]
         public void EachDatabaseMustHaveItsOwnSession()
         {
-            var multiSf = Kernel.Get<MultiSessions>();
+            var multiSf = Container.GetInstance<MultiSessionFactories>();
+            var sf = multiSf.DefaultSessionFactory;
+            var sfBar = multiSf.BarSessionFactory;
+            sf.Statistics.Clear();
+            sfBar.Statistics.Clear();
 
-            Assert.NotNull(multiSf.DefaultSession);
-            Assert.NotNull(multiSf.BarSession);
-            Assert.AreNotEqual(multiSf.DefaultSession, multiSf.BarSession);
-            Assert.AreNotEqual(multiSf.DefaultSession.SessionFactory, multiSf.BarSession.SessionFactory);
+            using (Container.BeginExecutionContextScope())
+            {
+                var multiS = Container.GetInstance<MultiSessions>();
+                var session = multiS.DefaultSession;
+                var barSession = multiS.BarSession;
+
+                Assert.AreEqual(0, sf.Statistics.SessionOpenCount);
+                Assert.AreEqual(0, sfBar.Statistics.SessionOpenCount);
+                Assert.NotNull(session);
+                Assert.NotNull(barSession);
+                Assert.AreNotEqual(barSession, session);
+                Assert.AreEqual(sf, session.SessionFactory);
+                Assert.AreEqual(sfBar, barSession.SessionFactory);
+                Assert.AreEqual(1, sf.Statistics.SessionOpenCount);
+                Assert.AreEqual(1, sfBar.Statistics.SessionOpenCount);
+                Assert.AreNotEqual(session.SessionFactory, barSession.SessionFactory);
+                Assert.AreEqual(0, sf.Statistics.SessionCloseCount);
+                Assert.AreEqual(0, sfBar.Statistics.SessionCloseCount);
+            }
+            Assert.AreEqual(1, sf.Statistics.SessionCloseCount);
+            Assert.AreEqual(1, sfBar.Statistics.SessionCloseCount);
+        }
+
+        [Test]
+        public void EachDatabaseMustHaveItsOwnGenericRepository()
+        {
+            using (Container.BeginExecutionContextScope())
+            {
+                var sf = Container.GetInstance<ISessionFactory>();
+                sf.Statistics.Clear();
+
+                var multiSf = Container.GetInstance<MultiGenericRepositories>();
+                var defSession = multiSf.Repository.GetMemberValue("Session") as ISession;
+                var barSession = multiSf.BarRepository.GetMemberValue("Session") as ISession;
+
+                Assert.NotNull(defSession);
+                Assert.NotNull(barSession);
+                Assert.AreEqual(0, sf.Statistics.SessionOpenCount);
+                Assert.AreEqual(sf, defSession.SessionFactory);
+                Assert.AreEqual(1, sf.Statistics.SessionOpenCount);
+                Assert.AreNotEqual(defSession, barSession);
+                Assert.AreNotEqual(defSession.SessionFactory, barSession.SessionFactory);
+            }
         }
 
         [Test]
         public void UnitOfWorkShouldFallbackToDefaultDatabaseWhenRetrievingEntityThatIsContainedInMultipleDatabases()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
             {
-                var repo = unitOfWork.GetRepository<AttrLazyLoad>();
+                unitOfWork.GetRepository<AttrLazyLoad>();
             }
         }
 
         [Test]
         public void UnitOfWorkShouldThrowWhenAnInvalidDatabaseConfigurationNameIsProvided()
         {
-            Assert.Throws<PowerArhitectureException>(() =>
+            Assert.Throws<ActivationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
                 {
-                    var repo = unitOfWork.GetRepository<AttrLazyLoad>("baz");
+                    unitOfWork.GetRepository<AttrLazyLoad>("baz");
                 }
             });
         }
@@ -85,7 +179,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void UnitOfWorkShouldWorkWithMultipleDatabasesAndCustomRepositories()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -96,9 +190,9 @@ namespace PowerArhitecture.Tests.DataAccess
                     var repo3 = unitOfWork.GetCustomRepository<IAttrLazyLoadRepository>("bar");
 
                     Assert.AreNotEqual(repo, repo2);
-                    Assert.AreEqual(repo2, repo3);
-                    Assert.AreEqual(2, unitOfWork.GetActiveSessions().Count());
                     Assert.AreNotEqual(repo.GetSession(), repo2.GetSession());
+                    Assert.AreEqual(repo2.GetSession(), repo3.GetSession());
+                    Assert.AreEqual(2, unitOfWork.GetActiveSessions().Count());
                     Assert.IsTrue(unitOfWork.GetActiveSessions().All(o => o.Transaction.IsActive));
 
                     var model1 = new AttrLazyLoad {Name = "Test"};
@@ -121,7 +215,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void UnitOfWorkShouldWorkWithMultipleDatabasesAndGenericRepositories()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -132,10 +226,9 @@ namespace PowerArhitecture.Tests.DataAccess
                     var repo2 = unitOfWork.GetRepository<AttrIndexAttribute>("bar");
                     var repo3 = unitOfWork.GetRepository<AttrIndexAttribute>("bar");
 
-                    Assert.AreNotEqual(repo, repo2);
-                    Assert.AreEqual(repo2, repo3);
                     Assert.AreEqual(2, unitOfWork.GetActiveSessions().Count());
                     Assert.AreNotEqual(repo.GetSession(), repo2.GetSession());
+                    Assert.AreEqual(repo2.GetSession(), repo3.GetSession());
                     Assert.IsTrue(unitOfWork.GetActiveSessions().All(o => o.Transaction.IsActive));
 
                     var model1 = new AttrIndexAttribute { Index1 = "Test", SharedIndex1 = DateTime.Now };
@@ -161,7 +254,7 @@ namespace PowerArhitecture.Tests.DataAccess
         {
             Assert.Throws<SqlTypeException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -184,7 +277,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
             });
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {

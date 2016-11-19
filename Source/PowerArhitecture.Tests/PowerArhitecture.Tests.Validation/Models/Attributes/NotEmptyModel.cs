@@ -9,5 +9,8 @@ namespace PowerArhitecture.Tests.Validation.Models.Attributes
 
         [NotEmpty(IncludePropertyName = true)]
         public string Name2 { get; set; }
+
+        [NotEmpty("Default", IncludePropertyName = true)]
+        public string Name3 { get; set; }
     }
 }

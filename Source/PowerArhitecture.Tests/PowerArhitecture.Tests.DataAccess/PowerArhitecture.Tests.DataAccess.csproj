@@ -82,34 +82,9 @@
       <HintPath>..\..\packages\NHibernateX.2.0.0-Alpha1\lib\net40\NHibernate.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Ninject">
-      <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Extensions.ContextPreservation, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Ninject.Extensions.ContextPreservation.3.2.0.0\lib\net45-full\Ninject.Extensions.ContextPreservation.dll</HintPath>
+    <Reference Include="NHibernate.Extensions, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NHibernateX.Extensions.1.2.0.0-Alpha1\lib\net452\NHibernate.Extensions.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Ninject.Extensions.Logging.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Ninject.Extensions.Logging.Log4net.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.MockingKernel">
-      <HintPath>..\..\packages\Ninject.MockingKernel.3.2.2.0\lib\net45-full\Ninject.MockingKernel.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.MockingKernel.Moq, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Ninject.MockingKernel.Moq.3.2.2.0\lib\net45-full\Ninject.MockingKernel.Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Web">
-      <HintPath>..\..\packages\Ninject.Web.3.2.1.0\lib\net45-full\Ninject.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
     </Reference>
     <Reference Include="Nito.AsyncEx.Context, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Nito.AsyncEx.Context.1.1.0\lib\net46\Nito.AsyncEx.Context.dll</HintPath>
@@ -125,6 +100,14 @@
     </Reference>
     <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SimpleInjector.3.2.7\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector.Extensions.ExecutionContextScoping, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SimpleInjector.Extensions.ExecutionContextScoping.3.2.7\lib\net45\SimpleInjector.Extensions.ExecutionContextScoping.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -148,12 +131,15 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Attributes\IsolationAttribute.cs" />
+    <Compile Include="Entities\AttrMssqlIndexAttribute.cs" />
     <Compile Include="Entities\AttrIndexAttribute.cs" />
     <Compile Include="Entities\AttrLazyLoad.cs" />
     <Compile Include="Entities\AttrUniqueAttribute.cs" />
     <Compile Include="Entities\Country.cs" />
     <Compile Include="Entities\IdentityValidableEntity.cs" />
     <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\UserExistance.cs" />
     <Compile Include="Entities\ValidableEntity.cs" />
     <Compile Include="Entities\ValidableRootChild.cs" />
     <Compile Include="Entities\Versioning\VersionCar.cs" />
@@ -165,6 +151,8 @@
     <Compile Include="EntityValidationTests.cs" />
     <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="MultiDatabasesTests.cs" />
+    <Compile Include="MultiDatabase\BazModels\BazModel.cs" />
+    <Compile Include="MultiDatabase\MultiRepositories.cs" />
     <Compile Include="MultiDatabase\MultiSessionFactories.cs" />
     <Compile Include="MultiDatabase\MultiSessions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

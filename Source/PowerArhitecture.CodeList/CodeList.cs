@@ -20,10 +20,10 @@ namespace PowerArhitecture.CodeList
 
         public virtual string Name { get; set; }
 
-        //Id can be changed via Code so we have to check CreatedDate and LastModifiedDate
+        //Id can be changed via Code so we have to check CreatedDate
         public override bool IsTransient()
         {
-            return CreatedDate == DateTime.MinValue || LastModifiedDate == DateTime.MinValue;
+            return CreatedDate == DateTime.MinValue;
         }
     }
 }

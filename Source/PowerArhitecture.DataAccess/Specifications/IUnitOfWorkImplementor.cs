@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
-using Ninject.Syntax;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.Specifications
 {
@@ -29,7 +29,7 @@ namespace PowerArhitecture.DataAccess.Specifications
         /// <summary>
         /// Use this if you want instantiate a class that has a Repository or Session as dependency
         /// </summary>
-        IResolutionRoot ResolutionRoot { get; }
+        IInstanceProvider ResolutionRoot { get; }
 
         IEnumerable<ISession> GetActiveSessions();
     }

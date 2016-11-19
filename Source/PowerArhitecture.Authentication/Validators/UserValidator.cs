@@ -31,7 +31,7 @@ namespace PowerArhitecture.Authentication.Validators
 
         private ValidationFailure AssertNonSystemUser(TUser user)
         {
-            return user.IsSystemUser ? ValidationFailure(I18N.Translate("System user cannot be deleted.")) : null;
+            return user.IsSystemUser ? Failure(I18N.Translate("System user cannot be deleted.")) : null;
         }
 
         private ValidationFailure ValidateUserName(TUser user)
@@ -39,18 +39,18 @@ namespace PowerArhitecture.Authentication.Validators
             if (!string.IsNullOrWhiteSpace(user.UserName))
             {
                 if (!Regex.IsMatch(user.UserName, "^[A-Za-z0-9]+$"))
-                    return ValidationFailure(o => o.UserName, I18N.Translate("'{0}' is not in the correct format.", 
+                    return Failure(o => o.UserName, I18N.Translate("'{0}' is not in the correct format.", 
                         I18N.Translate("UserName")));
             }
             else
-                return ValidationFailure(o => o.UserName, I18N.Translate("'{0}' should not be empty.", I18N.Translate("UserName")));
-            return ValidationSuccess;
+                return Failure(o => o.UserName, I18N.Translate("'{0}' should not be empty.", I18N.Translate("UserName")));
+            return Success;
         }
 
         private async Task<ValidationFailure> CheckDuplicates(TUser user)
         {
             return await _repository.Query().AnyAsync(o => o.UserName == user.UserName)
-                ? ValidationFailure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName))
+                ? Failure(o => o.UserName, I18N.Translate("'{0}' '{1}' already exists.", I18N.Translate("UserName"), user.UserName))
                 : null;
         }
 

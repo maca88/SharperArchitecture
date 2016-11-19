@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluentValidation;
 using NHibernate;
 using NHibernate.Linq;
+using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
-using PowerArhitecture.Domain.Extensions;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Extensions;
@@ -16,7 +16,7 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
 {
-    public class ValidableEntity : Entity, IAutoValidated
+    public class ValidableEntity : VersionedEntity, IAutoValidated
     {
         public virtual string Name { get; set; }
 
@@ -40,7 +40,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
         public virtual string CountryCode { get; set; }
 
-        public virtual object AggregateRoot => ValidableEntity;
+        public virtual IVersionedEntity AggregateRoot => ValidableEntity;
 
         public virtual ISet<ValidableEntitySubChild> Children { get; set; } = new HashSet<ValidableEntitySubChild>();
     }
@@ -57,7 +57,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
         public virtual string Name { get; set; }
 
-        public virtual object AggregateRoot => ValidableEntityChild?.AggregateRoot;
+        public virtual IVersionedEntity AggregateRoot => ValidableEntityChild?.AggregateRoot;
     }
 
     public class ValidableEntityValidator : Validator<ValidableEntity>
@@ -74,13 +74,13 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
     public class ValidableEntityValidationContextFiller : BaseValidationContextFiller<ValidableEntity>
     {
-        private readonly ISession _session;
+        public readonly ISession Session;
 
         public static int FilledCount { get; set; }
 
         public ValidableEntityValidationContextFiller(ISession session)
         {
-            _session = session;
+            Session = session;
         }
 
         public override void FillContextData(ValidableEntity model, Dictionary<string, object> contextData)
@@ -88,7 +88,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
             FilledCount++;
             var codes = model.Children.Select(o => o.CountryCode).Distinct().ToList();
             contextData["validCodes"] =
-                new HashSet<string>(_session.Query<Country>().Where(o => codes.Contains(o.Code)).Select(o => o.Code))
+                new HashSet<string>(Session.Query<Country>().Where(o => codes.Contains(o.Code)).Select(o => o.Code))
                 {
                     "CannotUpdate"
                 };

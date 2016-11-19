@@ -14,6 +14,6 @@ namespace PowerArhitecture.Domain.Attributes
             Mode = mode;
         }
 
-        public FetchMode Mode { get; private set; }
+        public FetchMode Mode { get; }
     }
 }

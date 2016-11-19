@@ -14,7 +14,8 @@ using NHibernate.Proxy.DynamicProxy;
 using NHibernate.Proxy;
 using NHibernate.Type;
 using PowerArhitecture.DataAccess;
-using PowerArhitecture.DataAccess.Wrappers;
+using PowerArhitecture.DataAccess.Decorators;
+using PowerArhitecture.DataAccess.Providers;
 
 namespace NHibernate
 {
@@ -80,14 +81,13 @@ namespace NHibernate
 
         internal static ISession Unwrap(this ISession session)
         {
-            var wrap = session as SessionWrapper;
+            var wrap = session as SessionDecorator;
             return wrap != null ? wrap.Session : session;
         }
 
         internal static bool IsManaged(this ISession session)
         {
-            var data = session.GetSessionImplementation().UserData as SessionContext;
-            return data?.IsManaged ?? false;
+            return SessionProvider.RegisteredSessionIds.Contains(session.GetSessionImplementation().SessionId);
         }
     }
 }

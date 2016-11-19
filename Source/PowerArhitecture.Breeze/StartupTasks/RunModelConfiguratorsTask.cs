@@ -24,7 +24,7 @@ namespace PowerArhitecture.Breeze.StartupTasks
             foreach (var modelConfigurator in configs.OrderByDescending(o =>
             {
                 var attr = o.GetType().GetCustomAttribute<PriorityAttribute>();
-                return attr?.Priority ?? 0;
+                return attr?.Priority ?? PriorityAttribute.Default;
             }))
             {
                 modelConfigurator.Configure();

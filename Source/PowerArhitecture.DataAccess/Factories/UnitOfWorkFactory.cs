@@ -4,31 +4,27 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ninject;
-using Ninject.Extensions.NamedScope;
-using Ninject.Parameters;
-using Ninject.Syntax;
-using PowerArhitecture.DataAccess.Configurations;
-using PowerArhitecture.DataAccess.Parameters;
+using PowerArhitecture.Common.SimpleInjector;
 using PowerArhitecture.DataAccess.Specifications;
+using SimpleInjector;
+using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.DataAccess.Factories
 {
-    public class UnitOfWorkFactory : IUnitOfWorkFactory
+    internal class UnitOfWorkFactory : IUnitOfWorkFactory
     {
-        readonly IResolutionRoot _resolutionRoot;
+        readonly Container _container;
 
-        public UnitOfWorkFactory(IResolutionRoot resolutionRoot)
+        public UnitOfWorkFactory(Container container)
         {
-            _resolutionRoot = resolutionRoot;
+            _container = container;
         }
 
-        public IUnitOfWork GetNew(IsolationLevel isolationLevel = IsolationLevel.Unspecified, string dbConfigName = null)
+        public IUnitOfWork GetNew(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
-            dbConfigName = dbConfigName ?? DatabaseConfiguration.DefaultName;
-            return _resolutionRoot.Get<IUnitOfWork>(
-                new ConstructorArgument("isolationLevel", isolationLevel),
-                new DatabaseConfigurationParameter(dbConfigName));
+            var unitOfWork = _container.GetInstance<UnitOfWork>();
+            unitOfWork.IsolationLevel = isolationLevel;
+            return unitOfWork;
         }
     }
 }

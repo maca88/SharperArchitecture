@@ -11,17 +11,16 @@ using System.Threading.Tasks;
 using NHibernate;
 using NHibernate.Event;
 using NHibernate.Impl;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Providers;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
 using PowerArhitecture.Tests.DataAccess.Entities.Versioning;
-using PowerArhitecture.Validation.Specifications;
+using PowerArhitecture.Validation;
+using SimpleInjector.Extensions.ExecutionContextScoping;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
@@ -33,7 +32,7 @@ namespace PowerArhitecture.Tests.DataAccess
             EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
         }
 
         protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
@@ -51,7 +50,8 @@ namespace PowerArhitecture.Tests.DataAccess
         public void save_version_entity()
         {
             var car = new VersionCar { Model = "BMW" };
-            using (var session = Kernel.Get<ISession>())
+            using (Container.BeginExecutionContextScope())
+            using (var session = Container.GetInstance<ISession>())
             using (var tx = session.BeginTransaction())
             {
                 session.Save(car); //A flush will happen as we set the id generator to indentity

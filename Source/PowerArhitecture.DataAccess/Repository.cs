@@ -7,69 +7,64 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
-using PowerArhitecture.Validation.Specifications;
-using FluentValidation.Results;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
-using Ninject.Extensions.Logging;
+using PowerArhitecture.Common.Specifications;
 using Property = NHibernate.Mapping.Property;
 
 namespace PowerArhitecture.DataAccess
 {
     public class Repository<TModel> : Repository<TModel, long>, IRepository<TModel> where TModel : class, IEntity<long>, new()
     {
-        public Repository(Lazy<ISession> session, ILogger logger)
+        public Repository(ISession session, ILogger logger)
             : base(session, logger)
         {
         }
     }
 
     /// <summary>
-    /// Dispose only if is used outside HttpContext or UnitOfWork
+    /// Generic repository
     /// </summary>
     /// <typeparam name="TModel"></typeparam>
     /// <typeparam name="TId"></typeparam>
     public class Repository<TModel, TId> : IRepository<TModel, TId> where TModel : class, IEntity<TId>, new()
     {
-        private readonly Lazy<ISession> _lazySession;
-
-        public Repository(Lazy<ISession> session, ILogger logger)
+        public Repository(ISession session, ILogger logger)
         {
             Logger = logger;
-            _lazySession = session;
+            Session = session;
         }
 
         protected ILogger Logger { get; }
 
-        protected ISession Session => _lazySession.Value;
+        protected internal ISession Session { get; internal set; }
 
-        public virtual IPrincipal User // TODO: Verify if needed
-        {
-            get
-            {
-                return Thread.CurrentPrincipal;
-            }
-        }
+        //public virtual IPrincipal User // TODO: Verify if needed
+        //{
+        //    get
+        //    {
+        //        return Thread.CurrentPrincipal;
+        //    }
+        //}
 
-        public virtual Task<TUser> GetCurrentUserAsync<TUser>(Expression<Func<TUser, string>> nameProperty, bool cachable) where TUser : IEntity
-        {
-            return GetCurrentUserAsync<TUser>(nameProperty.GetFullPropertyName(), cachable);
-        }
+        //public virtual Task<TUser> GetCurrentUserAsync<TUser>(Expression<Func<TUser, string>> nameProperty, bool cachable) where TUser : IEntity
+        //{
+        //    return GetCurrentUserAsync<TUser>(nameProperty.GetFullPropertyName(), cachable);
+        //}
 
-        public virtual async Task<TUser> GetCurrentUserAsync<TUser>(string nameProperty, bool cachable) where TUser : IEntity
-        {
-            if (string.IsNullOrEmpty(User?.Identity?.Name))
-            {
-                return default(TUser);
-            }
-            return (TUser)await Session.CreateCriteria(typeof(TUser))
-                .Add(Restrictions.Eq(nameProperty, User.Identity.Name))
-                .SetCacheable(cachable)
-                .UniqueResultAsync();
-        }
+        //public virtual async Task<TUser> GetCurrentUserAsync<TUser>(string nameProperty, bool cachable) where TUser : IEntity
+        //{
+        //    if (string.IsNullOrEmpty(User?.Identity?.Name))
+        //    {
+        //        return default(TUser);
+        //    }
+        //    return (TUser)await Session.CreateCriteria(typeof(TUser))
+        //        .Add(Restrictions.Eq(nameProperty, User.Identity.Name))
+        //        .SetCacheable(cachable)
+        //        .UniqueResultAsync();
+        //}
 
         public virtual IQueryable<TModel> Query()
         {

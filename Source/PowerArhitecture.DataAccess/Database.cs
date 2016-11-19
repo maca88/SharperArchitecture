@@ -17,7 +17,6 @@ using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Interceptors;
 using PowerArhitecture.DataAccess.Specifications;
-using PowerArhitecture.DataAccess.Wrappers;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Specifications;
 using FluentNHibernate.Automapping;
@@ -32,6 +31,7 @@ using NHibernate.Tool.hbm2ddl;
 using log4net;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.DataAccess.Decorators;
 
 namespace PowerArhitecture.DataAccess
 {
@@ -180,17 +180,17 @@ namespace PowerArhitecture.DataAccess
                 (dbConnection, conventions) => RecreateSchema(info.Configuration, dbConnection, conventions));
         }
 
-        public static SessionFactoryInfo GetSessionFactoryInfo(ISession session)
+        internal static SessionFactoryInfo GetSessionFactoryInfo(ISession session)
         {
             return GetSessionFactoryInfo(session.SessionFactory);
         }
 
-        public static IEnumerable<DatabaseConfiguration> GetDatabaseConfigurationsForModel<T>()
+        public static IReadOnlyCollection<DatabaseConfiguration> GetDatabaseConfigurationsForModel<T>()
         {
             return GetDatabaseConfigurationsForModel(typeof(T));
         }
 
-        public static IEnumerable<DatabaseConfiguration> GetDatabaseConfigurationsForModel(Type modelType)
+        public static IReadOnlyCollection<DatabaseConfiguration> GetDatabaseConfigurationsForModel(Type modelType)
         {
             if (modelType == null)
             {
@@ -214,34 +214,14 @@ namespace PowerArhitecture.DataAccess
             return result;
         }
 
-        public static string GetDatabaseConfigurationName(Type modelType)
-        {
-            if (!MultipleDatabases && HasDefaultDatabase)
-            {
-                return DatabaseConfiguration.DefaultName;
-            }
-            var configs = GetDatabaseConfigurationsForModel(modelType).ToList();
-            if (!configs.Any())
-            {
-                throw new PowerArhitectureException($"No database configuration found for type {modelType}.");
-            }
-            if (configs.Count > 1)
-            {
-                if (configs.Any(o => o.Name == DatabaseConfiguration.DefaultName))
-                {
-                    return DatabaseConfiguration.DefaultName;
-                }
-                throw new PowerArhitectureException($"There are multiple database configurations that contain type {modelType}. " +
-                    "Hint: Use the overload with a database configuration name");
-            }
-            return configs.First().Name;
-        }
-
         #endregion
 
         internal static SessionFactoryInfo GetSessionFactoryInfo(ISessionFactory sessionFactory)
         {
-            return SessionFactories[sessionFactory];
+            SessionFactoryInfo info;
+            return SessionFactories.TryGetValue(sessionFactory, out info)
+                ? info
+                : null;
         }
 
         private static void RegisterSessionFactory(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 

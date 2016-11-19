@@ -22,11 +22,11 @@ namespace PowerArhitecture.Breeze
 {
     public class BreezeMetadataConfigurator
     {
-        private readonly IValidatorFactoryExtended _validatorFactory;
+        private readonly IValidatorFactory _validatorFactory;
         private readonly object _lock = new object();
         private static readonly HashSet<string> NullableProperties = new HashSet<string>();
 
-        public BreezeMetadataConfigurator(IValidatorFactoryExtended validatorFactory)
+        public BreezeMetadataConfigurator(IValidatorFactory validatorFactory)
         {
             _validatorFactory = validatorFactory;
         }

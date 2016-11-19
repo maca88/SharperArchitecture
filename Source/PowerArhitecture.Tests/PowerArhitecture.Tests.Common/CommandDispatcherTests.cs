@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Tests.Common.Commands;
@@ -21,8 +20,8 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void CommandDispatcherMustBeTransient()
         {
-            var dispatcher = Kernel.Get<ICommandDispatcher>();
-            var dispatcher2 = Kernel.Get<ICommandDispatcher>();
+            var dispatcher = Container.GetInstance<ICommandDispatcher>();
+            var dispatcher2 = Container.GetInstance<ICommandDispatcher>();
 
             Assert.AreNotEqual(dispatcher, dispatcher2);
         }
@@ -30,9 +29,9 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void CommandHandlerMustBeTransient()
         {
-            var handler = Kernel.Get<TestCommandHandler>();
-            var handler2 = Kernel.Get<TestCommandHandler>();
-            var handler3 = Kernel.Get<ICommandHandler<TestCommand, bool>>();
+            var handler = Container.GetInstance<TestCommandHandler>();
+            var handler2 = Container.GetInstance<TestCommandHandler>();
+            var handler3 = Container.GetInstance<ICommandHandler<TestCommand, bool>>();
 
             Assert.AreNotEqual(handler, handler2);
             Assert.AreNotEqual(handler2, handler3);
@@ -42,9 +41,9 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void VoidCommandHandlerMustBeTransient()
         {
-            var handler = Kernel.Get<VoidCommandHandler>();
-            var handler2 = Kernel.Get<VoidCommandHandler>();
-            var handler3 = Kernel.Get<ICommandHandler<VoidCommand>>();
+            var handler = Container.GetInstance<VoidCommandHandler>();
+            var handler2 = Container.GetInstance<VoidCommandHandler>();
+            var handler3 = Container.GetInstance<ICommandHandler<VoidCommand>>();
 
             Assert.AreNotEqual(handler, handler2);
             Assert.AreNotEqual(handler2, handler3);
@@ -54,7 +53,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestCommandHandlerAsyncThenSync()
         {
-            var commandDispatcher = Kernel.Get<ICommandDispatcher>();
+            var commandDispatcher = Container.GetInstance<ICommandDispatcher>();
             var result = await commandDispatcher.DispatchAsync(new TestCommand());
 
             Assert.AreEqual(true, result);
@@ -67,7 +66,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestCommandHandlerSyncThenAsync()
         {
-            var commandDispatcher = Kernel.Get<ICommandDispatcher>();
+            var commandDispatcher = Container.GetInstance<ICommandDispatcher>();
             var result = commandDispatcher.Dispatch(new TestCommand());
 
             Assert.AreEqual(true, result);
@@ -80,7 +79,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void VoidCommandHandler()
         {
-            var commandDispatcher = Kernel.Get<ICommandDispatcher>();
+            var commandDispatcher = Container.GetInstance<ICommandDispatcher>();
             var cmd = new VoidCommand();
             commandDispatcher.Dispatch(cmd);
 
@@ -90,7 +89,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task VoidCommandHandlerAsync()
         {
-            var commandDispatcher = Kernel.Get<ICommandDispatcher>();
+            var commandDispatcher = Container.GetInstance<ICommandDispatcher>();
             var cmd = new VoidCommand();
             await commandDispatcher.DispatchAsync(cmd);
 
@@ -100,7 +99,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void ModelCommandHandler()
         {
-            var commandDispatcher = Kernel.Get<ICommandDispatcher>();
+            var commandDispatcher = Container.GetInstance<ICommandDispatcher>();
             var model = new Model();
             var cmd = new ModelCommand(model);
             commandDispatcher.Dispatch(cmd);

@@ -6,14 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate.Event;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
+using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.Domain;
-using Ninject.Extensions.Logging;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
     //End trimming Id for Entity<string> types: http://support.microsoft.com/kb/316626
-    public class EntityPreUpdateInsertEventListener : 
+    internal class EntityPreUpdateInsertEventListener : 
         IPreInsertEventListener,
         IPreUpdateEventListener
     {

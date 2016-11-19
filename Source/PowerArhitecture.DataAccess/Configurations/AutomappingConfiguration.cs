@@ -24,13 +24,13 @@ namespace PowerArhitecture.DataAccess.Configurations
             _mappingStepsAssembiles = new List<Assembly>();
         }
 
-        public IFluentAutoMappingConfiguration ShouldMap(Predicate<Type> predicate)
+        public IFluentAutoMappingConfiguration ShouldMapType(Predicate<Type> predicate)
         {
             _shouldMapTypePredicate = predicate;
             return this;
         }
 
-        public IFluentAutoMappingConfiguration ShouldMap(Predicate<Member> predicate)
+        public IFluentAutoMappingConfiguration ShouldMapMember(Predicate<Member> predicate)
         {
             _shouldMapMemberPredicate = predicate;
             return this;
@@ -50,16 +50,12 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Type type)
         {
-            if (_shouldMapTypePredicate != null && !_shouldMapTypePredicate(type))
-            {
-                return false;
-            }
             if (type.GetCustomAttribute<IncludeAttribute>() != null)
             {
                 return true;
             }
-                
-            return base.ShouldMap(type) && typeof(IEntity).IsAssignableFrom(type) && type.GetCustomAttribute<IgnoreAttribute>(false) == null;
+            return base.ShouldMap(type) && typeof(IEntity).IsAssignableFrom(type) && type.GetCustomAttribute<IgnoreAttribute>(false) == null &&
+                (_shouldMapTypePredicate == null || _shouldMapTypePredicate(type));
         }
 
         public override bool AbstractClassIsLayerSupertype(Type type)
@@ -69,11 +65,6 @@ namespace PowerArhitecture.DataAccess.Configurations
 
         public override bool ShouldMap(Member member)
         {
-            if (_shouldMapTypePredicate != null && !_shouldMapMemberPredicate(member))
-            {
-                return false;
-            }
-
             if (member.IsProperty)
             {
                 var propInfo = (PropertyInfo)member.MemberInfo;
@@ -86,7 +77,7 @@ namespace PowerArhitecture.DataAccess.Configurations
                     return member.CanWrite;
             }
 
-            return member.CanWrite && base.ShouldMap(member);
+            return member.CanWrite && base.ShouldMap(member) && (_shouldMapMemberPredicate == null || _shouldMapMemberPredicate(member));
         }
 
         public override IEnumerable<IAutomappingStep> GetMappingSteps(AutoMapper mapper, FluentNHibernate.Conventions.IConventionFinder conventionFinder)

@@ -2,46 +2,47 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Transactions;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using NHibernate;
 using NHibernate.Linq;
-using Ninject;
-using Ninject.Extensions.Logging;
-using Ninject.Syntax;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.EventListeners;
-using PowerArhitecture.DataAccess.Parameters;
+using PowerArhitecture.DataAccess.Extensions;
+using SimpleInjector;
+using SimpleInjector.Extensions;
+using SimpleInjector.Extensions.ExecutionContextScoping;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace PowerArhitecture.DataAccess
 {
-    public class UnitOfWork : IUnitOfWorkImplementor
+    internal class UnitOfWork : IUnitOfWorkImplementor
     {
+        private bool _intialized;
+        private Scope _scope;
+        private TransactionScope _transactionScope;
         private readonly ILogger _logger;
-        private readonly IsolationLevel _isolationLevel;
+        private readonly Container _container;
         private readonly IEventPublisher _eventPublisher;
-        private readonly TransactionScope _transactionScope;
         private readonly ConcurrentDictionary<string, ISession> _sessions = new ConcurrentDictionary<string, ISession>();
 
         public UnitOfWork(ILogger logger, 
-            IResolutionRoot resolutionRoot,
-            IEventPublisher eventPublisher, 
-            [Optional]IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+            IEventPublisher eventPublisher,
+            IInstanceProvider instanceProvider,
+            Container container)
         {
             _logger = logger;
+            _container = container;
             _eventPublisher = eventPublisher;
-            _isolationLevel = isolationLevel;
-            ResolutionRoot = resolutionRoot;
-            if (Database.MultipleDatabases)
-            {
-                _transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-            }
+            ResolutionRoot = instanceProvider;
         }
+
+        public IsolationLevel IsolationLevel { get; internal set; } = IsolationLevel.Unspecified;
 
         public IQueryable<TModel> Query<TModel>() where TModel : class, IEntity<long>, new()
         {
@@ -71,25 +72,25 @@ namespace PowerArhitecture.DataAccess
             return GetOrAddSession(dbConfigName).Query<TModel>();
         }
 
-        public IRepository<TModel, long> GetRepository<TModel>() where TModel : class, IEntity<long>, new()
+        public IRepository<TModel> GetRepository<TModel>() where TModel : class, IEntity<long>, new()
         {
-            var dbConfigName = Database.GetDatabaseConfigurationName(typeof(TModel));
+            var dbConfigName = GetDatabaseConfigurationName(typeof(TModel));
             return GetRepository<TModel>(dbConfigName);
         }
 
-        public IRepository<TModel, long> GetRepository<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new()
+        public IRepository<TModel> GetRepository<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new()
         {
             if (dbConfigName == null)
             {
                 throw new ArgumentNullException(nameof(dbConfigName));
             }
             GetOrAddSession(dbConfigName); // Get and save the session
-            return ResolutionRoot.Get<IRepository<TModel, long>>(new DatabaseConfigurationParameter(dbConfigName));
+            return _container.GetDatabaseService<IRepository<TModel>>(dbConfigName);
         }
 
         public IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new()
         {
-            var dbConfigName = Database.GetDatabaseConfigurationName(typeof(TModel));
+            var dbConfigName = GetDatabaseConfigurationName(typeof(TModel));
             return GetRepository<TModel, TId>(dbConfigName);
         }
 
@@ -100,10 +101,10 @@ namespace PowerArhitecture.DataAccess
                 throw new ArgumentNullException(nameof(dbConfigName));
             }
             GetOrAddSession(dbConfigName); // Get and save the session
-            return ResolutionRoot.Get<IRepository<TModel, TId>>(new DatabaseConfigurationParameter(dbConfigName));
+            return _container.GetDatabaseService<IRepository<TModel, TId>>(dbConfigName);
         }
 
-        public TRepo GetCustomRepository<TRepo>()  where TRepo : IRepository
+        public TRepo GetCustomRepository<TRepo>() where TRepo : class, IRepository
         {
             string dbConfigName;
             if (!Database.MultipleDatabases)
@@ -118,18 +119,18 @@ namespace PowerArhitecture.DataAccess
             else
             {
                 var repoType = typeof(TRepo).GetGenericType(typeof(IRepository<,>));
-                dbConfigName = Database.GetDatabaseConfigurationName(repoType.GetGenericArguments()[0]);
+                dbConfigName = GetDatabaseConfigurationName(repoType.GetGenericArguments()[0]);
             }
             return GetCustomRepository<TRepo>(dbConfigName);
         }
 
-        public TRepo GetCustomRepository<TRepo>(string dbConfigName) where TRepo : IRepository
+        public TRepo GetCustomRepository<TRepo>(string dbConfigName) where TRepo : class, IRepository
         {
             if (dbConfigName == null)
             {
                 throw new ArgumentNullException(nameof(dbConfigName));
             }
-            return ResolutionRoot.Get<TRepo>(new DatabaseConfigurationParameter(dbConfigName));
+            return _container.GetDatabaseService<TRepo>(dbConfigName);
         }
 
         public void Save<TModel>(TModel model) where TModel : IEntity
@@ -246,7 +247,7 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
-        public IResolutionRoot ResolutionRoot { get; }
+        public IInstanceProvider ResolutionRoot { get; }
 
         public IEnumerable<ISession> GetActiveSessions()
         {
@@ -260,10 +261,7 @@ namespace PowerArhitecture.DataAccess
 
         public void Dispose()
         {
-            foreach (var session in _sessions.Values)
-            {
-                session.Dispose();
-            }
+            _scope?.Dispose();
             _transactionScope?.Dispose();
             _sessions.Clear();
         }
@@ -304,14 +302,32 @@ namespace PowerArhitecture.DataAccess
                 throw new PowerArhitectureException(
                     $"There isn't any DatabaseConfiguration registered with the name '{dbConfigName}'");
             }
+            Initialize();
             dbConfigName = dbConfigName ?? DatabaseConfiguration.DefaultName;
             return _sessions.GetOrAdd(dbConfigName, k =>
             {
-                var session = ResolutionRoot.Get<ISession>(new DatabaseConfigurationParameter(dbConfigName));
-                session.BeginTransaction(_isolationLevel);
+                var session = _container.GetDatabaseService<ISession>(dbConfigName);
+                session.BeginTransaction(IsolationLevel);
                 session.Transaction.RegisterSynchronization(new TransactionEventListener(session.Unwrap(), _eventPublisher));
                 return session;
             });
+        }
+
+        /// <summary>
+        /// We must lazy initialize the scope as the constructor is called in the Verify method of the SimpleInjector and never disposed
+        /// </summary>
+        private void Initialize()
+        {
+            if (_intialized)
+            {
+                return;
+            }
+            _intialized = true;
+            _scope = _container.BeginExecutionContextScope();
+            if (Database.MultipleDatabases)
+            {
+                _transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            }
         }
 
         private ISession GetOrAddSession<T>()
@@ -321,9 +337,31 @@ namespace PowerArhitecture.DataAccess
 
         private ISession GetOrAddSession(Type modelType)
         {
-            return GetOrAddSession(Database.GetDatabaseConfigurationName(modelType));
+            return GetOrAddSession(GetDatabaseConfigurationName(modelType));
         }
 
-        
+        private static string GetDatabaseConfigurationName(Type modelType)
+        {
+            if (!Database.MultipleDatabases && Database.HasDefaultDatabase)
+            {
+                return DatabaseConfiguration.DefaultName;
+            }
+            var configs = Database.GetDatabaseConfigurationsForModel(modelType).ToList();
+            if (!configs.Any())
+            {
+                throw new PowerArhitectureException($"No database configuration found for type {modelType}.");
+            }
+            if (configs.Count > 1)
+            {
+                if (configs.Any(o => o.Name == DatabaseConfiguration.DefaultName))
+                {
+                    return DatabaseConfiguration.DefaultName;
+                }
+                throw new PowerArhitectureException($"There are multiple database configurations that contain type {modelType}. " +
+                    "Hint: Use the overload with a database configuration name");
+            }
+            return configs.First().Name;
+        }
+
     }
 }

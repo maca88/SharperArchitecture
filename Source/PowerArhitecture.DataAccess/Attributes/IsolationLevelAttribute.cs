@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace PowerArhitecture.DataAccess.Attributes
 {
-    public class IsolationLevelAttribute
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public class IsolationLevelAttribute : Attribute
     {
         public IsolationLevelAttribute(IsolationLevel isolationLevel)
         {

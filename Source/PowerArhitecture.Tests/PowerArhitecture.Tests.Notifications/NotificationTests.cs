@@ -2,8 +2,6 @@
 using System.Linq;
 using System.Security.Principal;
 using System.Threading;
-using NHibernate;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess;
@@ -15,7 +13,7 @@ using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.Notifications.Entities;
 using PowerArhitecture.Tests.Notifications.EventListeners;
 using PowerArhitecture.Tests.Notifications.Repositories;
-using PowerArhitecture.Validation.Specifications;
+using PowerArhitecture.Validation;
 
 namespace PowerArhitecture.Tests.Notifications
 {
@@ -28,7 +26,8 @@ namespace PowerArhitecture.Tests.Notifications
             TestAssemblies.Add(typeof(NotificationTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
+            TestAssemblies.Add(typeof(NewNotificationEvent).Assembly);
         }
 
         protected override IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
@@ -45,8 +44,8 @@ namespace PowerArhitecture.Tests.Notifications
         [Test]
         public void notification_string_listener_test()
         {
-            var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            var listener = Kernel.Get<NotificationHandler>();
+            var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
+            var listener = Container.GetInstance<NotificationHandler>();
             listener.Reset();
             using (var unitOfWork = unitOfWorkFactory.GetNew())
             {
@@ -87,8 +86,8 @@ namespace PowerArhitecture.Tests.Notifications
         [Test]
         public void notification_entity_listener_test()
         {
-            var unitOfWorkFactory = Kernel.Get<IUnitOfWorkFactory>();
-            var listener = Kernel.Get<NotificationHandler>();
+            var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
+            var listener = Container.GetInstance<NotificationHandler>();
             listener.Reset();
             using (var unitOfWork = unitOfWorkFactory.GetNew())
             {

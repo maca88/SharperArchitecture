@@ -1,8 +1,5 @@
 using System;
 using System.Xml.Serialization;
-using NHibernate.Intercept;
-using NHibernate.Proxy;
-using NHibernate.Proxy.DynamicProxy;
 using PowerArhitecture.Domain.Attributes;
 
 namespace PowerArhitecture.Domain
@@ -50,30 +47,6 @@ namespace PowerArhitecture.Domain
         public virtual Type GetIdType()
         {
             return typeof(TType);
-        }
-
-        public virtual Type GetTypeUnproxied()
-        {
-            return GetProxyRealType(this);
-        }
-
-        private static Type GetProxyRealType(object proxy)
-        {
-            var nhProxy = proxy as IProxy;
-            if (nhProxy == null) return proxy.GetType();
-
-            var lazyInitializer = nhProxy.Interceptor as ILazyInitializer;
-            if (lazyInitializer != null)
-                return lazyInitializer.PersistentClass;
-
-            var fieldInterceptorAccessor = nhProxy.Interceptor as IFieldInterceptorAccessor;
-            if (fieldInterceptorAccessor != null)
-            {
-                return fieldInterceptorAccessor.FieldInterceptor == null
-                    ? proxy.GetType().BaseType
-                    : fieldInterceptorAccessor.FieldInterceptor.MappedClass;
-            }
-            return proxy.GetType();
         }
     }
 }

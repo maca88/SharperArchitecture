@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using PowerArhitecture.Authentication.Entities;
-using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using PowerArhitecture.Notifications.Enums;

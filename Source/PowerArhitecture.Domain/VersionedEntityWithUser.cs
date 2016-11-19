@@ -1,10 +1,6 @@
 using System;
-using System.ComponentModel;
-using PowerArhitecture.Common.Attributes;
-using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain.Attributes;
 using PowerArhitecture.Domain.Specifications;
-using PowerArhitecture.Validation.Attributes;
 
 namespace PowerArhitecture.Domain
 {
@@ -22,10 +18,8 @@ namespace PowerArhitecture.Domain
     [Ignore]
     public abstract class VersionedEntityWithUser<TUser, TType> : VersionedEntity<TType>, IVersionedEntityWithUser<TUser, TType>
     {
-        [NotNull]
         public virtual TUser CreatedBy { get; protected set; }
 
-        //[NotNull]
         public virtual TUser LastModifiedBy { get; protected set; }
 
     }

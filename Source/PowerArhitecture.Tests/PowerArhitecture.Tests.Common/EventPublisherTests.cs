@@ -5,10 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Ninject;
-using Ninject.MockingKernel.Moq;
 using NUnit.Framework;
-using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Tests.Common.Events;
 
@@ -25,8 +22,8 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void EventPublisherMustBeSingleton()
         {
-            var publisher = Kernel.Get<IEventPublisher>();
-            var publisher2 = Kernel.Get<IEventPublisher>();
+            var publisher = Container.GetInstance<IEventPublisher>();
+            var publisher2 = Container.GetInstance<IEventPublisher>();
 
             Assert.AreEqual(publisher, publisher2);
         }
@@ -34,8 +31,8 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void TestEventHandlerMustBeSingleton()
         {
-            var eventHandler = Kernel.Get<TestEventHandler>();
-            var eventHandler2 = Kernel.Get<TestEventHandler>();
+            var eventHandler = Container.GetInstance<TestEventHandler>();
+            var eventHandler2 = Container.GetInstance<TestEventHandler>();
 
             Assert.AreEqual(eventHandler, eventHandler2);
         }
@@ -43,8 +40,8 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void TestSingletonEventHandler()
         {
-            var eventHandler = Kernel.Get<TestEventHandler>();
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventHandler = Container.GetInstance<TestEventHandler>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
             eventPublisher.Publish(new TestEvent("test"));
 
             Assert.AreEqual(1, eventHandler.CallCounter);
@@ -54,9 +51,9 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestSingletonEventHandlerAsync()
         {
-            var eventHandler = Kernel.Get<TestEventHandler>();
+            var eventHandler = Container.GetInstance<TestEventHandler>();
             eventHandler.CallCounter = 0;
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
             await eventPublisher.PublishAsync(new TestEvent("test"));
 
             Assert.AreEqual(1, eventHandler.CallCounter);
@@ -66,9 +63,9 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestSingletonEventHandlerSyncThenAsync()
         {
-            var eventHandler = Kernel.Get<TestEventHandler>();
+            var eventHandler = Container.GetInstance<TestEventHandler>();
             eventHandler.CallCounter = 0;
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
             eventPublisher.Publish(new TestEvent("test"));
 
             Assert.AreEqual(1, eventHandler.CallCounter);
@@ -83,9 +80,9 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestSingletonEventHandlerAsyncThenSync()
         {
-            var eventHandler = Kernel.Get<TestEventHandler>();
+            var eventHandler = Container.GetInstance<TestEventHandler>();
             eventHandler.CallCounter = 0;
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
             await eventPublisher.PublishAsync(new TestEvent("test"));
 
             Assert.AreEqual(1, eventHandler.CallCounter);
@@ -100,7 +97,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void FaultyEventHandlerThrowing()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             Assert.ThrowsAsync<InvalidOperationException>(() => eventPublisher.PublishAsync(new FaultyEvent("test2")));
         }
@@ -108,7 +105,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void TwoEventsPerHandler()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new TwoEventsPerHandlerEvent();
             var evt2 = new TwoEventsPerHandler2Event();
@@ -122,7 +119,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TwoEventsPerHandlerAsync()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new TwoEventsPerHandlerEvent();
             var evt2 = new TwoEventsPerHandler2Event();
@@ -136,7 +133,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void ThreeEventsPerHandler()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new ThreeEventsPerHandlerEvent();
             var evt2 = new ThreeEventsPerHandler2Event();
@@ -153,7 +150,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task ThreeEventsPerHandlerAsync()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new ThreeEventsPerHandlerEvent();
             var evt2 = new ThreeEventsPerHandler2Event();
@@ -170,7 +167,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public void FourEventsPerHandler()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new FourEventsPerHandlerEvent();
             var evt2 = new FourEventsPerHandler2Event();
@@ -190,7 +187,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task FourEventsPerHandlerAsync()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var evt = new ThreeEventsPerHandlerEvent();
             var evt2 = new ThreeEventsPerHandler2Event();
@@ -210,7 +207,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task SequentialAsyncHandlers()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var startedStack = new Stack<string>();
             startedStack.Push("SequentialAsync2EventHandler");
@@ -237,7 +234,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task SequentialAsyncHandlersCancellation()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var startedStack = new Stack<string>();
             startedStack.Push("SequentialAsync2EventHandler");
@@ -269,7 +266,7 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task SequentialAsyncPriorityHandlers()
         {
-            var eventPublisher = Kernel.Get<IEventPublisher>();
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
 
             var startedStack = new Stack<string>();
             startedStack.Push("SequentialAsyncPriorityEventHandler");

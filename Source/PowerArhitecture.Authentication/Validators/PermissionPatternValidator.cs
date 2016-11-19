@@ -26,7 +26,7 @@ namespace PowerArhitecture.Authentication.Validators
             }
             catch
             {
-                return ValidationFailure(o => o.Pattern, I18N.Translate("'{0}' is not in the correct format.", I18N.Translate("Pattern")));
+                return Failure(o => o.Pattern, I18N.Translate("'{0}' is not in the correct format.", I18N.Translate("Pattern")));
             }
         }
     }

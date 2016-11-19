@@ -8,15 +8,15 @@ using FluentNHibernate.Cfg.Db;
 using HibernatingRhinos.Profiler.Appender.NHibernate;
 using NHibernate;
 using NHibernate.Cfg;
-using NHibernate.Param;
-using Ninject;
-using Ninject.MockingKernel.Moq;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Configurations;
+using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Extensions;
-using PowerArhitecture.DataAccess.Parameters;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
+using SimpleInjector;
+using SimpleInjector.Extensions;
+using SimpleInjector.Extensions.ExecutionContextScoping;
 
 namespace PowerArhitecture.Tests.Common
 {
@@ -37,7 +37,8 @@ namespace PowerArhitecture.Tests.Common
         
         protected virtual IFluentDatabaseConfiguration CreateDatabaseConfiguration(string dbName = "foo", string name = null)
         {
-            return FluentDatabaseConfiguration.Create(new Configuration(), name)
+            return FluentDatabaseConfiguration.Create(new Configuration()
+                    .SetProperty(NHibernate.Cfg.Environment.GenerateStatistics, "true"), name)
                 .AddConventionAssemblies(ConventionAssemblies)
                 .AddEntityAssemblies(EntityAssemblies)
                 .FluentNHibernate(f => f
@@ -73,23 +74,29 @@ namespace PowerArhitecture.Tests.Common
         {
         }
 
-        protected override void Configure()
+        protected override void ConfigureContainer(Container container)
         {
-            Kernel = new MoqMockingKernel();
-            NHibernateProfiler.Initialize();
+            container.Options.DefaultScopedLifestyle = new ExecutionContextScopeLifestyle();
             foreach (var config in GetDatabaseConfigurations())
             {
                 DatabaseConfigurations.Add(config);
                 var dbConfig = config.Build();
                 ConfigureDatabaseConfiguration(dbConfig);
-                Kernel.RegisterDatabaseConfiguration(dbConfig);
+                container.RegisterDatabaseConfiguration(dbConfig);
             }
+        }
+
+        protected override void Configure()
+        {
+            NHibernateProfiler.Initialize();
 
             base.Configure();
 
             foreach (var config in DatabaseConfigurations)
             {
-                var sessionFactory = Kernel.Get<ISessionFactory>(new DatabaseConfigurationParameter(config.Name));
+                var sessionFactory = config.Name == DatabaseConfiguration.DefaultName
+                        ? Container.GetInstance<ISessionFactory>()
+                        : Container.GetInstance<ISessionFactory>(config.Name);
                 SessionFactories.Add(sessionFactory);
                 FillData(sessionFactory);
             }

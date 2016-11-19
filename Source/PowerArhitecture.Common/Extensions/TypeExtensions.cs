@@ -30,18 +30,23 @@ namespace System
             return Nullable.GetUnderlyingType(type) != null;
         }
 
+        /// <summary>
+        /// Check if the given type is assignable to the provided generic type.
+        /// Implementation taken from http://stackoverflow.com/a/1075059
+        /// </summary>
+        /// <param name="givenType"></param>
+        /// <param name="genericType"></param>
+        /// <returns></returns>
         public static bool IsAssignableToGenericType(this Type givenType, Type genericType)
         {
-            var interfaceTypes = givenType.GetInterfaces();
-
-            if (interfaceTypes.Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType))
+            if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
             {
                 return true;
             }
-
-            if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+            if (givenType.GetInterfaces().Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType))
+            {
                 return true;
-
+            }
             var baseType = givenType.BaseType;
             return baseType != null && IsAssignableToGenericType(baseType, genericType);
         }
@@ -50,19 +55,22 @@ namespace System
         {
             while (true)
             {
-                var interfaceTypes = givenType.GetInterfaces();
-
-                var i = interfaceTypes.FirstOrDefault(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType);
-                if (i != null)
+                if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
                 {
-                    return i;
+                    return givenType;
+                }
+                    
+                var type = givenType.GetInterfaces().FirstOrDefault(it => it.IsGenericType && it.GetGenericTypeDefinition() == genericType);
+                if (type != null)
+                {
+                    return type;
                 }
 
-                if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
-                    return givenType;
-
                 var baseType = givenType.BaseType;
-                if (baseType == null) return null;
+                if (baseType == null)
+                {
+                    return null;
+                }
                 givenType = baseType;
             }
         }
@@ -85,17 +93,7 @@ namespace System
         public static object GetDefaultValue(this Type t)
         {
             return t.IsValueType ? Activator.CreateInstance(t) : null;
-            /*
-            var attributes = (DefaultValueAttribute[])t.GetCustomAttributes(typeof(DefaultValueAttribute), false);
-            return attributes.Length > 0 ?
-                attributes[0].Value :
-                typeof(TypeExtensions).GetMethod("GetDefaultGeneric", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(t).Invoke(null, new object[] { });*/
         }
-        /*
-        private static T GetDefaultGeneric<T>()
-        {
-            return default(T);
-        }*/
 
         public static bool IsNumericType(this Type type)
         {
@@ -224,6 +222,16 @@ namespace System
             return type.GetMethod(methodName, AllBinding);
         }
 
+        public static IEnumerable<Type> GetAllBaseTypes(this Type type)
+        {
+            type = type.GetTypeInfo().BaseType;
+            while (type != null)
+            {
+                yield return type;
+                type = type.GetTypeInfo().BaseType;
+            }
+        }
+
         /// <summary>
         ///   Returns list of all unique interfaces implemented given types, including their base interfaces.
         /// </summary>
@@ -271,11 +279,6 @@ namespace System
             //NOTE: is there a better, stable way to sort Types. We will need to revise this once we allow open generics
             Array.Sort(array, (l, r) => string.Compare(l.AssemblyQualifiedName, r.AssemblyQualifiedName, StringComparison.OrdinalIgnoreCase));
             return array;
-        }
-
-        public static Type[] GetAllInterfaces(this Type type)
-        {
-            return GetAllInterfaces(new[] { type });
         }
     }
 }

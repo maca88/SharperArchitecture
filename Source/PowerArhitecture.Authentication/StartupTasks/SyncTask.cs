@@ -6,8 +6,6 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Specifications;
-using Ninject;
-using Ninject.Syntax;
 
 namespace PowerArhitecture.Authentication.StartupTasks
 {

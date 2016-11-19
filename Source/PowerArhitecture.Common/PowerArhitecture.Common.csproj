@@ -45,35 +45,12 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Extensions.ContextPreservation, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.ContextPreservation.3.2.0.0\lib\net45-full\Ninject.Extensions.ContextPreservation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Conventions, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Conventions.3.2.0.0\lib\net45-full\Ninject.Extensions.Conventions.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.NamedScope">
-      <HintPath>..\packages\Ninject.Extensions.NamedScope.3.2.0.0\lib\net45-full\Ninject.Extensions.NamedScope.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="SecondLanguage, Version=1.0.2.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SecondLanguage.1.0.2.1\lib\net35\SecondLanguage.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.7\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -90,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Attributes\ConventionAttribute.cs" />
     <Compile Include="Attributes\EnumStringAttribute.cs" />
+    <Compile Include="Attributes\NamedAttribute.cs" />
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
@@ -100,13 +78,22 @@
     <Compile Include="Configuration\CommonConfiguration.cs" />
     <Compile Include="Configuration\CommonConfigurationKeys.cs" />
     <Compile Include="Configuration\NinjectConfiguration.cs" />
-    <Compile Include="Ninject\ContravariantBindingResolver.cs" />
+    <Compile Include="SimpleInjector\ContainerExtensions.cs" />
+    <Compile Include="Adapters\Log4NetAdapter.cs" />
     <Compile Include="Cryptographics\AESCryptography.cs" />
     <Compile Include="Cryptographics\Sha1Cryptography.cs" />
     <Compile Include="Enums\PatternOptions.cs" />
     <Compile Include="Events\MessageEvent.cs" />
     <Compile Include="Events\BaseEventHandler.cs" />
     <Compile Include="Events\BaseEventsHandler.cs" />
+    <Compile Include="Package.cs" />
+    <Compile Include="SimpleInjector\ContextDependentExtensions.cs" />
+    <Compile Include="SimpleInjector\IPackage.cs" />
+    <Compile Include="SimpleInjector\KeyedRegistrationNotFoundEventArgs.cs" />
+    <Compile Include="SimpleInjector\PackageExtensions.cs" />
+    <Compile Include="SimpleInjector\KeyedRegistration.cs" />
+    <Compile Include="SimpleInjector\KeyedDependencyInjectionBehavior.cs" />
+    <Compile Include="SimpleInjector\InstanceProvider.cs" />
     <Compile Include="Specifications\ICommand.cs" />
     <Compile Include="Specifications\ICommandDispatcher.cs" />
     <Compile Include="Specifications\ICommandHandler.cs" />
@@ -120,7 +107,6 @@
     <Compile Include="Extensions\Int64Extensions.cs" />
     <Compile Include="Extensions\MemoryStreamExtensions.cs" />
     <Compile Include="Extensions\NameValueCollectionExtensions.cs" />
-    <Compile Include="Extensions\NinjectExtensions.cs" />
     <Compile Include="Extensions\PatternOptionExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Helpers\ExpressionHelper.cs" />
@@ -134,20 +120,21 @@
     <Compile Include="Extensions\AssemblyExtensions.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs" />
-    <Compile Include="Extensions\IEnumerableExtensions.cs" />
-    <Compile Include="Extensions\IListExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\MemberInfoExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Publishers\UnhandledExceptionPublisher.cs" />
-    <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Specifications\ICommonConfiguration.cs" />
     <Compile Include="Specifications\IEventPublisher.cs" />
+    <Compile Include="Specifications\ILogger.cs" />
     <Compile Include="Specifications\IMultipleContractResolver.cs" />
     <Compile Include="Specifications\ICryptography.cs" />
     <Compile Include="Specifications\IEventHandler.cs" />
+    <Compile Include="Specifications\IInstanceProvider.cs" />
     <Compile Include="Specifications\ITask.cs" />
     <Compile Include="Writers\StringWriterWithEncoding.cs" />
   </ItemGroup>

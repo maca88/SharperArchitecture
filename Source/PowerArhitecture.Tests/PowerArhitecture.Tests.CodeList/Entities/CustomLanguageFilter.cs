@@ -9,7 +9,7 @@ using PowerArhitecture.Tests.CodeList.Attributes;
 
 namespace PowerArhitecture.Tests.CodeList.Entities
 {
-    [Configuration]
+    [CodeListConfiguration]
     public partial class CustomLanguageFilter : LocalizableCodeListWithUser<string, CustomLanguageFilter, CustomLanguageFilterLanguage>
     {
         [CurrentLanguage]

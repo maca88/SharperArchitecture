@@ -10,8 +10,8 @@ namespace PowerArhitecture.DataAccess.Specifications
 {
     public interface IFluentAutoMappingConfiguration
     {
-        IFluentAutoMappingConfiguration ShouldMap(Predicate<Type> predicate);
-        IFluentAutoMappingConfiguration ShouldMap(Predicate<Member> predicate);
+        IFluentAutoMappingConfiguration ShouldMapType(Predicate<Type> predicate);
+        IFluentAutoMappingConfiguration ShouldMapMember(Predicate<Member> predicate);
         IFluentAutoMappingConfiguration AddStepAssembly(Assembly assembly);
         IFluentAutoMappingConfiguration AddStepAssemblies(IEnumerable<Assembly> assemblies);
     }

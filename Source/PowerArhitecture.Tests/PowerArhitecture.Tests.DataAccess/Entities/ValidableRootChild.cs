@@ -9,7 +9,7 @@ using PowerArhitecture.Validation.Attributes;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
 {
-    public class ValidableRootChild : Entity, IAutoValidated, IAggregateChild
+    public class ValidableRootChild : VersionedEntity, IAutoValidated, IAggregateChild
     {
         [NotNull]
         public virtual string Name { get; set; }
@@ -22,6 +22,6 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
         public virtual bool ValidateOnDelete => true;
 
-        public virtual object AggregateRoot => Parent == null ? this : Parent.AggregateRoot;
+        public virtual IVersionedEntity AggregateRoot => Parent == null ? this : Parent.AggregateRoot;
     }
 }

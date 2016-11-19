@@ -11,6 +11,7 @@ using NHibernate;
 using NHibernate.Event;
 using NHibernate.Persister.Entity;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
@@ -18,7 +19,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     /// <summary>
     /// Update the audit properties for the persistent entities (transient entities are handled in NhSaveOrUpdateEventListener)
     /// </summary>
-    public class AuditEntityEventListener : IPreUpdateEventListener
+    internal class AuditEntityEventListener : IPreUpdateEventListener
     {
         private readonly IAuditUserProvider _auditUserProvider;
 

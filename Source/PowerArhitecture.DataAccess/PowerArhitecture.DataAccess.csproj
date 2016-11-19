@@ -61,32 +61,13 @@
       <HintPath>..\packages\NHibernateX.2.0.0-Alpha1\lib\net40\NHibernate.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Ninject">
-      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Extensions.ContextPreservation, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.ContextPreservation.3.2.0.0\lib\net45-full\Ninject.Extensions.ContextPreservation.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.7\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Ninject.Extensions.Conventions, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.Conventions.3.2.0.0\lib\net45-full\Ninject.Extensions.Conventions.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
+    <Reference Include="SimpleInjector.Extensions.ExecutionContextScoping, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.Extensions.ExecutionContextScoping.3.2.7\lib\net45\SimpleInjector.Extensions.ExecutionContextScoping.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.2.3.0\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject.Extensions.NamedScope, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Extensions.NamedScope.3.2.0.0\lib\net45-full\Ninject.Extensions.NamedScope.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -119,7 +100,7 @@
     <Compile Include="Conventions\ForeignKeyColumnNameConvention.cs" />
     <Compile Include="Conventions\ForeignKeyNameConvenction.cs" />
     <Compile Include="Conventions\FormulaAttributeConvention.cs" />
-    <Compile Include="Conventions\IndexedAttributeConvention.cs" />
+    <Compile Include="Conventions\IndexAttributeConvention.cs" />
     <Compile Include="Conventions\FetchModeAttributeConvention.cs" />
     <Compile Include="Conventions\LengthAttributeConvention.cs" />
     <Compile Include="Conventions\Mssql\MssqlDataTypesConvention.cs" />
@@ -150,6 +131,7 @@
     <Compile Include="Events\EntitySavingEvent.cs" />
     <Compile Include="Events\EntitySavingOrUpdatingEvent.cs" />
     <Compile Include="Events\HibernateMappingsBuiltEvent.cs" />
+    <Compile Include="Events\SessionCreatedEvent.cs" />
     <Compile Include="Events\SessionFactoryCreatedEvent.cs" />
     <Compile Include="Events\SessionFlushedEvent.cs" />
     <Compile Include="Events\SessionFlushingEvent.cs" />
@@ -161,10 +143,11 @@
     <Compile Include="Extensions\AutoPersistenceModelModelExtensions.cs" />
     <Compile Include="Extensions\ConfigurationExtensions.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
+    <Compile Include="Extensions\EntityExtensions.cs" />
     <Compile Include="Extensions\FluentNHibernateInspectorExtensions.cs" />
     <Compile Include="Extensions\NhConfigurationExtensions.cs" />
-    <Compile Include="Extensions\NinjectModuleExtensions.cs" />
     <Compile Include="Extensions\SessionExtensions.cs" />
+    <Compile Include="Extensions\SimpleInjectorExtensions.cs" />
     <Compile Include="Extensions\ValidationContextExtensions.cs" />
     <Compile Include="Attributes\NhEventListenerAttribute.cs" />
     <Compile Include="Factories\UnitOfWorkFactory.cs" />
@@ -181,10 +164,10 @@
     <Compile Include="NHEventListeners\NhUpdateEventListener.cs" />
     <Compile Include="NHEventListeners\RootAggregatePreUpdateInsertEventListener.cs" />
     <Compile Include="NHEventListeners\ValidatePreInsertUpdateDeleteEventListener.cs" />
-    <Compile Include="Parameters\DatabaseConfigurationParameter.cs" />
+    <Compile Include="Package.cs" />
     <Compile Include="Providers\AuditUserProvider.cs" />
-    <Compile Include="ResolutionScopes.cs" />
-    <Compile Include="SessionContext.cs" />
+    <Compile Include="Providers\SessionFactoryProvider.cs" />
+    <Compile Include="Providers\SessionProvider.cs" />
     <Compile Include="Specifications\IAuditUserProvider.cs" />
     <Compile Include="Specifications\IFluentConventionsConfiguration.cs" />
     <Compile Include="Specifications\IFluentAutoMappingConfiguration.cs" />
@@ -192,12 +175,9 @@
     <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
     <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
     <Compile Include="Visitors\NHibernateMappingVisitor.cs" />
-    <Compile Include="Wrappers\CustomAutoPersistenceModel.cs" />
+    <Compile Include="Decorators\CustomAutoPersistenceModel.cs" />
     <Compile Include="MappingSteps\CustomHasManyToManyStep.cs" />
-    <Compile Include="NinjectRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\SessionFactoryProvider.cs" />
-    <Compile Include="Providers\SessionProvider.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="SessionFactoryInfo.cs" />
     <Compile Include="Specifications\ICreateSchemaConvention.cs" />
@@ -209,7 +189,7 @@
     <Compile Include="Tools\SchemaExportExt.cs" />
     <Compile Include="Tools\SchemaUpdateExt.cs" />
     <Compile Include="UnitOfWork.cs" />
-    <Compile Include="Wrappers\SessionWrapper.cs" />
+    <Compile Include="Decorators\SessionDecorator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

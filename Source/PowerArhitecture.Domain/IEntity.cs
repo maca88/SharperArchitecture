@@ -14,7 +14,5 @@ namespace PowerArhitecture.Domain
         object GetId();
 
         Type GetIdType();
-
-        Type GetTypeUnproxied();
     }
 }

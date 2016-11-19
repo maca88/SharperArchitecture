@@ -44,9 +44,13 @@ namespace PowerArhitecture.Common.Events
                     paramExpr, paramExpr2).Compile();
         }
 
-        public EventPublisher(IMediator mediator)
+        /// <summary>
+        /// We cannot inject IMediator as it is registered as Transient because of the ICommandDispacther
+        /// </summary>
+        /// <param name="mediatorFactory"></param>
+        public EventPublisher(Func<IMediator> mediatorFactory)
         {
-            _mediator = mediator;
+            _mediator = mediatorFactory();
         }
 
         public virtual void Publish(IEvent e)

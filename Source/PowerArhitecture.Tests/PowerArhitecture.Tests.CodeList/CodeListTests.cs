@@ -6,7 +6,6 @@ using NHibernate;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.CodeList;
 using PowerArhitecture.CodeList.Specifications;
-using Ninject;
 using NUnit.Framework.Internal;
 using PowerArhitecture.Authentication;
 using PowerArhitecture.Authentication.Specifications;
@@ -18,6 +17,7 @@ using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
+using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.CodeList
@@ -37,19 +37,114 @@ namespace PowerArhitecture.Tests.CodeList
             TestAssemblies.Add(typeof(CodeListTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
+            TestAssemblies.Add(typeof(ICodeList).Assembly);
         }
 
         protected override void ConfigureDatabaseConfiguration(DatabaseConfiguration configuration)
         {
-            ((AutoMappingConfiguration) configuration.AutoMappingConfiguration).AddStepAssembly(
+            configuration.AutoMappingConfiguration.AddStepAssembly(
                 Assembly.GetAssembly(typeof(ICodeList)));
         }
 
         [Test]
-        public void TestLocalizationWithDefaultLanguageFilter()
+        public void QueryingByCodeShouldWork()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            {
+                try
+                {
+                    var cl = unitOfWork.Query<SimpleCodeList, string>()
+                        .First(o => o.Code == "Code1");
+                    Assert.NotNull(cl);
+
+                    unitOfWork.Commit();
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        [Test]
+        public void QueryingByIdShouldWork()
+        {
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            {
+                try
+                {
+                    var cl = unitOfWork.Query<SimpleCodeList, string>()
+                        .First(o => o.Id == "Code1");
+                    Assert.NotNull(cl);
+
+                    unitOfWork.Commit();
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        [Test]
+        public void QueryingLocalizableCodeListByIdShouldWork()
+        {
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            {
+                try
+                {
+                    unitOfWork.DefaultSession.EnableFilter("Language")
+                        .SetParameter("Current", "sl")
+                        .SetParameter("Fallback", "en");
+                    var bmw = unitOfWork.Query<Car, string>()
+                        .First(o => o.Id == "BMW");
+                    Assert.NotNull(bmw);
+
+                    bmw = unitOfWork.Query<Car, string>()
+                        .First(o => o.Id == "BMW");
+                    Assert.NotNull(bmw);
+
+                    unitOfWork.Commit();
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        [Test]
+        public void IdAndCodeMustBeEqual()
+        {
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            {
+                try
+                {
+                    var cls = unitOfWork.Query<SimpleCodeList, string>()
+                        .ToList();
+                    foreach (var cl in cls)
+                    {
+                        Assert.AreEqual(cl.Id, cl.Code);
+                    }
+
+                    unitOfWork.Commit();
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        [Test]
+        public void LocalizationWithLanguageFilter()
+        {
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -59,20 +154,21 @@ namespace PowerArhitecture.Tests.CodeList
                     var bmw = unitOfWork.Query<Car, string>()
                         .First(o => o.Code == "BMW");
                     Assert.AreEqual("BMW Slo", bmw.Name);
+
+                    unitOfWork.Commit();
                 }
                 catch
                 {
                     unitOfWork.Rollback();
                     throw;
                 }
-                unitOfWork.Commit();
             }
         }
 
         [Test]
-        public void TestLocalizationWithCustomLanguageFilter()
+        public void LocalizationWithCustomLanguageFilter()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -90,13 +186,14 @@ namespace PowerArhitecture.Tests.CodeList
                         .First(o => o.Code == "Code2");
                     Assert.AreEqual("EN", cl.Name);
                     Assert.AreEqual("Custom2EN", cl.CurrentCustom2);
+
+                    unitOfWork.Commit();
                 }
                 catch
                 {
                     unitOfWork.Rollback();
                     throw;
                 }
-                unitOfWork.Commit();
             }
         }
 
@@ -117,18 +214,19 @@ namespace PowerArhitecture.Tests.CodeList
             FillCustomLanguageFilters(entities);
             FillSimpleCodeList(entities);
 
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
             {
                 try
                 {
                     unitOfWork.Save(entities.ToArray());
+
+                    unitOfWork.Commit();
                 }
                 catch
                 {
                     unitOfWork.Rollback();
                     throw;
                 }
-                unitOfWork.Commit();
             }
         }
 

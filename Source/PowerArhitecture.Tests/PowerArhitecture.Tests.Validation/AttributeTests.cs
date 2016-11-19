@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.Validation.Models;
@@ -24,7 +23,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void Length()
         {
-            var validator = Kernel.Get<IValidator<LengthModel>>();
+            var validator = Container.GetInstance<IValidator<LengthModel>>();
 
             var model = new LengthModel
             {
@@ -60,7 +59,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void NotNull()
         {
-            var validator = Kernel.Get<IValidator<NotNullModel>>();
+            var validator = Container.GetInstance<IValidator<NotNullModel>>();
 
             var model = new NotNullModel();
             var result = validator.Validate(model, ruleSets: new[] { ValidationRuleSet.Attribute });
@@ -75,26 +74,29 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void NotEmpty()
         {
-            var validator = Kernel.Get<IValidator<NotEmptyModel>>();
+            var validator = Container.GetInstance<IValidator<NotEmptyModel>>();
 
             var model = new NotEmptyModel
             {
                 Name = "",
-                Name2 = ""
+                Name2 = "",
+                Name3 = "Default"
             };
             var result = validator.Validate(model, ruleSets: new[] { ValidationRuleSet.Attribute });
             Assert.IsFalse(result.IsValid);
-            Assert.AreEqual(2, result.Errors.Count);
+            Assert.AreEqual(3, result.Errors.Count);
             Assert.AreEqual("Name", result.Errors[0].PropertyName);
             Assert.AreEqual("Should not be empty.", result.Errors[0].ErrorMessage);
             Assert.AreEqual("Name2", result.Errors[1].PropertyName);
             Assert.AreEqual("'Name2' should not be empty.", result.Errors[1].ErrorMessage);
+            Assert.AreEqual("Name3", result.Errors[2].PropertyName);
+            Assert.AreEqual("'Name3' should not be empty.", result.Errors[2].ErrorMessage);
         }
 
         [Test]
         public void CreditCard()
         {
-            var validator = Kernel.Get<IValidator<CreditCardModel>>();
+            var validator = Container.GetInstance<IValidator<CreditCardModel>>();
 
             var model = new CreditCardModel
             {
@@ -113,7 +115,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void Email()
         {
-            var validator = Kernel.Get<IValidator<EmailModel>>();
+            var validator = Container.GetInstance<IValidator<EmailModel>>();
 
             var model = new EmailModel
             {
@@ -132,7 +134,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void Equal()
         {
-            var validator = Kernel.Get<IValidator<EqualModel>>();
+            var validator = Container.GetInstance<IValidator<EqualModel>>();
 
             var model = new EqualModel
             {
@@ -157,7 +159,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void NotEqual()
         {
-            var validator = Kernel.Get<IValidator<NotEqualModel>>();
+            var validator = Container.GetInstance<IValidator<NotEqualModel>>();
 
             var model = new NotEqualModel
             {
@@ -182,7 +184,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void ExactLength()
         {
-            var validator = Kernel.Get<IValidator<ExactLengthModel>>();
+            var validator = Container.GetInstance<IValidator<ExactLengthModel>>();
 
             var model = new ExactLengthModel
             {
@@ -201,7 +203,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void GreaterThan()
         {
-            var validator = Kernel.Get<IValidator<GreaterThanModel>>();
+            var validator = Container.GetInstance<IValidator<GreaterThanModel>>();
 
             var model = new GreaterThanModel
             {
@@ -220,7 +222,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void GreaterThanOrEqual()
         {
-            var validator = Kernel.Get<IValidator<GreaterThanOrEqualModel>>();
+            var validator = Container.GetInstance<IValidator<GreaterThanOrEqualModel>>();
 
             var model = new GreaterThanOrEqualModel
             {
@@ -239,7 +241,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void LessThan()
         {
-            var validator = Kernel.Get<IValidator<LessThanModel>>();
+            var validator = Container.GetInstance<IValidator<LessThanModel>>();
 
             var model = new LessThanModel
             {
@@ -258,7 +260,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void LessThanOrEqual()
         {
-            var validator = Kernel.Get<IValidator<LessThanOrEqualModel>>();
+            var validator = Container.GetInstance<IValidator<LessThanOrEqualModel>>();
 
             var model = new LessThanOrEqualModel
             {
@@ -277,7 +279,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void RegularExpression()
         {
-            var validator = Kernel.Get<IValidator<RegularExpressionModel>>();
+            var validator = Container.GetInstance<IValidator<RegularExpressionModel>>();
 
             var model = new RegularExpressionModel
             {
@@ -296,7 +298,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void IgnoreValidationAttributes()
         {
-            var validator = Kernel.Get<IValidator<IgnoreValidationAttributesModel>>();
+            var validator = Container.GetInstance<IValidator<IgnoreValidationAttributesModel>>();
 
             var model = new IgnoreValidationAttributesModel();
             var result = validator.Validate(model, ruleSets: new[] { ValidationRuleSet.Attribute });

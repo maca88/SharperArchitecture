@@ -19,6 +19,7 @@ using NHibernate.Event.Default;
 using NHibernate.Intercept;
 using NHibernate.Persister.Entity;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.DataAccess.Extensions;
 
 namespace PowerArhitecture.DataAccess.NHEventListeners
 {

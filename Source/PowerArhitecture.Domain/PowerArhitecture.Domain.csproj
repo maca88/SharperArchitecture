@@ -33,20 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate, Version=4.1.0.1001, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\NHibernateX.2.0.0-Alpha1\lib\net40\NHibernate.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Interactive.Async, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Interactive.Async.3.0.0\lib\net45\System.Interactive.Async.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,6 +48,7 @@
     <Compile Include="Attributes\IncludeAttribute.cs" />
     <Compile Include="Attributes\IndexAttribute.cs" />
     <Compile Include="Attributes\LazyLoadAttribute.cs" />
+    <Compile Include="Attributes\Mssql\MssqlIndexAttribute.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
     <Compile Include="Entity.cs" />
@@ -74,18 +63,7 @@
     <Compile Include="VersionedEntityWithUser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">
-      <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
-      <Name>PowerArhitecture.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PowerArhitecture.Validation\PowerArhitecture.Validation.csproj">
-      <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
-      <Name>PowerArhitecture.Validation</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Extensions\" />

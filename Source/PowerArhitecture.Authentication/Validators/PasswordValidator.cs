@@ -9,6 +9,10 @@ using Microsoft.AspNet.Identity;
 
 namespace PowerArhitecture.Authentication.Validators
 {
+    /// <summary>
+    /// Custom password validator that uses gettext for validation errors
+    /// TODO: port all functionality
+    /// </summary>
     public class PasswordValidator : IPasswordValidator
     {
         public Task<IdentityResult> ValidateAsync(string item)

@@ -11,7 +11,7 @@ using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class TransactionEventListener : ISynchronization
+    internal class TransactionEventListener : ISynchronization
     {
         private readonly ISession _session;
         private readonly IEventPublisher _eventPublisher;

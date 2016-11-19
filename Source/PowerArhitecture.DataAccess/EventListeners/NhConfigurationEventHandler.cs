@@ -1,54 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Events;
 using NHibernate.Event;
-using Ninject;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
     public class NhConfigurationEventHandler : BaseEventHandler<NhConfigurationEvent>
     {
-        private readonly IList<ISaveOrUpdateEventListener> _saveOrUpdateEventListeners;
-        private readonly IList<IFlushEventListener> _flushEventListeners;
-        private readonly IList<IDeleteEventListener> _deleteEventListeners;
-        private readonly IList<IAutoFlushEventListener> _autoFlushEventListeners;
+        private readonly IEnumerable<ISaveOrUpdateEventListener> _saveOrUpdateEventListeners;
+        private readonly IEnumerable<IFlushEventListener> _flushEventListeners;
+        private readonly IEnumerable<IDeleteEventListener> _deleteEventListeners;
+        private readonly IEnumerable<IAutoFlushEventListener> _autoFlushEventListeners;
 
-        private readonly IList<IPreInsertEventListener> _preInsertEventListeners;
-        private readonly IList<IPreUpdateEventListener> _preUpdateEventListeners;
-        private readonly IList<IPreDeleteEventListener> _preDeleteEventListeners;
-        private readonly IList<IPreCollectionUpdateEventListener> _preCollectionUpdateEventListeners;
-        private readonly IList<IPostInsertEventListener> _postInsertEventListeners;
-        private readonly IList<IPostUpdateEventListener> _postUpdateEventListeners;
-        private readonly IList<IPostDeleteEventListener> _postDeleteEventListeners;
-        private readonly IList<IPostCollectionUpdateEventListener> _postCollectionUpdateEventListeners;
+        private readonly IEnumerable<IPreInsertEventListener> _preInsertEventListeners;
+        private readonly IEnumerable<IPreUpdateEventListener> _preUpdateEventListeners;
+        private readonly IEnumerable<IPreDeleteEventListener> _preDeleteEventListeners;
+        private readonly IEnumerable<IPreCollectionUpdateEventListener> _preCollectionUpdateEventListeners;
+        private readonly IEnumerable<IPostInsertEventListener> _postInsertEventListeners;
+        private readonly IEnumerable<IPostUpdateEventListener> _postUpdateEventListeners;
+        private readonly IEnumerable<IPostDeleteEventListener> _postDeleteEventListeners;
+        private readonly IEnumerable<IPostCollectionUpdateEventListener> _postCollectionUpdateEventListeners;
 
         
         public NhConfigurationEventHandler(
-            IList<ISaveOrUpdateEventListener> saveOrUpdateEventListeners,
-            IList<IFlushEventListener> flushEventListeners,
-            IList<IDeleteEventListener> deleteEventListeners,
-            IList<IAutoFlushEventListener> autoFlushEventListeners,
-            IList<IPreInsertEventListener> preInsertEventListeners,
-            IList<IPreUpdateEventListener> preUpdateEventListeners,
-            IList<IPreCollectionUpdateEventListener> preCollectionUpdateEventListeners,
-            IList<IPreDeleteEventListener> preDeleteEventListeners,
-            IList<IPostInsertEventListener> postInsertEventListeners,
-            IList<IPostUpdateEventListener> postUpdateEventListeners,
-            IList<IPostCollectionUpdateEventListener> postCollectionUpdateEventListeners,
-            IList<IPostDeleteEventListener> postDeleteEventListeners
+            IEnumerable<ISaveOrUpdateEventListener> saveOrUpdateEventListeners,
+            IEnumerable<IPreInsertEventListener> preInsertEventListeners,
+            IEnumerable<IPreUpdateEventListener> preUpdateEventListeners,
+            IEnumerable<IPreCollectionUpdateEventListener> preCollectionUpdateEventListeners,
+            IEnumerable<IFlushEventListener> flushEventListeners,
+            IEnumerable<IDeleteEventListener> deleteEventListeners,
+            IEnumerable<IAutoFlushEventListener> autoFlushEventListeners,
+            IEnumerable<IPreDeleteEventListener> preDeleteEventListeners,
+            IEnumerable<IPostInsertEventListener> postInsertEventListeners,
+            IEnumerable<IPostUpdateEventListener> postUpdateEventListeners,
+            IEnumerable<IPostCollectionUpdateEventListener> postCollectionUpdateEventListeners,
+            IEnumerable<IPostDeleteEventListener> postDeleteEventListeners
             )
         {
             _saveOrUpdateEventListeners = saveOrUpdateEventListeners;
-            _flushEventListeners = flushEventListeners;
-            _deleteEventListeners = deleteEventListeners;
-            _autoFlushEventListeners = autoFlushEventListeners;
             _preInsertEventListeners = preInsertEventListeners;
             _preUpdateEventListeners = preUpdateEventListeners;
             _preCollectionUpdateEventListeners = preCollectionUpdateEventListeners;
+            _flushEventListeners = flushEventListeners;
+            _deleteEventListeners = deleteEventListeners;
+            _autoFlushEventListeners = autoFlushEventListeners;
             _preDeleteEventListeners = preDeleteEventListeners;
             _postInsertEventListeners = postInsertEventListeners;
             _postUpdateEventListeners = postUpdateEventListeners;
@@ -100,7 +101,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
             config.AppendListeners(ListenerType.PostDelete, MergeListeners(eventListeners.PostDeleteEventListeners, _postDeleteEventListeners));
         }
 
-        private static T[] MergeListeners<T>(IList<T> currentListeners, IList<T> newListeners) 
+        private static T[] MergeListeners<T>(IList<T> currentListeners, IEnumerable<T> newListeners) 
             where T : class
         {
             currentListeners = currentListeners.ToList();

@@ -9,7 +9,7 @@ using PowerArhitecture.Domain;
 namespace PowerArhitecture.DataAccess.Specifications
 {
     //only needed for generic constraint
-    public interface IRepository //: IDisposable
+    public interface IRepository
     {
         T Load<T>(object id);
 
@@ -24,11 +24,6 @@ namespace PowerArhitecture.DataAccess.Specifications
         Task SaveAsync(IEntity model);
 
         IQueryable<T> Query<T>() where T : IEntity;
-
-        /// <summary>
-        /// Retrive the current principal from the custom session context
-        /// </summary>
-        IPrincipal User { get; }
     } 
 
     public interface IRepository<TModel> : IRepository<TModel, long> where TModel : class, IEntity<long>, new() {}

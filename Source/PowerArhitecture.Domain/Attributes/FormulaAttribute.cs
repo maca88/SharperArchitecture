@@ -12,9 +12,9 @@ namespace PowerArhitecture.Domain.Attributes
         {
             SqlFormula = formula;
             if (!SqlFormula.StartsWith("(") && !SqlFormula.EndsWith(")"))
-                SqlFormula = string.Format("({0})", SqlFormula);
+                SqlFormula = $"({SqlFormula})";
         }
 
-        public string SqlFormula { get; private set; }
+        public string SqlFormula { get; }
     }
 }

@@ -2,23 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Ninject;
-using Ninject.Syntax;
+using SimpleInjector;
+using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Common.Reporting
 {
     public class ReportSettingsProvider : IReportSettingsProvider
     {
-        private readonly IResolutionRoot _resolutionRoot;
+        private readonly Container _resolutionRoot;
 
-        public ReportSettingsProvider(IResolutionRoot resolutionRoot)
+        public ReportSettingsProvider(Container resolutionRoot)
         {
             _resolutionRoot = resolutionRoot;
         }
 
         public IReportSettings GetSettings(string reportType)
         {
-            return _resolutionRoot.Get<IReportSettings>(reportType);
+            return _resolutionRoot.GetInstance<IReportSettings>(reportType);
         }
     }
 }

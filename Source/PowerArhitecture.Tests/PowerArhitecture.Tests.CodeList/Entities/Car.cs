@@ -8,7 +8,7 @@ using PowerArhitecture.Tests.CodeList.Attributes;
 
 namespace PowerArhitecture.Tests.CodeList.Entities
 {
-    [Configuration]
+    [CodeListConfiguration]
     public partial class Car : LocalizableCodeListWithUser<string, Car, CarLanguage>
     {
         [FilterCurrentLanguage("Language", "Current", "Fallback")]

@@ -26,8 +26,8 @@ namespace PowerArhitecture.Tests.Validation.Models
             Custom((model, context) =>
             {
                 return !context.RootContextData.ContainsKey("Test")
-                    ? ValidationFailure("RootContextData.Test")
-                    : ValidationSuccess;
+                    ? Failure("RootContextData.Test")
+                    : Success;
             });
         }
     }

@@ -12,7 +12,7 @@ using PowerArhitecture.Validation;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
 {
-    public class IdentityValidableEntity : Entity, IAutoValidated
+    public class IdentityValidableEntity : VersionedEntity, IAutoValidated
     {
         public virtual string Name { get; set; }
 
@@ -31,7 +31,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
 
         public virtual string Name { get; set; }
 
-        public virtual object AggregateRoot => IdentityValidableEntity;
+        public virtual IVersionedEntity AggregateRoot => IdentityValidableEntity;
     }
 
     public class IdentityValidableEntityValidator : Validator<IdentityValidableEntity>

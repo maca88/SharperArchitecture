@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Ninject;
 using PowerArhitecture.Validation.Attributes;
 using PowerArhitecture.Validation.Extensions;
 using FluentValidation;
@@ -17,7 +16,10 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Validation
 {
-    //the default validator if a custom one is not defined. This validator validates validation attributes
+    /// <summary>
+    /// The default validator if a custom one is not defined. This validator validates validation attributes
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
     public class Validator<TModel> : AbstractValidator<TModel>, IValidatorExtended
     {
         public Validator()
@@ -41,7 +43,7 @@ namespace PowerArhitecture.Validation
                 else if (!CanValidateWithoutContextFiller)
                 {
                     throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
-                                                        "Hint: override property CanValidateWithoutContextFiller or pass the context filler upon validation");
+                                                        "Hint: override property CanValidateWithoutContextFiller or pass a context filler upon validation");
                 }
                 context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
             }
@@ -63,24 +65,24 @@ namespace PowerArhitecture.Validation
                 else if (!CanValidateWithoutContextFiller)
                 {
                     throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
-                                                        "Hint: override property CanValidateWithoutContextFiller or pass the context filler upon validation");
+                                                        "Hint: override property CanValidateWithoutContextFiller or pass a context filler upon validation");
                 }
                 context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
             }
             return await base.ValidateAsync(context, cancellation);
         }
 
-        protected ValidationFailure ValidationFailure(Expression<Func<TModel, object>> propertyExp, string errorMsg)
+        protected ValidationFailure Failure(Expression<Func<TModel, object>> propertyExp, string errorMsg)
         {
             return new ValidationFailure(propertyExp.GetFullPropertyName(), errorMsg);
         }
 
-        protected ValidationFailure ValidationFailure(string errorMsg)
+        protected ValidationFailure Failure(string errorMsg)
         {
             return new ValidationFailure("", errorMsg);
         }
 
-        protected ValidationFailure ValidationSuccess => null;
+        protected ValidationFailure Success => null;
 
         protected void RuleSet(IEnumerable<string> ruleSetNames, Action action)
         {
@@ -138,9 +140,10 @@ namespace PowerArhitecture.Validation
                     #endregion
                     #region NotEmptyAttribute
 
-                    if (attr is NotEmptyAttribute)
+                    var notEmptyAttr = attr as NotEmptyAttribute;
+                    if (notEmptyAttr != null)
                     {
-                        propValidator = new NotEmptyValidator(prop.PropertyType.GetDefaultValue());
+                        propValidator = new NotEmptyValidator(notEmptyAttr.DefaultValue ?? prop.PropertyType.GetDefaultValue());
                     }
 
                     #endregion

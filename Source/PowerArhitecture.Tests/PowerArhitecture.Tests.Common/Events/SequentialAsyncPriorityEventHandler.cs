@@ -33,7 +33,7 @@ namespace PowerArhitecture.Tests.Common.Events
         }
     }
 
-    [Priority(10)]
+    [Priority(20)]
     public class SequentialAsyncPriority2EventHandler : SequentialAsyncPriorityEventHandler
     {
     }

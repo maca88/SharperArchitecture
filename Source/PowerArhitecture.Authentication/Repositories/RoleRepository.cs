@@ -10,7 +10,7 @@ using PowerArhitecture.Validation.Specifications;
 using Microsoft.AspNet.Identity;
 using NHibernate;
 using NHibernate.Linq;
-using Ninject.Extensions.Logging;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
@@ -19,7 +19,7 @@ namespace PowerArhitecture.Authentication.Repositories
     public class RoleRepository<TRole> : Repository<TRole>, IRoleRepository<TRole>
          where TRole : class, IRole, IEntity<long>, new()
     {
-        public RoleRepository(Lazy<ISession> session, ILogger logger) 
+        public RoleRepository(ISession session, ILogger logger) 
             : base(session, logger)
         {
         }

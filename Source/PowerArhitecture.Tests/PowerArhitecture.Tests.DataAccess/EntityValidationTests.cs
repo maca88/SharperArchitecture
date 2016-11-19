@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
-using Ninject;
+using NHibernate.Extensions;
 using NUnit.Framework;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.DataAccess;
+using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.NHEventListeners;
+using PowerArhitecture.DataAccess.Providers;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.DataAccess.Entities;
 using PowerArhitecture.Validation;
-using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.DataAccess
 {
@@ -28,14 +30,15 @@ namespace PowerArhitecture.Tests.DataAccess
             EntityAssemblies.Add(typeof(LifecycleTests).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
-            TestAssemblies.Add(typeof(IValidatorEngine).Assembly);
+            TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
+            TestAssemblies.Add(typeof(LifecycleTests).Assembly);
         }
 
         [Test]
         public void VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomatically()
         {
             ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity {Name = "Test"};
                 ValidableEntityChild child;
@@ -79,14 +82,14 @@ namespace PowerArhitecture.Tests.DataAccess
                 unitOfWork.Commit();
             }
             Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public async Task VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomaticallyAsync()
         {
             ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
                 ValidableEntityChild child;
@@ -130,14 +133,14 @@ namespace PowerArhitecture.Tests.DataAccess
                 await unitOfWork.CommitAsync();
             }
             Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void ShouldNotLeakWhenTheTransactionIsNotCommited()
         {
             ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
                 ValidableEntityChild child;
@@ -151,13 +154,13 @@ namespace PowerArhitecture.Tests.DataAccess
                 Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
             }
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void ShouldNotLeakForNonManagedSession()
         {
-            using (var unitOfWork = Kernel.Get<ISessionFactory>().OpenSession())
+            using (var unitOfWork = Container.GetInstance<ISessionFactory>().OpenSession())
             {
                 var entity = new IdentityValidableEntity { Name = "Test" };
                 IdentityValidableChildEntity child;
@@ -168,14 +171,14 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Save(entity);
             }
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void VariuosIdentityChildSubChildDeletionShouldTriggerRootToValidateAutomatically()
         {
             //ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new IdentityValidableEntity { Name = "Test" };
                 IdentityValidableChildEntity child;
@@ -211,7 +214,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 unitOfWork.Commit();
             }
             Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -220,7 +223,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -246,7 +249,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -255,7 +258,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -281,7 +284,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -290,7 +293,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -307,7 +310,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -316,7 +319,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -333,14 +336,14 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void AutoValidationShouldNotThrowWhenChildIsSwitchedToANonRegisteredParent()
         {
             ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -364,7 +367,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 unitOfWork.Commit();
             }
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -373,16 +376,18 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
+                        var flushMode = unitOfWork.DefaultSession.FlushMode;
                         var child = new ValidableEntityChild
                         {
                             CountryCode = "Code0"
                         };
                         unitOfWork.Save(child);
                         unitOfWork.Flush();
+                        Assert.AreEqual(flushMode, unitOfWork.DefaultSession.FlushMode);
 
                         var newEntity = new ValidableEntity
                         {
@@ -392,6 +397,7 @@ namespace PowerArhitecture.Tests.DataAccess
                         child.CountryCode = "CannotUpdate";
                         newEntity.Children.Add(child);
                         unitOfWork.Save(newEntity);
+                        Assert.AreEqual(flushMode, unitOfWork.DefaultSession.FlushMode);
                     }
                     catch
                     {
@@ -402,13 +408,13 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void PersistedIdentityChildShouldNotBeValidatedWhenAttachedToTransientParent()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -435,13 +441,13 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Commit();
             }
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void RootChildShouldNotThrowAStackOverflowException()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -470,7 +476,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Commit();
             }
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -478,7 +484,7 @@ namespace PowerArhitecture.Tests.DataAccess
         {
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -508,7 +514,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -517,7 +523,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -535,7 +541,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -544,7 +550,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -562,7 +568,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -571,7 +577,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<PowerArhitectureException> (() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -590,7 +596,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -599,7 +605,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<PowerArhitectureException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -618,7 +624,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -627,7 +633,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -647,7 +653,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -656,7 +662,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -676,13 +682,13 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void InvalidDeletedIdentityChildShouldNotThrowOnAutomaticRootValidation()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -700,13 +706,13 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Commit();
             }
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
         public void DeletedIdentityParentShouldNotThrowOnAutomaticValidation()
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -728,7 +734,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Commit();
             }
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -737,7 +743,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -757,7 +763,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -766,7 +772,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -786,7 +792,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -795,7 +801,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -816,7 +822,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -825,7 +831,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -846,7 +852,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -855,7 +861,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -873,7 +879,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -882,7 +888,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<PowerArhitectureException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -901,7 +907,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -910,7 +916,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -930,7 +936,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -939,7 +945,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -960,7 +966,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
         }
 
         [Test]
@@ -969,7 +975,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityValidationContextFiller.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
-                using (var unitOfWork = Kernel.Get<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -990,12 +996,46 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
             });
             Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
-            CheckValidationListenerForLeakage();
+            CheckForLeakages();
+        }
+
+
+        [Test]
+        public void SessionShouldNotFlushUponValidation()
+        {
+            using (var session = Container.GetInstance<ISessionFactory>().OpenSession())
+            using(var trans = session.BeginTransaction(IsolationLevel.Serializable))
+            {
+
+                trans.Commit();
+            }
+
+            var wasCommited = false;
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            {
+                try
+                {
+                    var user = new UserExistance {UserName = "Test"};
+                    unitOfWork.Save(user);
+                    Assert.AreEqual("Test", user.UserName);
+                    Assert.IsTrue(unitOfWork.ContainsDefaultSession());
+                    unitOfWork.DefaultSession.Subscribe(o => o.Transaction.AfterCommit((session, b) =>
+                    {
+                        wasCommited = true;
+                    }));
+                    unitOfWork.Commit();
+                    Assert.IsTrue(wasCommited);
+                }
+                catch
+                {
+                    unitOfWork.Rollback();
+                }
+            }
         }
 
         protected override void FillData(ISessionFactory sessionFactory)
         {
-            using (var unitOfWork = Kernel.Get<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
             {
                 try
                 {
@@ -1026,24 +1066,26 @@ namespace PowerArhitecture.Tests.DataAccess
 
                     }
 
-                    
+                    unitOfWork.Commit();
                 }
                 catch
                 {
                     unitOfWork.Rollback();
                     throw;
                 }
-                unitOfWork.Commit();
             }
         }
 
-        private void CheckValidationListenerForLeakage()
+        private void CheckForLeakages()
         {
-            var valiadtionListener = Kernel.Get<ValidatePreInsertUpdateDeleteEventHandler>();
+            var valiadtionListener = Container.GetInstance<ValidatePreInsertUpdateDeleteEventHandler>();
             var dict =
                     valiadtionListener.GetMemberValue<ConcurrentDictionary<ISession, ConcurrentSet<IEntity>>>(
                         "_validatedEntities");
             Assert.AreEqual(0, dict.Count);
+
+            var sessionIds =(ConcurrentSet<Guid>)Container.GetInstance<SessionProvider>().GetMemberValue("RegisteredSessionIds");
+            Assert.AreEqual(0, sessionIds.Count);
         }
     }
 }

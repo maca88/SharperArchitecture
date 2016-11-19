@@ -4,11 +4,13 @@ namespace PowerArhitecture.Common.Attributes
 {
     public class PriorityAttribute : Attribute
     {
-        public PriorityAttribute(int priority)
+        public const ushort Default = 10;
+
+        public PriorityAttribute(ushort priority)
         {
             Priority = priority;
         }
 
-        public int Priority { get; private set; }
+        public ushort Priority { get; private set; }
     }
 }

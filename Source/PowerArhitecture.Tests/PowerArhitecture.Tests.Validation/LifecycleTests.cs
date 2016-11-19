@@ -10,11 +10,11 @@ using PowerArhitecture.Validation.Attributes;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Validators;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.Validation.Models;
 using PowerArhitecture.Validation;
+using PowerArhitecture.Validation.Factories;
 using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.Validation
@@ -25,21 +25,22 @@ namespace PowerArhitecture.Tests.Validation
         public LifecycleTests()
         {
             TestAssemblies.Add(typeof(Validator<>).Assembly);
+            TestAssemblies.Add(typeof(LifecycleTests).Assembly);
         }
 
         [Test]
         public void ValidatorMustBeSingleton()
         {
-            var validatorFactory = Kernel.Get<IValidatorFactory>();
+            var validatorFactory = Container.GetInstance<IValidatorFactory>();
 
-            var validator = Kernel.Get<ITestModelValidator>();
-            var validator2 = Kernel.Get<TestModelValidator>();
-            var validator3 = Kernel.Get<IValidator<TestModel>>();
-            var validator4 = Kernel.Get<IValidator<TestModel>>();
+            var validator = Container.GetInstance<ITestModelValidator>();
+            var validator2 = Container.GetInstance<TestModelValidator>();
+            var validator3 = Container.GetInstance<IValidator<TestModel>>();
+            var validator4 = Container.GetInstance<IValidator<TestModel>>();
             var validator5 = validatorFactory.GetValidator(typeof(TestModel));
             var validator6 = validatorFactory.GetValidator<TestModel>();
-            var validator7 = Kernel.Get<AbstractValidator<TestModel>>();
-            var validator8 = Kernel.Get<Validator<TestModel>>();
+            var validator7 = Container.GetInstance<Validator<TestModel>>();
+            var validator8 = Container.GetInstance<Validator<TestModel>>();
 
             Assert.AreEqual(validator, validator2);
             Assert.AreEqual(validator2, validator3);
@@ -53,11 +54,11 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void GenericValidatorMustBeSingleton()
         {
-            var validatorFactory = Kernel.Get<IValidatorFactory>();
+            var validatorFactory = Container.GetInstance<IValidatorFactory>();
 
-            var validator = Kernel.Get<IValidator<SubChild>>();
-            var validator2 = Kernel.Get<Validator<SubChild>>();
-            var validator3 = Kernel.Get<AbstractValidator<SubChild>>();
+            var validator = Container.GetInstance<IValidator<SubChild>>();
+            var validator2 = Container.GetInstance<Validator<SubChild>>();
+            var validator3 = Container.GetInstance<Validator<SubChild>>();
             var validator4 = validatorFactory.GetValidator(typeof(SubChild));
             var validator5 = validatorFactory.GetValidator<SubChild>();
 
@@ -69,19 +70,10 @@ namespace PowerArhitecture.Tests.Validation
         }
 
         [Test]
-        public void ValidatorEngineMustBeSingleton()
-        {
-            var validatorEngine = Kernel.Get<IValidatorEngine>();
-            var validatorEngine2 = Kernel.Get<ValidatorEngine>();
-
-            Assert.AreEqual(validatorEngine, validatorEngine2);
-        }
-
-        [Test]
         public void ValidatorFactoryMustBeSingleton()
         {
-            var validatorFactory = Kernel.Get<IValidatorFactory>();
-            var validatorFactory2 = Kernel.Get<IValidatorFactoryExtended>();
+            var validatorFactory = Container.GetInstance<IValidatorFactory>();
+            var validatorFactory2 = Container.GetInstance<IValidatorFactory>();
 
             Assert.AreEqual(validatorFactory, validatorFactory2);
         }
@@ -89,10 +81,10 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void ValidatorContextFillerMustBeTransient()
         {
-            var contextFiller = Kernel.Get<IValidationContextFiller<TestModel>>();
-            var contextFiller2 = Kernel.Get<IValidationContextFiller<TestModel>>();
-            var contextFiller3 = Kernel.Get<ITestModelValidatonContextFiller>();
-            var contextFiller4 = Kernel.Get<BaseValidationContextFiller<TestModel>>();
+            var contextFiller = Container.GetInstance<IValidationContextFiller<TestModel>>();
+            var contextFiller2 = Container.GetInstance<IValidationContextFiller<TestModel>>();
+            var contextFiller3 = Container.GetInstance<ITestModelValidatonContextFiller>();
+            var contextFiller4 = Container.GetInstance<ITestModelValidatonContextFiller>();
             
             Assert.AreEqual(typeof(TestModelValidatonContextFiller), contextFiller.GetType());
             Assert.AreEqual(typeof(TestModelValidatonContextFiller), contextFiller2.GetType());

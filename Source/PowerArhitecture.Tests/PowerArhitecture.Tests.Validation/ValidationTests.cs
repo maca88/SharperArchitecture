@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
-using Ninject;
 using NUnit.Framework;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Tests.Common;
@@ -19,13 +18,14 @@ namespace PowerArhitecture.Tests.Validation
         public ValidationTests()
         {
             TestAssemblies.Add(typeof(Validator<>).Assembly);
+            TestAssemblies.Add(typeof(ValidationTests).Assembly);
         }
 
         [Test]
         public void ValidateWithContextFiller()
         {
-            var validator = Kernel.Get<IValidator<TestModel>>();
-            var contextFiller = Kernel.Get<ITestModelValidatonContextFiller>();
+            var validator = Container.GetInstance<IValidator<TestModel>>();
+            var contextFiller = Container.GetInstance<ITestModelValidatonContextFiller>();
             var model = new TestModel();
             var valResult = validator.Validate(model, contextFiller: contextFiller);
             Assert.IsTrue(valResult.IsValid);
@@ -36,8 +36,8 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public async Task ValidateWithContextFillerAsync()
         {
-            var validator = Kernel.Get<IValidator<TestModel>>();
-            var contextFiller = Kernel.Get<ITestModelValidatonContextFiller>();
+            var validator = Container.GetInstance<IValidator<TestModel>>();
+            var contextFiller = Container.GetInstance<ITestModelValidatonContextFiller>();
             var model = new TestModel();
             var valResult = await validator.ValidateAsync(model, contextFiller: contextFiller);
             Assert.IsTrue(valResult.IsValid);
@@ -48,7 +48,7 @@ namespace PowerArhitecture.Tests.Validation
         [Test]
         public void ValidateNesetdModelWithContextFiller()
         {
-            var validator = Kernel.Get<IValidator<Parent>>();
+            var validator = Container.GetInstance<IValidator<Parent>>();
             var model = new Parent
             {
                 Children = new List<Child>

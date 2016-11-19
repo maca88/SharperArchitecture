@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Web;
 using PowerArhitecture.Common.Reporting;
 using PowerArhitecture.Reporting.Specifications;
-using Ninject;
-using Ninject.Extensions.Logging;
-using Ninject.Syntax;
+using PowerArhitecture.Common.Specifications;
+using SimpleInjector;
+using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Reporting
 {
@@ -19,10 +19,10 @@ namespace PowerArhitecture.Reporting
         //Dictionary<reportName, Dictionary<reportType, Dictionary<reportLanguage, Dictionary<ReportInfo, IReport>>>>
         private readonly Dictionary<string, Dictionary<string, Dictionary<string, KeyValuePair<ReportInfo, IReport>>>> _reports;
         private readonly ILogger _logger;
-        private readonly IResolutionRoot _resolutionRoot;
+        private readonly Container _resolutionRoot;
         private readonly IReportSettingsProvider _settingsProvider;
 
-        public Reporter(ILogger logger, IResolutionRoot resolutionRoot, IReportSettingsProvider settingsProvider)
+        public Reporter(ILogger logger, Container resolutionRoot, IReportSettingsProvider settingsProvider)
         {
             _logger = logger;
             _resolutionRoot = resolutionRoot;
@@ -139,7 +139,7 @@ namespace PowerArhitecture.Reporting
 
         public ReportResult CreateReport<TItem>(ReportParameters<TItem> parameters) where TItem : class
         {
-            var report = _resolutionRoot.Get<IReport>(parameters.ReportType);
+            var report = _resolutionRoot.GetInstance<IReport>(parameters.ReportType);
             parameters.Settings = parameters.Settings ?? _settingsProvider.GetSettings(parameters.ReportType);
             var reportData = report.Create(parameters);
             return new ReportResult
@@ -152,7 +152,7 @@ namespace PowerArhitecture.Reporting
 
         public ReportResult Print<TItem>(PrintParameters<TItem> parameters) where TItem : class
         {
-            var printReport = _resolutionRoot.Get<IPrintReport>();
+            var printReport = _resolutionRoot.GetInstance<IPrintReport>();
             parameters.Settings = parameters.Settings ?? _settingsProvider.GetSettings(ReportType.Pdf);
             var printData = printReport.Print(parameters);
             return new ReportResult
