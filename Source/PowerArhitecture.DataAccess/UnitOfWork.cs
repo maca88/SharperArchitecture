@@ -15,7 +15,6 @@ using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Extensions;
 using SimpleInjector;
-using SimpleInjector.Extensions;
 using SimpleInjector.Extensions.ExecutionContextScoping;
 using IsolationLevel = System.Data.IsolationLevel;
 
@@ -31,15 +30,11 @@ namespace PowerArhitecture.DataAccess
         private readonly IEventPublisher _eventPublisher;
         private readonly ConcurrentDictionary<string, ISession> _sessions = new ConcurrentDictionary<string, ISession>();
 
-        public UnitOfWork(ILogger logger, 
-            IEventPublisher eventPublisher,
-            IInstanceProvider instanceProvider,
-            Container container)
+        public UnitOfWork(ILogger logger, IEventPublisher eventPublisher, Container container)
         {
             _logger = logger;
             _container = container;
             _eventPublisher = eventPublisher;
-            ResolutionRoot = instanceProvider;
         }
 
         public IsolationLevel IsolationLevel { get; internal set; } = IsolationLevel.Unspecified;
@@ -49,88 +44,27 @@ namespace PowerArhitecture.DataAccess
             return GetOrAddSession<TModel>().Query<TModel>();
         }
 
-        public IQueryable<TModel> Query<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new()
-        {
-            if (dbConfigName == null)
-            {
-                throw new ArgumentNullException(nameof(dbConfigName));
-            }
-            return GetOrAddSession(dbConfigName).Query<TModel>();
-        }
-
         public IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new()
         {
             return GetOrAddSession<TModel>().Query<TModel>();
         }
 
-        public IQueryable<TModel> Query<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new()
-        {
-            if (dbConfigName == null)
-            {
-                throw new ArgumentNullException(nameof(dbConfigName));
-            }
-            return GetOrAddSession(dbConfigName).Query<TModel>();
-        }
-
         public IRepository<TModel> GetRepository<TModel>() where TModel : class, IEntity<long>, new()
         {
-            var dbConfigName = GetDatabaseConfigurationName(typeof(TModel));
-            return GetRepository<TModel>(dbConfigName);
-        }
-
-        public IRepository<TModel> GetRepository<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new()
-        {
-            if (dbConfigName == null)
-            {
-                throw new ArgumentNullException(nameof(dbConfigName));
-            }
-            GetOrAddSession(dbConfigName); // Get and save the session
-            return _container.GetDatabaseService<IRepository<TModel>>(dbConfigName);
+            GetOrAddSession<TModel>(); // Get and save the session
+            return _container.GetInstance<IRepository<TModel>>();
         }
 
         public IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new()
         {
-            var dbConfigName = GetDatabaseConfigurationName(typeof(TModel));
-            return GetRepository<TModel, TId>(dbConfigName);
-        }
-
-        public IRepository<TModel, TId> GetRepository<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new()
-        {
-            if (dbConfigName == null)
-            {
-                throw new ArgumentNullException(nameof(dbConfigName));
-            }
-            GetOrAddSession(dbConfigName); // Get and save the session
-            return _container.GetDatabaseService<IRepository<TModel, TId>>(dbConfigName);
+            GetOrAddSession<TModel>(); // Get and save the session
+            return _container.GetInstance<IRepository<TModel, TId>>();
         }
 
         public TRepo GetCustomRepository<TRepo>() where TRepo : class, IRepository
         {
-            string dbConfigName;
-            if (!Database.MultipleDatabases)
-            {
-                dbConfigName = DatabaseConfiguration.DefaultName;
-            }
-            else if (!typeof(TRepo).IsAssignableToGenericType(typeof(IRepository<,>)))
-            {
-                throw new PowerArhitectureException(
-                    $"The repository of type {typeof(TRepo)} does not implement IRepository<,>");
-            }
-            else
-            {
-                var repoType = typeof(TRepo).GetGenericType(typeof(IRepository<,>));
-                dbConfigName = GetDatabaseConfigurationName(repoType.GetGenericArguments()[0]);
-            }
-            return GetCustomRepository<TRepo>(dbConfigName);
-        }
-
-        public TRepo GetCustomRepository<TRepo>(string dbConfigName) where TRepo : class, IRepository
-        {
-            if (dbConfigName == null)
-            {
-                throw new ArgumentNullException(nameof(dbConfigName));
-            }
-            return _container.GetDatabaseService<TRepo>(dbConfigName);
+            GetOrAddSession(typeof(TRepo).GetDatabaseConfigurationNameForRepository());
+            return _container.GetInstance<TRepo>();
         }
 
         public void Save<TModel>(TModel model) where TModel : IEntity
@@ -247,8 +181,6 @@ namespace PowerArhitecture.DataAccess
             }
         }
 
-        public IInstanceProvider ResolutionRoot { get; }
-
         public IEnumerable<ISession> GetActiveSessions()
         {
             return _sessions.Values.ToArray();
@@ -337,31 +269,7 @@ namespace PowerArhitecture.DataAccess
 
         private ISession GetOrAddSession(Type modelType)
         {
-            return GetOrAddSession(GetDatabaseConfigurationName(modelType));
+            return GetOrAddSession(modelType.GetDatabaseConfigurationNameForModel());
         }
-
-        private static string GetDatabaseConfigurationName(Type modelType)
-        {
-            if (!Database.MultipleDatabases && Database.HasDefaultDatabase)
-            {
-                return DatabaseConfiguration.DefaultName;
-            }
-            var configs = Database.GetDatabaseConfigurationsForModel(modelType).ToList();
-            if (!configs.Any())
-            {
-                throw new PowerArhitectureException($"No database configuration found for type {modelType}.");
-            }
-            if (configs.Count > 1)
-            {
-                if (configs.Any(o => o.Name == DatabaseConfiguration.DefaultName))
-                {
-                    return DatabaseConfiguration.DefaultName;
-                }
-                throw new PowerArhitectureException($"There are multiple database configurations that contain type {modelType}. " +
-                    "Hint: Use the overload with a database configuration name");
-            }
-            return configs.First().Name;
-        }
-
     }
 }

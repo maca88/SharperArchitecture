@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.Results;
 using NUnit.Framework;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
@@ -21,30 +22,29 @@ namespace PowerArhitecture.Tests.Validation.Models
 
     public class TestModelValidator : Validator<TestModel>, ITestModelValidator
     {
-        public TestModelValidator()
+    }
+
+    public class TestModelBusinessRule : AbstractBusinessRule<TestModel>
+    {
+        public static int ValidateCount;
+        public static int CanValidateCount;
+        public static int ValidatBeforeValidationCount;
+
+        public override void BeforeValidation(TestModel root, ValidationContext context)
         {
-            Custom((model, context) =>
-            {
-                return !context.RootContextData.ContainsKey("Test")
-                    ? Failure("RootContextData.Test")
-                    : Success;
-            });
+            ValidatBeforeValidationCount++;
         }
-    }
 
-    public interface ITestModelValidatonContextFiller : IValidationContextFiller<TestModel>
-    {
-        int FillCount { get; }
-    }
-
-    public class TestModelValidatonContextFiller : BaseValidationContextFiller<TestModel>, ITestModelValidatonContextFiller
-    {
-        public int FillCount { get; private set; }
-
-        public override void FillContextData(TestModel model, Dictionary<string, object> contextData)
+        public override ValidationFailure Validate(TestModel child, ValidationContext context)
         {
-            FillCount++;
-            contextData["Test"] = true;
+            ValidateCount++;
+            return Success;
+        }
+
+        public override bool CanValidate(TestModel child, ValidationContext context)
+        {
+            CanValidateCount++;
+            return true;
         }
     }
 }

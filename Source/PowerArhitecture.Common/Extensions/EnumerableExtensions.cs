@@ -22,5 +22,10 @@ namespace System.Linq
                 action(item);
             }
         }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items)
+        {
+            return new HashSet<T>(items ?? new List<T>());
+        }
     }
 }

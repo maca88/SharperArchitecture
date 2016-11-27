@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Castle.Components.DictionaryAdapter;
 using FluentValidation;
+using FluentValidation.Results;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Attributes;
-using PowerArhitecture.Validation.Extensions;
+using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.Tests.Validation.Models
 {
@@ -43,5 +40,68 @@ namespace PowerArhitecture.Tests.Validation.Models
     {
         [NotNull]
         public string Name { get; set; }
+    }
+
+    public class ParentBusinessRule : TestBusinessRule<Parent, Parent>
+    { }
+
+    public class ParentChildBusinessRule : TestBusinessRule<Parent, Child>
+    { }
+
+    public class ParentChild2BusinessRule : TestBusinessRule<Parent, Child, int>
+    { }
+
+    public class ParentSubChildBusinessRule : TestBusinessRule<Parent, SubChild>
+    { }
+
+    public class ChildSubChildBusinessRule : TestBusinessRule<Child, SubChild>
+    { }
+
+    public class SubChildBusinessRule : TestBusinessRule<SubChild, SubChild>
+    { }
+
+    public class TestBusinessRule<TModel, TChild> : TestBusinessRule<TModel, TChild, byte>
+        where TModel : class
+        where TChild : class
+    { }
+
+    public class TestBusinessRule<TModel, TChild, TType> : AbstractBusinessRule<TModel, TChild> 
+        where TModel : class
+        where TChild : class
+    {
+        public static List<IBusinessRule> Instances = new List<IBusinessRule>();
+        public static List<Tuple<TChild, IBusinessRule>> ValidateModels = new List<Tuple<TChild, IBusinessRule>>();
+        public static List<Tuple<TChild, IBusinessRule>> CanValidateModels = new List<Tuple<TChild, IBusinessRule>>();
+        public static List<Tuple<TModel, IBusinessRule>> BeforeValidationModels = new List<Tuple<TModel, IBusinessRule>>();
+
+        public TestBusinessRule()
+        {
+            Instances.Add(this);
+        }
+
+        public override void BeforeValidation(TModel root, ValidationContext context)
+        {
+            BeforeValidationModels.Add(new Tuple<TModel, IBusinessRule>(root, this));
+        }
+
+        public override ValidationFailure Validate(TChild child, ValidationContext context)
+        {
+            ValidateModels.Add(new Tuple<TChild, IBusinessRule>(child, this));
+            return Success;
+        }
+
+        public override bool CanValidate(TChild child, ValidationContext context)
+        {
+            CanValidateModels.Add(new Tuple<TChild, IBusinessRule>(child, this));
+            return true;
+        }
+
+        public static void Clear()
+        {
+            Instances.Clear();
+            ValidateModels.Clear();
+            CanValidateModels.Clear();
+            BeforeValidationModels.Clear();
+        }
     }
 }

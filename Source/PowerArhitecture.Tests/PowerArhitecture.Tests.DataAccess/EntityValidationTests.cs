@@ -37,7 +37,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomatically()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity {Name = "Test"};
@@ -49,12 +49,12 @@ namespace PowerArhitecture.Tests.DataAccess
                     child.Children.Add(new ValidableEntitySubChild { Name = "My name", ValidableEntityChild = child });
                 }
                 unitOfWork.Save(entity);
-                Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
 
                 entity.Name = "New name";
                 unitOfWork.Save(entity);
                 unitOfWork.Flush();
-                Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(2, ValidableEntityBusinessRule.FilledCount);
                 
                 // Remove the child from the collection and set it as deleted
                 // OnPreUpdateCollection will trigger the validation
@@ -62,7 +62,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 entity.Children.Remove(child);
                 unitOfWork.Delete(child);
                 unitOfWork.Flush();
-                Assert.AreEqual(3, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(3, ValidableEntityBusinessRule.FilledCount);
 
                 // Remove the releationship with the child on both sides
                 child = entity.Children.First();
@@ -70,7 +70,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 child.ValidableEntity = null;
                 unitOfWork.Delete(child);
                 unitOfWork.Flush();
-                Assert.AreEqual(4, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(4, ValidableEntityBusinessRule.FilledCount);
 
                 // Remove the subchild from the child on both sides
                 child = entity.Children.First();
@@ -78,17 +78,17 @@ namespace PowerArhitecture.Tests.DataAccess
                 child.Children.Remove(subChild);
                 subChild.ValidableEntityChild = null;
                 unitOfWork.Flush();
-                Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(5, ValidableEntityBusinessRule.FilledCount);
                 unitOfWork.Commit();
             }
-            Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(5, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public async Task VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomaticallyAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
@@ -100,12 +100,12 @@ namespace PowerArhitecture.Tests.DataAccess
                     child.Children.Add(new ValidableEntitySubChild { Name = "My name", ValidableEntityChild = child });
                 }
                 await unitOfWork.SaveAsync(entity);
-                Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
 
                 entity.Name = "New name";
                 await unitOfWork.SaveAsync(entity);
                 await unitOfWork.FlushAsync();
-                Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(2, ValidableEntityBusinessRule.FilledCount);
 
                 // Remove the child from the collection and set it as deleted
                 // OnPreUpdateCollection will trigger the validation
@@ -113,7 +113,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 entity.Children.Remove(child);
                 await unitOfWork.DeleteAsync(child);
                 await unitOfWork.FlushAsync();
-                Assert.AreEqual(3, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(3, ValidableEntityBusinessRule.FilledCount);
 
                 // Remove the releationship with the child on both sides
                 child = entity.Children.First();
@@ -121,7 +121,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 child.ValidableEntity = null;
                 await unitOfWork.DeleteAsync(child);
                 await unitOfWork.FlushAsync();
-                Assert.AreEqual(4, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(4, ValidableEntityBusinessRule.FilledCount);
 
                 // Remove the subchild from the child on both sides
                 child = entity.Children.First();
@@ -129,17 +129,17 @@ namespace PowerArhitecture.Tests.DataAccess
                 child.Children.Remove(subChild);
                 subChild.ValidableEntityChild = null;
                 await unitOfWork.FlushAsync();
-                Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(5, ValidableEntityBusinessRule.FilledCount);
                 await unitOfWork.CommitAsync();
             }
-            Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(5, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void ShouldNotLeakWhenTheTransactionIsNotCommited()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
@@ -151,9 +151,9 @@ namespace PowerArhitecture.Tests.DataAccess
                     child.Children.Add(new ValidableEntitySubChild { Name = "My name", ValidableEntityChild = child });
                 }
                 unitOfWork.Save(entity);
-                Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+                Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             }
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
@@ -213,14 +213,14 @@ namespace PowerArhitecture.Tests.DataAccess
 
                 unitOfWork.Commit();
             }
-            Assert.AreEqual(5, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(5, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidRootShouldThrowOnFlushAutomaticValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -236,7 +236,7 @@ namespace PowerArhitecture.Tests.DataAccess
                             child.Children.Add(new ValidableEntitySubChild { Name = "My name", ValidableEntityChild = child });
                         }
                         unitOfWork.Save(entity);
-                        Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+                        Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
                         entity.Name = null;
                         unitOfWork.Flush();
                     }
@@ -248,14 +248,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(2, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidRootShouldThrowOnFlushAutomaticValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -271,7 +271,7 @@ namespace PowerArhitecture.Tests.DataAccess
                             child.Children.Add(new ValidableEntitySubChild { Name = "My name", ValidableEntityChild = child });
                         }
                         await unitOfWork.SaveAsync(entity);
-                        Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+                        Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
                         entity.Name = null;
                         await unitOfWork.FlushAsync();
                     }
@@ -283,14 +283,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(2, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(2, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidRootShouldThrowOnAutomaticValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -309,14 +309,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidRootShouldThrowOnAutomaticValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -335,14 +335,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void AutoValidationShouldNotThrowWhenChildIsSwitchedToANonRegisteredParent()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
             {
                 try
@@ -366,14 +366,14 @@ namespace PowerArhitecture.Tests.DataAccess
                 }
                 unitOfWork.Commit();
             }
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void PersistedChildShouldBeValidatedWhenAttachedToTransientParent()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -407,7 +407,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
@@ -520,7 +520,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void InvalidChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -540,14 +540,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidChildShouldThrowOnAutomaticRootValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -567,14 +567,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void ChildShouldThrowOnAutomaticRootValidationWhenRootIsReadOnly()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<PowerArhitectureException> (() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -595,14 +595,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void ChildShouldThrowOnAutomaticRootValidationWhenRootIsReadOnlyAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<PowerArhitectureException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -623,14 +623,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidDeletedChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -652,14 +652,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidDeletedChildShouldThrowOnAutomaticRootValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -681,7 +681,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
@@ -740,7 +740,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void InvalidManuallyDeletedChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -762,14 +762,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidManuallyDeletedChildShouldThrowOnAutomaticRootValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -791,14 +791,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidInsertedChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -821,14 +821,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidInsertedChildShouldThrowOnAutomaticRootValidationAsync()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<ExtendedValidationException>(async () =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -851,14 +851,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     await unitOfWork.CommitAsync();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidSubChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -878,14 +878,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void SubChildShouldThrowOnAutomaticRootValidationWhenRootIsReadOnly()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<PowerArhitectureException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -906,14 +906,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidDeletedSubChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -935,14 +935,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidManuallyDeletedSubChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -965,14 +965,14 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(1, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(1, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 
         [Test]
         public void InvalidInsertedSubChildShouldThrowOnAutomaticRootValidation()
         {
-            ValidableEntityValidationContextFiller.FilledCount = 0;
+            ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<ExtendedValidationException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
@@ -995,7 +995,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     unitOfWork.Commit();
                 }
             });
-            Assert.AreEqual(0, ValidableEntityValidationContextFiller.FilledCount);
+            Assert.AreEqual(0, ValidableEntityBusinessRule.FilledCount);
             CheckForLeakages();
         }
 

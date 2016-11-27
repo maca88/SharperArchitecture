@@ -8,42 +8,35 @@ namespace FluentValidation
 {
     public static class ValidatorExtensions
     {
-        public const string DataContextFilledKey = "dataContextFilled";
-        public const string DataContextFillerKey = "dataContextFiller";
-
-        public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string[] ruleSets = null, 
-            IValidationContextFiller<T> contextFiller = null)
+        public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string[] ruleSets)
         {
-            var valResult = Validate(validator, instance, ruleSets, (object)contextFiller);
+            var valResult = Validate(validator, instance, ruleSets, null);
             if (!valResult.IsValid)
             {
                 throw new ValidationException(valResult.Errors);
             }
         }
 
-        public static async Task ValidateAndThrowAsync<T>(this IValidator<T> validator, T instance, string[] ruleSets = null,
-            IValidationContextFiller<T> contextFiller = null)
+        public static async Task ValidateAndThrowAsync<T>(this IValidator<T> validator, T instance, string[] ruleSets)
         {
-            var valResult = await ValidateAsync(validator, instance, ruleSets, (object)contextFiller);
+            var valResult = await ValidateAsync(validator, instance, ruleSets, null);
             if (!valResult.IsValid)
             {
                 throw new ValidationException(valResult.Errors);
             }
         }
 
-        public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, string[] ruleSets = null,
-            IValidationContextFiller<T> contextFiller = null)
+        public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, string[] ruleSets)
         {
-            return Validate(validator, instance, ruleSets, (object)contextFiller);
+            return Validate(validator, instance, ruleSets, null);
         }
 
-        public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, string[] ruleSets = null, 
-            IValidationContextFiller<T> contextFiller = null)
+        public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, string[] ruleSets)
         {
-            return ValidateAsync(validator, instance, ruleSets, (object)contextFiller);
+            return ValidateAsync(validator, instance, ruleSets, null);
         }
 
-        public static ValidationResult Validate(IValidator validator, object instance, string[] ruleSets, object contextFiller,
+        public static ValidationResult Validate(IValidator validator, object instance, string[] ruleSets,
             Dictionary<string, object> extraData = null)
         {
             IValidatorSelector selector = new DefaultValidatorSelector();
@@ -52,10 +45,6 @@ namespace FluentValidation
                 selector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSets);
             }
             var context = new ValidationContext(instance, new PropertyChain(), selector);
-            if (contextFiller != null)
-            {
-                context.RootContextData[DataContextFillerKey] = contextFiller;
-            }
             if (extraData != null)
             {
                 foreach (var pair in extraData)
@@ -66,7 +55,7 @@ namespace FluentValidation
             return validator.Validate(context);
         }
 
-        public static Task<ValidationResult> ValidateAsync(IValidator validator, object instance, string[] ruleSets, object contextFiller,
+        public static Task<ValidationResult> ValidateAsync(IValidator validator, object instance, string[] ruleSets,
             Dictionary<string, object> extraData = null)
         {
             IValidatorSelector selector = new DefaultValidatorSelector();
@@ -75,10 +64,6 @@ namespace FluentValidation
                 selector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSets);
             }
             var context = new ValidationContext(instance, new PropertyChain(), selector);
-            if (contextFiller != null)
-            {
-                context.RootContextData[DataContextFillerKey] = contextFiller;
-            }
             if (extraData != null)
             {
                 foreach (var pair in extraData)

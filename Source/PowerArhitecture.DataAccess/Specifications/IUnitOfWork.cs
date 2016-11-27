@@ -10,23 +10,13 @@ namespace PowerArhitecture.DataAccess.Specifications
     {
         IQueryable<TModel> Query<TModel>() where TModel : class, IEntity<long>, new();
 
-        IQueryable<TModel> Query<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new();
-
         IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new();
-
-        IQueryable<TModel> Query<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new();
 
         IRepository<TModel> GetRepository<TModel>() where TModel : class, IEntity<long>, new();
 
-        IRepository<TModel> GetRepository<TModel>(string dbConfigName) where TModel : class, IEntity<long>, new();
-
         IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new();
 
-        IRepository<TModel, TId> GetRepository<TModel, TId>(string dbConfigName) where TModel : class, IEntity<TId>, new();
-
         TRepo GetCustomRepository<TRepo>() where TRepo : class, IRepository;
-
-        TRepo GetCustomRepository<TRepo>(string dbConfigName) where TRepo : class, IRepository;
 
         void Save<TModel>(TModel model) where TModel : IEntity;
 

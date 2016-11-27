@@ -36,3 +36,7 @@ using PowerArhitecture.Common.Attributes;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: Convention(Order = 10)]
+#if DEBUG
+[assembly: InternalsVisibleTo("PowerArhitecture.Tests.DataAccess")]
+[assembly: InternalsVisibleTo("PowerArhitecture.Tests.Common")]
+#endif

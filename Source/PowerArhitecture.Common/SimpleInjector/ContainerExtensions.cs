@@ -72,31 +72,6 @@ namespace SimpleInjector.Extensions
             };
         }
 
-        public static void Register<TService>(this Container container, Func<TService> instanceCreator, string key, Lifestyle lifestyle)
-            where TService : class
-        {
-            var namedInjection = container.GetKeyedDependencyInjectionBehavior();
-            namedInjection.KeyedRegistration.Register(typeof(TService), instanceCreator, key, lifestyle);
-        }
-
-        public static void RegisterSingleton<TService>(this Container container, TService instance, string key) where TService : class
-        {
-            var namedInjection = container.GetKeyedDependencyInjectionBehavior();
-            namedInjection.KeyedRegistration.Register(typeof(TService), () => instance, key, Lifestyle.Singleton);
-        }
-
-        public static TService GetInstance<TService>(this Container container, string key) where TService : class
-        {
-            var namedInjection = container.GetKeyedDependencyInjectionBehavior();
-            return (TService)namedInjection.GetInstance(typeof(TService), key);
-        }
-
-        public static object GetInstance(this Container container, Type serviceType, string key)
-        {
-            var namedInjection = container.GetKeyedDependencyInjectionBehavior();
-            return namedInjection.GetInstance(serviceType, key);
-        }
-
         public static IEnumerable<object> TryGetAllInstances(this Container container, Type serviceType)
         {
             var collectionType = typeof(IEnumerable<>).MakeGenericType(serviceType);
@@ -109,18 +84,6 @@ namespace SimpleInjector.Extensions
         {
             IServiceProvider provider = container;
             return provider.GetService(serviceType);
-        }
-
-        private static KeyedDependencyInjectionBehavior GetKeyedDependencyInjectionBehavior(this Container container)
-        {
-            var namedInjection = container.Options.DependencyInjectionBehavior as KeyedDependencyInjectionBehavior;
-            if (namedInjection == null)
-            {
-                throw new PowerArhitectureException(
-                    "Cannot get or create a keyed registration because the current DependencyInjectionBehavior does not support it. " +
-                    "Hint: Set the default dependency injection behaviour to: new KeyedDependencyInjectionBehavior(container)");
-            }
-            return namedInjection;
         }
     }
 }

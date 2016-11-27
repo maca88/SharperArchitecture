@@ -32,8 +32,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         }
     }
 
-
-    public class UserExistanceContextFiller : BaseValidationContextFiller<UserExistance>
+    public class UserExistanceContextFiller : AbstractBusinessRule<UserExistance>
     {
         private readonly ISession _session;
 
@@ -42,9 +41,19 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
             _session = session;
         }
 
-        public override void FillContextData(UserExistance model, Dictionary<string, object> contextData)
+        public override void BeforeValidation(UserExistance root, ValidationContext context)
         {
-            contextData["Session"] = _session;
+            context.RootContextData["Session"] = _session;
+        }
+
+        public override ValidationFailure Validate(UserExistance child, ValidationContext context)
+        {
+            return Success;
+        }
+
+        public override bool CanValidate(UserExistance child, ValidationContext context)
+        {
+            return true;
         }
     }
 

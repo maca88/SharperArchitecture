@@ -9,12 +9,8 @@ using FluentValidation.Validators;
 
 namespace PowerArhitecture.Validation.Specifications
 {
-    public interface IValidatorExtended : IValidator
+    public interface IValidatorModifier : IValidator
     {
-        bool HasValidationContextFiller { get; }
-
-        bool CanValidateWithoutContextFiller { get; }
-
         void AddPropertyValidator(IPropertyValidator propValidator, PropertyInfo prop, string ruleSet, bool includePropertyName);
     }
 }

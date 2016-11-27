@@ -18,7 +18,7 @@ namespace PowerArhitecture.Common.Reporting
 
         public IReportSettings GetSettings(string reportType)
         {
-            return _resolutionRoot.GetInstance<IReportSettings>(reportType);
+            return _resolutionRoot.GetInstance<IReportSettings>(/*reportType*/);
         }
     }
 }

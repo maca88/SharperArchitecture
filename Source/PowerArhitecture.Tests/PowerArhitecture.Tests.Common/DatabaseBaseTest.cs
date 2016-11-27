@@ -92,11 +92,10 @@ namespace PowerArhitecture.Tests.Common
 
             base.Configure();
 
+            var sfProvider = Container.GetInstance<ISessionFactoryProvider>();
             foreach (var config in DatabaseConfigurations)
             {
-                var sessionFactory = config.Name == DatabaseConfiguration.DefaultName
-                        ? Container.GetInstance<ISessionFactory>()
-                        : Container.GetInstance<ISessionFactory>(config.Name);
+                var sessionFactory = sfProvider.Get(config.Name);
                 SessionFactories.Add(sessionFactory);
                 FillData(sessionFactory);
             }
@@ -114,12 +113,9 @@ namespace PowerArhitecture.Tests.Common
             {
                 Database.RecreateTables(sessionFactory);
             }*/
-            foreach (var sessionFactory in SessionFactories)
-            {
-                Database.DropTables(sessionFactory);
-                Database.RemoveSessionFactory(sessionFactory);
-            }
-            
+            Database.Cleanup();
+            SessionFactories.Clear();
+            DatabaseConfigurations.Clear();
             base.Cleanup();
         }
     }

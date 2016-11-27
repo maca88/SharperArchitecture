@@ -8,14 +8,16 @@ using System.Threading.Tasks;
 using NHibernate;
 using NHibernate.Event;
 using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Decorators;
 using PowerArhitecture.DataAccess.Events;
 using SimpleInjector;
 using PowerArhitecture.DataAccess.Extensions;
+using PowerArhitecture.DataAccess.Specifications;
 
 namespace PowerArhitecture.DataAccess.Providers
 {
-    public class SessionProvider
+    internal class SessionProvider : ISessionProvider
     {
         private readonly ILogger _logger;
         private readonly Container _container;
@@ -41,6 +43,12 @@ namespace PowerArhitecture.DataAccess.Providers
                 _eventPublisher.Publish(new SessionCreatedEvent(eventSource));
                 return eventSource;
             }), _eventPublisher, name);
+        }
+
+        public ISession Get(string dbConfigName = null)
+        {
+            dbConfigName = dbConfigName ?? DatabaseConfiguration.DefaultName;
+            return _container.GetDatabaseService<ISession>(dbConfigName);
         }
     }
 }

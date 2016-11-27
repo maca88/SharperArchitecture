@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.Results;
 using NHibernate;
 using NHibernate.Linq;
 using PowerArhitecture.DataAccess.Extensions;
@@ -72,26 +73,36 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         }
     }
 
-    public class ValidableEntityValidationContextFiller : BaseValidationContextFiller<ValidableEntity>
+    public class ValidableEntityBusinessRule : AbstractBusinessRule<ValidableEntity>
     {
         public readonly ISession Session;
 
         public static int FilledCount { get; set; }
 
-        public ValidableEntityValidationContextFiller(ISession session)
+        public ValidableEntityBusinessRule(ISession session)
         {
             Session = session;
         }
 
-        public override void FillContextData(ValidableEntity model, Dictionary<string, object> contextData)
+        public override void BeforeValidation(ValidableEntity root, ValidationContext context)
         {
             FilledCount++;
-            var codes = model.Children.Select(o => o.CountryCode).Distinct().ToList();
-            contextData["validCodes"] =
+            var codes = root.Children.Select(o => o.CountryCode).Distinct().ToList();
+            context.RootContextData["validCodes"] =
                 new HashSet<string>(Session.Query<Country>().Where(o => codes.Contains(o.Code)).Select(o => o.Code))
                 {
                     "CannotUpdate"
                 };
+        }
+
+        public override ValidationFailure Validate(ValidableEntity child, ValidationContext context)
+        {
+            return Success;
+        }
+
+        public override bool CanValidate(ValidableEntity child, ValidationContext context)
+        {
+            return true;
         }
     }
 

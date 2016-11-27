@@ -11,7 +11,7 @@ namespace PowerArhitecture.Tests.DataAccess.MultiDatabase
 {
     public class MultiGenericRepositories
     {
-        public MultiGenericRepositories(IRepository<AttrIndexAttribute> repository, [Database("bar")]IRepository<AttrIndexAttribute> barRepository)
+        public MultiGenericRepositories(IRepository<AttrIndexAttribute> repository, IBarRepository<AttrIndexAttribute, long> barRepository)
         {
             Repository = repository;
             BarRepository = barRepository;
@@ -19,6 +19,6 @@ namespace PowerArhitecture.Tests.DataAccess.MultiDatabase
 
         public IRepository<AttrIndexAttribute> Repository { get; }
 
-        public IRepository<AttrIndexAttribute> BarRepository { get; }
+        public IBarRepository<AttrIndexAttribute, long> BarRepository { get; }
     }
 }

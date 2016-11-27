@@ -10,6 +10,7 @@ using NHibernate;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
+using PowerArhitecture.Tests.DataAccess.MultiDatabase;
 
 namespace PowerArhitecture.Tests.DataAccess.Entities
 {
@@ -21,7 +22,7 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         public virtual string Xml { get; set; }
     }
 
-    public interface IAttrLazyLoadRepository : IRepository
+    public interface IAttrLazyLoadRepository : IRepository<AttrLazyLoad>
     {
         
     }
@@ -29,6 +30,17 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
     public class AttrLazyLoadRepository : Repository<AttrLazyLoad>, IAttrLazyLoadRepository
     {
         public AttrLazyLoadRepository(ISession session, ILogger logger) : base(session, logger)
+        {
+        }
+    }
+
+    public interface IBarAttrLazyLoadRepository : IBarRepository<AttrLazyLoad, long>
+    {
+    }
+
+    public class BarAttrLazyLoadRepository : BarRepository<AttrLazyLoad, long>, IBarAttrLazyLoadRepository
+    {
+        public BarAttrLazyLoadRepository(ISession session, ILogger logger) : base(session, logger)
         {
         }
     }

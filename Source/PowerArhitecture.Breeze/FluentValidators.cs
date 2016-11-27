@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using PowerArhitecture.Validation.Extensions;
-using FluentValidation;
 using FluentValidation.Validators;
+using PowerArhitecture.Validation.Extensions;
 
-namespace PowerArhitecture.Validation
+namespace PowerArhitecture.Breeze
 {
     public class FluentValidators
     {

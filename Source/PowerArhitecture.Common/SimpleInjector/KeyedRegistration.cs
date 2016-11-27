@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using SimpleInjector;
 
 namespace PowerArhitecture.Common.SimpleInjector
@@ -57,7 +60,7 @@ namespace PowerArhitecture.Common.SimpleInjector
             Register(serviceType, lifestyle.CreateRegistration(serviceType, instanceCreator, _container), key);
         }
 
-        private void Register(Type serviceType, Registration registration, string key)
+        public void Register(Type serviceType, Registration registration, string key)
         {
             var producer = new InstanceProducer(serviceType, registration);
             var serviceProducers = _serviceRegistrations.GetOrAdd(serviceType,

@@ -26,13 +26,13 @@ namespace PowerArhitecture.DataAccess.EventListeners
             var config = Database.GetDatabaseConfigurationsForModel(e.ModelType).FirstOrDefault(); // TODO: handle multi db
             if (config == null)
             {
-                throw new PowerArhitectureException($"An entity validator for type {e.ModelType} was instantiated before session factory was created");
+                throw new PowerArhitectureException($"There is no database configuration that contains the entity of type {e.ModelType}");
             }
             if (!config.Conventions.RequiredLastModifiedProperty)
             {
                 return;
             }
-            var extendedValidator = e.Validator as IValidatorExtended;
+            var extendedValidator = e.Validator as IValidatorModifier;
             if (extendedValidator == null)
             {
                 throw new PowerArhitectureException($"Entity validator for model {e.ModelType} must inherit from a Validator<>");

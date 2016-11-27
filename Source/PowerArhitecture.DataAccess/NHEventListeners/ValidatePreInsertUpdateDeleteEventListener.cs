@@ -63,14 +63,13 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         private class ValidationInfo
         {
             public ValidationInfo(IValidator validator, IEntity model, Type modelType, 
-                bool root, string[] ruleSets, object contextDataFiller)
+                bool root, string[] ruleSets)
             {
                 Validator = validator;
                 RuleSets = ruleSets;
                 Model = model;
                 ModelType = modelType;
                 Root = root;
-                ContextDataFiller = contextDataFiller;
             }
 
             public IValidator Validator { get; }
@@ -82,8 +81,6 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             public bool Root { get; }
 
             public string[] RuleSets { get; }
-
-            public object ContextDataFiller { get; }
 
             public ValidationInfo Next { get; set; }
 
@@ -117,12 +114,12 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 try
                 {
                     var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
-                    valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
-                    {
-                        {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
-                        {ValidationContextExtensions.AutoValidationKey, true}
-                    });
-                    
+                        valInfo.RuleSets, new Dictionary<string, object>
+                        {
+                            {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
+                            {ValidationContextExtensions.AutoValidationKey, true}
+                        });
+
                     if (!validationResult.IsValid)
                     {
                         Clear(session);
@@ -159,11 +156,11 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 try
                 {
                     var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
-                    valInfo.RuleSets, valInfo.ContextDataFiller, new Dictionary<string, object>
-                    {
-                        {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
-                        {ValidationContextExtensions.AutoValidationKey, true}
-                    });
+                        valInfo.RuleSets, new Dictionary<string, object>
+                        {
+                            {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
+                            {ValidationContextExtensions.AutoValidationKey, true}
+                        });
                     if (!validationResult.IsValid)
                     {
                         Clear(session);
@@ -316,7 +313,6 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             var type = entity.GetTypeUnproxied();
             var validator = (IValidator)_container.GetInstance(typeof(IValidator<>).MakeGenericType(type));
             //var validatorEx = validator as IValidatorExtended;
-            object contextFiller = null;
 
             //if (validatorEx != null && !validatorEx.CanValidateWithoutContextFiller && validatorEx.HasValidationContextFiller)
             //{
@@ -324,14 +320,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             //        $"Entity of type '{type}' cannot be auto validated as ISession is not managed and a IValidationContextFiller<> is required. " +
             //        "Hint: use a managed ISession or remove IAutoValidate from the type or set CanValidateWithoutContextFiller on the type validator to false");
             //}
-
-            var info = Database.GetSessionFactoryInfo(session);
-            if (info != null)
-            {
-                contextFiller = _container.TryGetInstance(typeof(IValidationContextFiller<>).MakeGenericType(type));
-            }
-
-            var newValInfo = new ValidationInfo(validator, entity, type, root, ruleSets, contextFiller);
+            var newValInfo = new ValidationInfo(validator, entity, type, root, ruleSets);
             if (valInfo == null)
             {
                 return newValInfo;

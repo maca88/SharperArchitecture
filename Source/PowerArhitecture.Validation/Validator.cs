@@ -11,8 +11,10 @@ using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
 using FluentValidation.Validators;
-using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.Specifications;
+using PowerArhitecture.Validation.Events;
 using PowerArhitecture.Validation.Specifications;
+using SimpleInjector;
 
 namespace PowerArhitecture.Validation
 {
@@ -20,56 +22,11 @@ namespace PowerArhitecture.Validation
     /// The default validator if a custom one is not defined. This validator validates validation attributes
     /// </summary>
     /// <typeparam name="TModel"></typeparam>
-    public class Validator<TModel> : AbstractValidator<TModel>, IValidatorExtended
+    public class Validator<TModel> : AbstractValidator<TModel>, IValidatorModifier
     {
         public Validator()
         {
             AddAttributeValidation();
-        }
-
-        public bool HasValidationContextFiller { get; internal set; }
-
-        public virtual bool CanValidateWithoutContextFiller => false;
-
-        public override ValidationResult Validate(ValidationContext<TModel> context)
-        {
-            if (HasValidationContextFiller && !context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFilledKey))
-            {
-                if (context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFillerKey))
-                {
-                    var ctxFiller = context.RootContextData[ValidatorExtensions.DataContextFillerKey] as IValidationContextFiller<TModel>;
-                    ctxFiller?.FillContextData(context.InstanceToValidate, context.RootContextData);
-                }
-                else if (!CanValidateWithoutContextFiller)
-                {
-                    throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
-                                                        "Hint: override property CanValidateWithoutContextFiller or pass a context filler upon validation");
-                }
-                context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
-            }
-            return base.Validate(context);
-        }
-
-        public override async Task<ValidationResult> ValidateAsync(ValidationContext<TModel> context, CancellationToken cancellation = new CancellationToken())
-        {
-            if (HasValidationContextFiller && !context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFilledKey))
-            {
-                if (context.RootContextData.ContainsKey(ValidatorExtensions.DataContextFillerKey))
-                {
-                    var ctxFiller = context.RootContextData[ValidatorExtensions.DataContextFillerKey] as IValidationContextFiller<TModel>;
-                    if (ctxFiller != null)
-                    {
-                        await ctxFiller.FillContextDataAsync(context.InstanceToValidate, context.RootContextData);
-                    }
-                }
-                else if (!CanValidateWithoutContextFiller)
-                {
-                    throw new PowerArhitectureException($"Forbidden to validate model of type '{typeof(TModel).FullName}' without a validation context filler. " +
-                                                        "Hint: override property CanValidateWithoutContextFiller or pass a context filler upon validation");
-                }
-                context.RootContextData[ValidatorExtensions.DataContextFilledKey] = true;
-            }
-            return await base.ValidateAsync(context, cancellation);
         }
 
         protected ValidationFailure Failure(Expression<Func<TModel, object>> propertyExp, string errorMsg)

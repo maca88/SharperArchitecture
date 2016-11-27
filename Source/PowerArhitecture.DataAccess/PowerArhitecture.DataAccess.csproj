@@ -88,8 +88,8 @@
     <Compile Include="Attributes\IsolationLevelAttribute.cs" />
     <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
     <Compile Include="Attributes\RepositoryAttribute.cs" />
-    <Compile Include="Attributes\DatabaseAttribute.cs" />
     <Compile Include="Comparers\EntityEqualComparer.cs" />
+    <Compile Include="Comparers\TypeInheritanceComparer.cs" />
     <Compile Include="Configurations\ConventionsConfiguration.cs" />
     <Compile Include="Configurations\DatabaseConfigurationKeys.cs" />
     <Compile Include="Configurations\DatabaseConfiguration.cs" />
@@ -173,6 +173,8 @@
     <Compile Include="Specifications\IFluentAutoMappingConfiguration.cs" />
     <Compile Include="Specifications\IFluentDatabaseConfiguration.cs" />
     <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
+    <Compile Include="Specifications\ISessionFactoryProvider.cs" />
+    <Compile Include="Specifications\ISessionProvider.cs" />
     <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
     <Compile Include="Visitors\NHibernateMappingVisitor.cs" />
     <Compile Include="Decorators\CustomAutoPersistenceModel.cs" />

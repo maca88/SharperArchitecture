@@ -47,7 +47,7 @@ namespace PowerArhitecture.Tests.Notifications
             var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
             var listener = Container.GetInstance<NotificationHandler>();
             listener.Reset();
-            using (var unitOfWork = unitOfWorkFactory.GetNew())
+            using (var unitOfWork = unitOfWorkFactory.Create())
             {
                 try
                 {
@@ -89,7 +89,7 @@ namespace PowerArhitecture.Tests.Notifications
             var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
             var listener = Container.GetInstance<NotificationHandler>();
             listener.Reset();
-            using (var unitOfWork = unitOfWorkFactory.GetNew())
+            using (var unitOfWork = unitOfWorkFactory.Create())
             {
                 try
                 {

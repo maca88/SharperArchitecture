@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractBusinessRule.cs" />
     <Compile Include="Attributes\ComparisonAttribute.cs" />
     <Compile Include="Attributes\CreditCardAttribute.cs" />
     <Compile Include="Attributes\EmailAttribute.cs" />
@@ -70,25 +71,24 @@
     <Compile Include="Attributes\NotNullAttribute.cs" />
     <Compile Include="Attributes\RegularExpressionAttribute.cs" />
     <Compile Include="Attributes\ValidationAttribute.cs" />
-    <Compile Include="BaseValidationContextFiller.cs" />
     <Compile Include="CustomRulesetValidatorSelector.cs" />
+    <Compile Include="Internal\BusinessRuleValidator.cs" />
+    <Compile Include="Internal\ValidatorDecorator.cs" />
     <Compile Include="Events\ValidatorCreatedEvent.cs" />
     <Compile Include="ExtendedValidationException.cs" />
     <Compile Include="Package.cs" />
-    <Compile Include="Specifications\IValidatorExtended.cs" />
+    <Compile Include="Specifications\IBusinessRule.cs" />
+    <Compile Include="Specifications\IValidatorModifier.cs" />
     <Compile Include="Validator.cs" />
     <Compile Include="CompositeValidatorRule.cs" />
-    <Compile Include="Extensions\IPropertyValidatorExtensions.cs" />
+    <Compile Include="Extensions\PropertyValidatorExtensions.cs" />
     <Compile Include="Extensions\PropertyRuleExtensions.cs" />
-    <Compile Include="Extensions\IRuleBuilderExtensions.cs" />
-    <Compile Include="Extensions\IRuleBuilderOptionsExtensions.cs" />
+    <Compile Include="Extensions\RuleBuilderOptionsExtensions.cs" />
     <Compile Include="Extensions\ValidatorExtensions.cs" />
-    <Compile Include="Factories\ValidatorFactory.cs" />
+    <Compile Include="Internal\ValidatorFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Specifications\IValidationContextFiller.cs" />
     <Compile Include="UniqueListValidator.cs" />
     <Compile Include="ValidationRuleSet.cs" />
-    <Compile Include="FluentValidators.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

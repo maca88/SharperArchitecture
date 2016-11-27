@@ -12,11 +12,10 @@ using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.DataAccess.Specifications;
 using SimpleInjector;
-using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.DataAccess.Providers
 {
-    internal class SessionFactoryProvider
+    internal class SessionFactoryProvider : ISessionFactoryProvider
     {
         private readonly IEventPublisher _eventPublisher;
         private readonly Container _container;
@@ -33,6 +32,12 @@ namespace PowerArhitecture.DataAccess.Providers
             var sessionFactory = Database.CreateSessionFactory(_eventPublisher, dbConfiguration);
             _eventPublisher.Publish(new SessionFactoryCreatedEvent(sessionFactory));
             return sessionFactory;
+        }
+
+        public ISessionFactory Get(string dbConfigName = null)
+        {
+            dbConfigName = dbConfigName ?? DatabaseConfiguration.DefaultName;
+            return _container.GetDatabaseService<ISessionFactory>(dbConfigName);
         }
     }
 }

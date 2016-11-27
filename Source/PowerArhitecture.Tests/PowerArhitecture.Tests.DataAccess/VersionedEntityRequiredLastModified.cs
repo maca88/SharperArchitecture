@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityMustHaveRequiredLastModified()
         {
-            var validator = Container.GetInstance<Validator<VersionCar>>();
+            var validator = /*(Validator<VersionCar>)*/Container.GetInstance<IValidator<VersionCar>>() as IEnumerable;
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")
@@ -64,7 +65,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void SaveVersionEntity()
         {
             var car = new VersionCar { Model = "BMW" };
-            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().GetNew())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {
@@ -158,7 +159,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityWithStringUserMustHaveRequiredLastModified()
         {
-            var validator = Container.GetInstance<Validator<VersionCarWithStringUser>>();
+            var validator = Container.GetInstance<IValidator<VersionCarWithStringUser>>() as IEnumerable;
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")
@@ -302,7 +303,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void ValidatorForVersionEntityWithEntityUserMustHaveRequiredLastModified()
         {
-            var validator = Container.GetInstance<Validator<VersionCarWithEntityUser>>();
+            var validator = Container.GetInstance<IValidator<VersionCarWithEntityUser>>() as IEnumerable;
 
             var lastModifiedDateRules = validator.OfType<PropertyRule>()
                 .Where(o => o.PropertyName == "LastModifiedDate")

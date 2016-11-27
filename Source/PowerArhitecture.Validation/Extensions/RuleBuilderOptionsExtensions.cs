@@ -9,7 +9,7 @@ using FluentValidation.Resources;
 
 namespace PowerArhitecture.Validation.Extensions
 {
-    public static class IRuleBuilderOptionsExtensions
+    public static class RuleBuilderOptionsExtensions
     {
         /// <summary>
         /// Use this extension when using a FluentValidation built-in validator 

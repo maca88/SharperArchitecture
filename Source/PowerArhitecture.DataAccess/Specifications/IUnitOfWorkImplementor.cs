@@ -26,11 +26,6 @@ namespace PowerArhitecture.DataAccess.Specifications
         /// </summary>
         bool ContainsSession(string dbConfigName);
 
-        /// <summary>
-        /// Use this if you want instantiate a class that has a Repository or Session as dependency
-        /// </summary>
-        IInstanceProvider ResolutionRoot { get; }
-
         IEnumerable<ISession> GetActiveSessions();
     }
 }

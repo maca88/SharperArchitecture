@@ -20,7 +20,7 @@ namespace PowerArhitecture.DataAccess.Factories
             _container = container;
         }
 
-        public IUnitOfWork GetNew(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+        public IUnitOfWork Create(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
             var unitOfWork = _container.GetInstance<UnitOfWork>();
             unitOfWork.IsolationLevel = isolationLevel;

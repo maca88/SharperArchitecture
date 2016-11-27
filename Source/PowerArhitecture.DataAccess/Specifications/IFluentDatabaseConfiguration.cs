@@ -27,6 +27,7 @@ namespace PowerArhitecture.DataAccess.Specifications
         IFluentDatabaseConfiguration Conventions(Action<IFluentConventionsConfiguration> action);
         IFluentDatabaseConfiguration FluentNHibernate(Action<FluentConfiguration> action);
         IFluentDatabaseConfiguration ConfigurationCompletedAction(Action<Configuration> action);
+        IFluentDatabaseConfiguration RegisterRepository(Type interfaceType, Type concreteType);
         DatabaseConfiguration Build();
     }
 }

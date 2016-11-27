@@ -18,7 +18,6 @@ namespace PowerArhitecture.Validation
             : base("{SubProperty} must be unique")
         {
             _propertyExpr = propertyExpr;
-
         }
 
         public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context)
@@ -29,17 +28,15 @@ namespace PowerArhitecture.Validation
             context.MessageFormatter.AppendArgument("SubProperty", propName);
 
             var currentItems = new HashSet<object>();
-            var duplicates = new List<object>();
             var result = new List<ValidationFailure>();
             var idx = 0;
             foreach (var field in fields)
             {
-                if(propInfo == null)
+                if (propInfo == null)
                     propInfo = field.GetPropertyInfo(_propertyExpr);
                 var val = propInfo.GetValue(field);
                 if (currentItems.Contains(val))
                 {
-                    duplicates.Add(val);
                     var propertyChain = new PropertyChain();
                     propertyChain.Add(context.PropertyName);
                     propertyChain.AddIndexer(idx);
@@ -57,7 +54,7 @@ namespace PowerArhitecture.Validation
 
         protected override bool IsValid(PropertyValidatorContext context)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

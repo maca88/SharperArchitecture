@@ -139,7 +139,7 @@ namespace PowerArhitecture.Reporting
 
         public ReportResult CreateReport<TItem>(ReportParameters<TItem> parameters) where TItem : class
         {
-            var report = _resolutionRoot.GetInstance<IReport>(parameters.ReportType);
+            var report = _resolutionRoot.GetInstance<IReport>(/*parameters.ReportType*/);
             parameters.Settings = parameters.Settings ?? _settingsProvider.GetSettings(parameters.ReportType);
             var reportData = report.Create(parameters);
             return new ReportResult

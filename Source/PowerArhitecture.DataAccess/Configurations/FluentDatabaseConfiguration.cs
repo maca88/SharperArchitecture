@@ -33,6 +33,36 @@ namespace PowerArhitecture.DataAccess.Configurations
             return this;
         }
 
+        public IFluentDatabaseConfiguration RegisterRepository(Type interfaceType, Type concreteType)
+        {
+            if (Name == DatabaseConfiguration.DefaultName)
+            {
+                throw new NotSupportedException("Registering a custom repository for the default database configuration is not supported.");
+            }
+            if (!interfaceType.IsInterface || !interfaceType.IsGenericType || !interfaceType.IsAssignableToGenericType(typeof(IRepository<,>)))
+            {
+                throw new ArgumentException("Type must be an open generic interface that derives from IRepository<,>", nameof(interfaceType));
+            }
+            if (!concreteType.IsClass || !concreteType.IsGenericType || !concreteType.IsAssignableToGenericType(typeof(Repository<,>)))
+            {
+                throw new ArgumentException("Type must be an open generic class that derives from Repository<,>", nameof(concreteType));
+            }
+            if (!concreteType.IsAssignableToGenericType(interfaceType))
+            {
+                throw new ArgumentException($"{nameof(interfaceType)} must be assignable from {nameof(concreteType)}");
+            }
+            foreach (var key in _configuration.RepositoryTypes.Keys)
+            {
+                if (!key.IsAssignableToGenericType(interfaceType) &&
+                    !interfaceType.IsAssignableToGenericType(key))
+                {
+                    throw new ArgumentException("Type must be assignable to previous registered repositories", nameof(interfaceType));
+                }
+            }
+            _configuration.RepositoryTypes[interfaceType] = concreteType;
+            return this;
+        }
+
         public IFluentDatabaseConfiguration RecreateAtStartup(bool value = true)
         {
             _configuration.RecreateAtStartup = value;

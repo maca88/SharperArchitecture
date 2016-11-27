@@ -53,9 +53,9 @@ namespace PowerArhitecture.Tests.Common
 
         protected virtual void Configure()
         {
+            AppConfiguration.SetGetDomainAssembliesFunction(() => TestAssemblies);
             Container = CreateContainer();
             ConfigureContainer(Container);
-            AppConfiguration.SetGetDomainAssembliesFunction(() => TestAssemblies);
             Container.RegisterPackages(TestAssemblies);
             Container.Verify();
             /*

@@ -46,7 +46,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void SessionWithinUnitOfWork()
         {
             var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
-            using (var unitOfWork = unitOfWorkFactory.GetNew().GetUnitOfWorkImplementation())
+            using (var unitOfWork = unitOfWorkFactory.Create().GetUnitOfWorkImplementation())
             {  
                 var repo1 = unitOfWork.GetRepository<AttrIndexAttribute>();
                 var repo2 = unitOfWork.GetRepository<AttrLazyLoad>();
@@ -57,7 +57,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 Assert.AreEqual(typeof(AttrLazyLoadRepository), repo2.GetType());
                 Assert.AreEqual(typeof(AttrLazyLoadRepository), repo3.GetType());
                 Assert.AreEqual(typeof(AttrLazyLoadRepository), repo4.GetType());
-                var session = unitOfWork.ResolutionRoot.Get<ISession>();
+                var session = Container.GetInstance<ISession>();
 
                 Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
                 Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
@@ -122,7 +122,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
                     var repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
                     var repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
-                    var session = unitOfWork.ResolutionRoot.Get<ISession>();
+                    var session = Container.GetInstance<ISession>();
 
                     Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
                     Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
@@ -134,7 +134,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
                     repo1 = (Repository<AttrIndexAttribute, long>) unitOfWork.GetRepository<AttrIndexAttribute>();
                     repo2 = (Repository<AttrLazyLoad, long>) unitOfWork.GetRepository<AttrLazyLoad>();
-                    session = unitOfWork.ResolutionRoot.Get<ISession>();
+                    session = Container.GetInstance<ISession>();
 
                     Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
                     Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
@@ -162,7 +162,7 @@ namespace PowerArhitecture.Tests.DataAccess
                 Assert.AreEqual(outerSession, outerRepo3.GetSession());
 
                 var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
-                using (var unitOfWork = unitOfWorkFactory.GetNew().GetUnitOfWorkImplementation())
+                using (var unitOfWork = unitOfWorkFactory.Create().GetUnitOfWorkImplementation())
                 {
                     var repo1 = unitOfWork.GetRepository<AttrIndexAttribute>();
                     var repo2 = unitOfWork.GetRepository<AttrLazyLoad>();
@@ -171,7 +171,7 @@ namespace PowerArhitecture.Tests.DataAccess
                     Assert.AreEqual(typeof(Repository<AttrIndexAttribute>), repo1.GetType());
                     Assert.AreEqual(typeof(AttrLazyLoadRepository), repo2.GetType());
                     Assert.AreEqual(typeof(AttrLazyLoadRepository), repo3.GetType());
-                    var session = unitOfWork.ResolutionRoot.Get<ISession>();
+                    var session = Container.GetInstance<ISession>();
 
                     Assert.AreEqual(unitOfWork.DefaultSession, repo1.GetSession());
                     Assert.AreEqual(unitOfWork.DefaultSession, repo2.GetSession());
@@ -184,7 +184,7 @@ namespace PowerArhitecture.Tests.DataAccess
         }
 
         [Test]
-        public void RepositoriesWithinSameScopeMustBeTheDifferentButShareSameSession()
+        public void RepositoriesWithinSameScopeMustBeEqual()
         {
             using (Container.BeginExecutionContextScope())
             {
@@ -193,12 +193,12 @@ namespace PowerArhitecture.Tests.DataAccess
                 var repo2 = (Repository<AttrLazyLoad, long>)Container.GetInstance<IRepository<AttrLazyLoad, long>>();
                 var repo3 = Container.GetInstance<IAttrLazyLoadRepository>();
                 var repo4 = Container.GetInstance<IAttrLazyLoadRepository>();
-                var repo5 = Container.GetInstance<Repository<AttrLazyLoad, long>>();
+                var repo5 = Container.GetInstance<IRepository<AttrLazyLoad, long>>();
 
                 Assert.AreNotEqual(repo1, repo2);
-                Assert.AreNotEqual(repo2, repo3);
-                Assert.AreNotEqual(repo3, repo4);
-                Assert.AreNotEqual(repo4, repo5);
+                Assert.AreEqual(repo2, repo3);
+                Assert.AreEqual(repo3, repo4);
+                Assert.AreEqual(repo2, repo5);
                 Assert.AreEqual(session, repo1.GetSession());
                 Assert.AreEqual(session, repo2.GetSession());
                 Assert.AreEqual(session, repo3.GetSession());
@@ -256,13 +256,13 @@ namespace PowerArhitecture.Tests.DataAccess
             using (Container.BeginExecutionContextScope())
             {
                 var session = Container.GetInstance<ISession>();
-                var filler = Container.GetInstance<IValidationContextFiller<ValidableEntity>>() as ValidableEntityValidationContextFiller;
+                var filler = Container.GetAllInstances<IBusinessRule<ValidableEntity>>().First() as ValidableEntityBusinessRule;
                 Assert.NotNull(filler);
                 Assert.AreEqual(session, filler.Session);
 
                 using (Container.BeginExecutionContextScope())
                 {
-                    var filler2 = Container.GetInstance(typeof(IValidationContextFiller<ValidableEntity>)) as ValidableEntityValidationContextFiller;
+                    var filler2 = Container.GetAllInstances(typeof(IBusinessRule<ValidableEntity>)).First() as ValidableEntityBusinessRule;
                     var session2 = Container.GetInstance<ISession>();
                     Assert.NotNull(filler2);
                     Assert.AreNotEqual(session, filler2.Session);

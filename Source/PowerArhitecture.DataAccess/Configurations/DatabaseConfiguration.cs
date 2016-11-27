@@ -15,7 +15,7 @@ namespace PowerArhitecture.DataAccess.Configurations
     {
         public const string DefaultName = "default";
 
-        public DatabaseConfiguration(Configuration configuration, string name = null)
+        internal DatabaseConfiguration(Configuration configuration, string name = null)
         {
             Name = name ?? DefaultName;
             Conventions = new ConventionsConfiguration();
@@ -40,6 +40,7 @@ namespace PowerArhitecture.DataAccess.Configurations
         public virtual Action<FluentConfiguration> FluentConfigurationAction { get; internal set; }
         public virtual Action<Configuration> ConfigurationCompletedAction { get; internal set; }
         public virtual Action<IFluentAutoMappingConfiguration> AutoMappingConfigurationAction { get; internal set; }
+        internal virtual Dictionary<Type, Type> RepositoryTypes { get; } = new Dictionary<Type, Type>();
 
         private void FillFromConfig()
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.IO;
@@ -35,18 +36,29 @@ using PowerArhitecture.DataAccess.Decorators;
 
 namespace PowerArhitecture.DataAccess
 {
-    public class Database
+    public static class Database
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Database));
-        internal static readonly ConcurrentDictionary<string, DatabaseConfiguration> RegisteredDatabaseConfigurations = 
+        private static readonly ConcurrentDictionary<string, DatabaseConfiguration> RegisteredDatabaseConfigurations = 
             new ConcurrentDictionary<string, DatabaseConfiguration>();
         private static readonly ConcurrentDictionary<ISessionFactory, SessionFactoryInfo> SessionFactories = 
             new ConcurrentDictionary<ISessionFactory, SessionFactoryInfo>();
         private static readonly ConcurrentDictionary<Type, IReadOnlyCollection<DatabaseConfiguration>>
             CachedConfigurationsForModels = new ConcurrentDictionary<Type, IReadOnlyCollection<DatabaseConfiguration>>();
-        private static IEventPublisher _eventPublisher;
+        private static readonly Lazy<List<Assembly>> StepAssemblies;
 
-        static Database(){}
+        static Database()
+        {
+            StepAssemblies = new Lazy<List<Assembly>>(() =>
+            {
+                return AppConfiguration.GetDomainAssemblies()
+                    .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
+                    .Where(assembly => assembly != Assembly.GetExecutingAssembly())
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof(IAutomappingStep).IsAssignableFrom(o)))
+                    .ToList();
+            });
+
+        }
 
         #region Public members
 
@@ -68,11 +80,7 @@ namespace PowerArhitecture.DataAccess
                     .ToList();
 
             var automappingConfiguration = dbConfiguration.AutoMappingConfiguration;
-            automappingConfiguration.AddStepAssemblies(AppConfiguration.GetDomainAssemblies()
-                    .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
-                    .Where(assembly => assembly != Assembly.GetExecutingAssembly())
-                    .Where(assembly => assembly.GetTypes().Any(o => typeof(IAutomappingStep).IsAssignableFrom(o)))
-                    .ToList());
+            automappingConfiguration.AddStepAssemblies(StepAssemblies.Value);
 
             var hbmMappingsPath = dbConfiguration.HbmMappingsPath;
             if (!string.IsNullOrEmpty(hbmMappingsPath) && hbmMappingsPath.StartsWith("."))
@@ -80,7 +88,6 @@ namespace PowerArhitecture.DataAccess
 
             try
             {
-                _eventPublisher = eventPublisher;
                 var fluentConfig = Fluently.Configure(cfg);
                 dbConfiguration.FluentConfigurationAction?.Invoke(fluentConfig);
                 var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
@@ -102,7 +109,7 @@ namespace PowerArhitecture.DataAccess
                             configuration.SetInterceptor(new NhibernateInterceptor());
                         }
 
-                        _eventPublisher?.Publish(new NhConfigurationEvent(configuration));
+                        eventPublisher?.Publish(new NhConfigurationEvent(configuration));
                         dbConfiguration.ConfigurationCompletedAction?.Invoke(configuration);
 
                         RecreateOrUpdateSchema(autoPestModel, configuration, dbConfiguration);
@@ -150,17 +157,6 @@ namespace PowerArhitecture.DataAccess
             return RegisteredDatabaseConfigurations.ContainsKey(name);
         }
 
-        public static bool RemoveSessionFactory(ISessionFactory sessionFactory)
-        {
-            SessionFactoryInfo info;
-            if (!SessionFactories.TryRemove(sessionFactory, out info))
-            {
-                return false;
-            }
-            sessionFactory.Dispose();
-            return true;
-        }
-
         public static void DropTables(ISessionFactory sessionFactory)
         {
             if(!SessionFactories.ContainsKey(sessionFactory))
@@ -202,11 +198,12 @@ namespace PowerArhitecture.DataAccess
                 return result;
             }
             var list = new List<DatabaseConfiguration>();
-            foreach (var info in SessionFactories.Values)
+
+            foreach (var dbConfig in RegisteredDatabaseConfigurations.Values.Where(o => o.EntityAssemblies.Contains(modelType.Assembly)))
             {
-                if (info.Configuration.ClassMappings.Any(o => o.MappedClass == modelType))
+                if (dbConfig.AutoMappingConfiguration.ShouldMap(modelType))
                 {
-                    list.Add(info.DatabaseConfiguration);
+                    list.Add(dbConfig);
                 }
             }
             result = list.AsReadOnly();
@@ -216,12 +213,40 @@ namespace PowerArhitecture.DataAccess
 
         #endregion
 
+        internal static void Cleanup(bool dropTables = true)
+        {
+            foreach (var sessionFactory in SessionFactories.Keys)
+            {
+                if (dropTables)
+                {
+                    DropTables(sessionFactory);
+                }
+                sessionFactory.Dispose();
+            }
+            CachedConfigurationsForModels.Clear();
+            SessionFactories.Clear();
+        }
+
         internal static SessionFactoryInfo GetSessionFactoryInfo(ISessionFactory sessionFactory)
         {
             SessionFactoryInfo info;
             return SessionFactories.TryGetValue(sessionFactory, out info)
                 ? info
                 : null;
+        }
+
+        internal static void RegisteredDatabaseConfiguration(DatabaseConfiguration dbConfiguration)
+        {
+            if (CachedConfigurationsForModels.Any())
+            {
+                throw new PowerArhitectureException("Cannot register a database configuration after GetDatabaseConfigurationsForModel is called");
+            }
+            RegisteredDatabaseConfigurations.AddOrUpdate(dbConfiguration.Name, dbConfiguration, (k, v) => dbConfiguration);
+        }
+
+        internal static IReadOnlyCollection<DatabaseConfiguration> GetRegisteredDatabaseConfigurations()
+        {
+            return new ReadOnlyCollection<DatabaseConfiguration>(RegisteredDatabaseConfigurations.Values.ToList());
         }
 
         private static void RegisterSessionFactory(ISessionFactory sessionFactory, Configuration configuration, AutoPersistenceModel autoPersistenceModel, 
