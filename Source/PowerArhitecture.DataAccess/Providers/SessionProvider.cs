@@ -10,6 +10,7 @@ using NHibernate.Event;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Configurations;
 using PowerArhitecture.DataAccess.Decorators;
+using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Events;
 using SimpleInjector;
 using PowerArhitecture.DataAccess.Extensions;
@@ -34,13 +35,12 @@ namespace PowerArhitecture.DataAccess.Providers
         public ISession Create(string name)
         {
             var sessionFactory = _container.GetDatabaseService<ISessionFactory>(name);
-            // TODO: create a webapi integration package
             return new SessionDecorator(new Lazy<IEventSource>(() =>
             {
                 var eventSource = (IEventSource) sessionFactory.OpenSession();
                 RegisteredSessionIds.Add(eventSource.SessionId);
-
-                _eventPublisher.Publish(new SessionCreatedEvent(eventSource));
+                eventSource.Transaction.RegisterSynchronization(new TransactionEventListener(eventSource.Unwrap(), _eventPublisher));
+                _eventPublisher.Publish(new SessionCreatedEvent(eventSource, name));
                 return eventSource;
             }), _eventPublisher, name);
         }

@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Transactions;
 using PowerArhitecture.DataAccess.Specifications;
@@ -12,7 +11,6 @@ using NHibernate.Linq;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Configurations;
-using PowerArhitecture.DataAccess.EventListeners;
 using PowerArhitecture.DataAccess.Extensions;
 using SimpleInjector;
 using SimpleInjector.Extensions.ExecutionContextScoping;
@@ -27,15 +25,15 @@ namespace PowerArhitecture.DataAccess
         private TransactionScope _transactionScope;
         private readonly ILogger _logger;
         private readonly Container _container;
-        private readonly IEventPublisher _eventPublisher;
         private readonly ConcurrentDictionary<string, ISession> _sessions = new ConcurrentDictionary<string, ISession>();
 
-        public UnitOfWork(ILogger logger, IEventPublisher eventPublisher, Container container)
+        public UnitOfWork(ILogger logger, Container container)
         {
             _logger = logger;
             _container = container;
-            _eventPublisher = eventPublisher;
         }
+
+        internal const string ScopeKey = "UnitOfWorkScope";
 
         public IsolationLevel IsolationLevel { get; internal set; } = IsolationLevel.Unspecified;
 
@@ -240,7 +238,6 @@ namespace PowerArhitecture.DataAccess
             {
                 var session = _container.GetDatabaseService<ISession>(dbConfigName);
                 session.BeginTransaction(IsolationLevel);
-                session.Transaction.RegisterSynchronization(new TransactionEventListener(session.Unwrap(), _eventPublisher));
                 return session;
             });
         }
@@ -256,6 +253,7 @@ namespace PowerArhitecture.DataAccess
             }
             _intialized = true;
             _scope = _container.BeginExecutionContextScope();
+            _scope.SetItem(ScopeKey, true);
             if (Database.MultipleDatabases)
             {
                 _transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);

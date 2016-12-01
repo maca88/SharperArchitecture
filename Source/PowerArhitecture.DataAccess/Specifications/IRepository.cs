@@ -55,7 +55,5 @@ namespace PowerArhitecture.DataAccess.Specifications
         void Delete(TId id);
 
         Task DeleteAsync(TId id);
-
-        IEnumerable<PropertyInfo> GetMappedProperties();
     }
 }

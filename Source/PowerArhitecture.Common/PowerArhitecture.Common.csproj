@@ -49,8 +49,8 @@
       <HintPath>..\packages\SecondLanguage.1.0.2.1\lib\net35\SecondLanguage.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.2.7.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.2.7\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.3.1.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.3.1\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -90,7 +90,6 @@
     <Compile Include="SimpleInjector\IPackage.cs" />
     <Compile Include="SimpleInjector\PackageExtensions.cs" />
     <Compile Include="SimpleInjector\KeyedRegistration.cs" />
-    <Compile Include="SimpleInjector\InstanceProvider.cs" />
     <Compile Include="Specifications\ICommand.cs" />
     <Compile Include="Specifications\ICommandDispatcher.cs" />
     <Compile Include="Specifications\ICommandHandler.cs" />
@@ -131,7 +130,6 @@
     <Compile Include="Specifications\IMultipleContractResolver.cs" />
     <Compile Include="Specifications\ICryptography.cs" />
     <Compile Include="Specifications\IEventHandler.cs" />
-    <Compile Include="Specifications\IInstanceProvider.cs" />
     <Compile Include="Specifications\ITask.cs" />
     <Compile Include="Writers\StringWriterWithEncoding.cs" />
   </ItemGroup>

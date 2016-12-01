@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using PowerArhitecture.Validation.Specifications;
 using FluentValidation;
-using PowerArhitecture.Common.Specifications;
+using SimpleInjector;
 
-namespace PowerArhitecture.Validation.Factories
+namespace PowerArhitecture.Validation.Internal
 {
     /// <summary>
     /// Validation factory that uses an instance provider to create validators  
@@ -15,17 +12,17 @@ namespace PowerArhitecture.Validation.Factories
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidatorFactory"/> class.
         /// </summary>
-        /// <param name="instanceProvider">The instanceProvider.</param>
-        public ValidatorFactory(IInstanceProvider instanceProvider)
+        /// <param name="container">The IoC container.</param>
+        public ValidatorFactory(Container container)
         {
-            InstanceProvider = instanceProvider;
+            Container = container;
         }
 
         /// <summary>
-        /// Gets or sets the InstanceProvider.
+        /// Gets or sets the IoC Container.
         /// </summary>
-        /// <value>The kernel.</value>
-        public IInstanceProvider InstanceProvider { get; set; }
+        /// <value>The IoC container.</value>
+        public Container Container { get; set; }
 
         /// <summary>
         /// Creates an instance of a validator with the given type using ninject.
@@ -34,7 +31,7 @@ namespace PowerArhitecture.Validation.Factories
         /// <returns>The newly created validator</returns>
         public override IValidator CreateInstance(Type validatorType)
         {
-            return InstanceProvider.Get(validatorType) as IValidator;
+            return Container.GetInstance(validatorType) as IValidator;
         }
     }
 }

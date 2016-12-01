@@ -10,10 +10,13 @@ namespace PowerArhitecture.DataAccess.Events
 {
     public class SessionCreatedEvent : IEvent
     {
-        public SessionCreatedEvent(ISession session)
+        public SessionCreatedEvent(ISession session, string dbConfigName)
         {
             Session = session;
+            DatabaseConfigurationName = dbConfigName;
         }
+
+        public string DatabaseConfigurationName { get; }
 
         public ISession Session { get; }
     }

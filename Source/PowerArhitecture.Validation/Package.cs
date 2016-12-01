@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using FluentValidation;
 using PowerArhitecture.Common.Configuration;
-using PowerArhitecture.Validation.Factories;
 using PowerArhitecture.Validation.Internal;
 using PowerArhitecture.Validation.Specifications;
 using SimpleInjector;

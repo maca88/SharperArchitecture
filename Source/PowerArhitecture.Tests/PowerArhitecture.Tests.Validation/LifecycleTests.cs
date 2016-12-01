@@ -14,7 +14,6 @@ using NUnit.Framework;
 using PowerArhitecture.Tests.Common;
 using PowerArhitecture.Tests.Validation.Models;
 using PowerArhitecture.Validation;
-using PowerArhitecture.Validation.Factories;
 using PowerArhitecture.Validation.Internal;
 using PowerArhitecture.Validation.Specifications;
 using SimpleInjector;

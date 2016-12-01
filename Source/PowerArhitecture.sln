@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{4B80128B-4613-44DC-B01B-64CCB7965734}"
 EndProject
@@ -48,6 +48,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArhitecture.Tests.CodeList", "PowerArhitecture.Tests\PowerArhitecture.Tests.CodeList\PowerArhitecture.Tests.CodeList.csproj", "{A5F74C36-45EC-4A98-84AE-A384186331C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArhitecture.Tests.Notifications", "PowerArhitecture.Tests\PowerArhitecture.Tests.Notifications\PowerArhitecture.Tests.Notifications.csproj", "{5C31B3AE-4071-4855-8FFC-656E26108BB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArhitecture.WebApi", "PowerArhitecture.WebApi\PowerArhitecture.WebApi.csproj", "{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArhitecture.Tests.WebApi", "PowerArhitecture.Tests\PowerArhitecture.Tests.WebApi\PowerArhitecture.Tests.WebApi.csproj", "{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArhitecture.Tests.WebApi.Server", "PowerArhitecture.Tests\PowerArhitecture.Tests.WebApi.Server\PowerArhitecture.Tests.WebApi.Server.csproj", "{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +158,24 @@ Global
 		{5C31B3AE-4071-4855-8FFC-656E26108BB9}.OData-debug|Any CPU.Build.0 = Release|Any CPU
 		{5C31B3AE-4071-4855-8FFC-656E26108BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C31B3AE-4071-4855-8FFC-656E26108BB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.OData-debug|Any CPU.ActiveCfg = Release|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.OData-debug|Any CPU.Build.0 = Release|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.OData-debug|Any CPU.ActiveCfg = Release|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.OData-debug|Any CPU.Build.0 = Release|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.OData-debug|Any CPU.ActiveCfg = Release|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.OData-debug|Any CPU.Build.0 = Release|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -173,5 +197,8 @@ Global
 		{C5E29A7B-EF0F-4BDD-B516-4CD7D351EBB7} = {4B80128B-4613-44DC-B01B-64CCB7965734}
 		{A5F74C36-45EC-4A98-84AE-A384186331C9} = {B4167F7F-6E9B-4E22-A654-EC616490670B}
 		{5C31B3AE-4071-4855-8FFC-656E26108BB9} = {B4167F7F-6E9B-4E22-A654-EC616490670B}
+		{FAF62C11-2B7E-4D9F-BCA9-02BAFE4239C8} = {4B80128B-4613-44DC-B01B-64CCB7965734}
+		{46824DC4-7E1B-4359-9BFA-394F9FF29E6E} = {B4167F7F-6E9B-4E22-A654-EC616490670B}
+		{DCC293EA-6B91-492A-B82B-E8A762FCD6AF} = {B4167F7F-6E9B-4E22-A654-EC616490670B}
 	EndGlobalSection
 EndGlobal

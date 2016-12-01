@@ -158,6 +158,11 @@ namespace PowerArhitecture.DataAccess.Extensions
             Database.RegisteredDatabaseConfiguration(dbConfiguration);
         }
 
+        public static bool IsOwnedByUnitOfWork(this Scope scope)
+        {
+            return scope?.GetItem(UnitOfWork.ScopeKey) != null;
+        }
+
         internal static bool NotHandledPredicate(PredicateContext context)
         {
             return !context.Handled;

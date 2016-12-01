@@ -30,7 +30,6 @@ namespace PowerArhitecture.Common
     {
         public void RegisterServices(Container container)
         {
-            container.RegisterSingleton<IInstanceProvider, InstanceProvider>();
             container.RegisterSingleton<UnhandledExceptionPublisher>();
             container.RegisterSingleton<ICryptography, Sha1Cryptography>();
 
@@ -53,6 +52,11 @@ namespace PowerArhitecture.Common
                 }
             };
 
+            var registeredTypes = container
+                .GetCurrentRegistrations()
+                .Select(o => o.Registration.ImplementationType)
+                .ToHashSet();
+
             // MediatR
             AppConfiguration.GetDomainAssemblies()
                 .SelectMany(o => o.GetTypes())
@@ -67,7 +71,8 @@ namespace PowerArhitecture.Common
                         t.IsAssignableToGenericType(typeof(INotificationHandler<>)) ||
                         t.IsAssignableToGenericType(typeof(IAsyncNotificationHandler<>)) ||
                         t.IsAssignableToGenericType(typeof(ICancellableAsyncNotificationHandler<>))
-                    )
+                    ) &&
+                    !registeredTypes.Contains(t)
                 )
                 .Select(t => new { Implementation = t, Services = t.GetInterfaces() })
                 .ForEach(o =>
