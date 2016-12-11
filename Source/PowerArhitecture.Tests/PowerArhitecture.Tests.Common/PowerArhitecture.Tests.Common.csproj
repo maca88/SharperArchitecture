@@ -56,10 +56,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation">
       <HintPath>..\..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
@@ -102,18 +98,22 @@
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
     <Compile Include="CommandDispatcherTests.cs" />
-    <Compile Include="Commands\ModelCommandHandler.cs" />
+    <Compile Include="Commands\SyncAsyncCommandHandler.cs" />
+    <Compile Include="Commands\TestAsyncCommandHandler.cs" />
+    <Compile Include="Commands\VoidAsyncCommandHandler.cs" />
     <Compile Include="Commands\VoidCommandHandler.cs" />
     <Compile Include="Commands\TestCommandHandler.cs" />
     <Compile Include="DatabaseBaseTest.cs" />
     <Compile Include="EventPublisherTests.cs" />
+    <Compile Include="Events\FaultyAsyncEventHandler.cs" />
     <Compile Include="Events\FaultyEventHandler.cs" />
+    <Compile Include="Events\MultipleEventsPerHandlerAsyncEventHander.cs" />
     <Compile Include="Events\SequentialAsyncPriorityEventHandler.cs" />
     <Compile Include="Events\SequentialAsyncEventHandler.cs" />
+    <Compile Include="Events\SyncAsyncEventHandler.cs" />
+    <Compile Include="Events\TestAsyncEventHandler.cs" />
     <Compile Include="Events\TestEventHandler.cs" />
-    <Compile Include="Events\ThreeEventsPerHandlerEventHander.cs" />
-    <Compile Include="Events\FourEventsPerHandlerEventHander.cs" />
-    <Compile Include="Events\TwoEventsPerHandlerEventHander.cs" />
+    <Compile Include="Events\MultipleEventsPerHandlerEventHander.cs" />
     <Compile Include="Internacionalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActionBootstrapperExtension.cs" />

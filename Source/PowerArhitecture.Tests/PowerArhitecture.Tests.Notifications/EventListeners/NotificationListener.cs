@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Notifications.Events;
 
 namespace PowerArhitecture.Tests.Notifications.EventListeners
 {
-    public class NotificationHandler : BaseEventHandler<NewNotificationEvent>
+    public class NotificationHandler : IEventHandler<NewNotificationEvent>
     {
-        public override void Handle(NewNotificationEvent message)
+        public void Handle(NewNotificationEvent message)
         {
             NotificationEvent = message;
         }

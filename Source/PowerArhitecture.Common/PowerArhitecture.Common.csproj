@@ -37,10 +37,6 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -70,9 +66,7 @@
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
-    <Compile Include="Commands\BaseCommandHandler.cs" />
     <Compile Include="Commands\CommandDispatcher.cs" />
-    <Compile Include="Commands\ModelCommand.cs" />
     <Compile Include="Configuration\AppConfiguration.cs" />
     <Compile Include="Configuration\CommonConfiguration.cs" />
     <Compile Include="Configuration\CommonConfigurationKeys.cs" />
@@ -82,14 +76,15 @@
     <Compile Include="Cryptographics\AESCryptography.cs" />
     <Compile Include="Cryptographics\Sha1Cryptography.cs" />
     <Compile Include="Enums\PatternOptions.cs" />
-    <Compile Include="Events\MessageEvent.cs" />
-    <Compile Include="Events\BaseEventHandler.cs" />
-    <Compile Include="Events\BaseEventsHandler.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="SimpleInjector\ContextDependentExtensions.cs" />
     <Compile Include="SimpleInjector\IPackage.cs" />
     <Compile Include="SimpleInjector\PackageExtensions.cs" />
     <Compile Include="SimpleInjector\KeyedRegistration.cs" />
+    <Compile Include="Specifications\IAsyncCommand.cs" />
+    <Compile Include="Specifications\IAsyncCommandHandler.cs" />
+    <Compile Include="Specifications\IAsyncEvent.cs" />
+    <Compile Include="Specifications\IAsyncEventHandler.cs" />
     <Compile Include="Specifications\ICommand.cs" />
     <Compile Include="Specifications\ICommandDispatcher.cs" />
     <Compile Include="Specifications\ICommandHandler.cs" />

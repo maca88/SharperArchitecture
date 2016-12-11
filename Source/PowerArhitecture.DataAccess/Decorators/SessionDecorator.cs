@@ -557,9 +557,9 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         async Task ISession.FlushAsync()
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
             await ((ISession) Session).FlushAsync();
-            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
         }
 
         public DbConnection Disconnect()
@@ -735,7 +735,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task<object> SaveAsync(object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             return await Session.SaveAsync(obj);
         }
 
@@ -747,7 +747,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task SaveAsync(object obj, object id)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.SaveAsync(obj, id);
         }
 
@@ -759,7 +759,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task<object> SaveAsync(string entityName, object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             return await Session.SaveAsync(entityName, obj);
         }
 
@@ -771,7 +771,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task SaveAsync(string entityName, object obj, object id)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.SaveAsync(entityName, obj, id);
         }
 
@@ -783,7 +783,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task SaveOrUpdateAsync(object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.SaveOrUpdateAsync(obj);
         }
 
@@ -795,7 +795,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task SaveOrUpdateAsync(string entityName, object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.SaveOrUpdateAsync(entityName, obj);
         }
 
@@ -807,7 +807,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task SaveOrUpdateAsync(string entityName, object obj, object id)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.SaveOrUpdateAsync(entityName, obj, id);
         }
 
@@ -819,7 +819,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task UpdateAsync(object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.UpdateAsync(obj);
         }
 
@@ -831,7 +831,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task UpdateAsync(object obj, object id)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.UpdateAsync(obj, id);
         }
 
@@ -843,7 +843,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task UpdateAsync(string entityName, object obj)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.UpdateAsync(entityName, obj);
         }
 
@@ -855,7 +855,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task UpdateAsync(string entityName, object obj, object id)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
             await Session.UpdateAsync(entityName, obj, id);
         }
 
@@ -927,7 +927,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task DeleteAsync(object obj)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             await Session.DeleteAsync(obj);
         }
 
@@ -939,7 +939,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task DeleteAsync(string entityName, object obj)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             await Session.DeleteAsync(entityName, obj);
         }
 
@@ -951,7 +951,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task<int> DeleteAsync(string query)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             return await Session.DeleteAsync(query);
         }
 
@@ -963,7 +963,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task<int> DeleteAsync(string query, object value, IType type)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             return await Session.DeleteAsync(query, value, type);
         }
 
@@ -975,7 +975,7 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task<int> DeleteAsync(string query, object[] values, IType[] types)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             return await Session.DeleteAsync(query, values, types);
         }
 
@@ -1103,9 +1103,9 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         async Task ISessionImplementor.FlushAsync()
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
             await ((ISessionImplementor) Session).FlushAsync();
-            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
         }
 
         public int ExecuteNativeUpdate(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
@@ -1284,9 +1284,9 @@ namespace PowerArhitecture.DataAccess.Decorators
 
         public async Task ForceFlushAsync(EntityEntry e)
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
             await Session.ForceFlushAsync(e);
-            await _eventPublisher.PublishAsync(new SessionFlushedEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
         }
 
         public Task MergeAsync(string entityName, object obj, IDictionary copiedAlready)
@@ -1312,7 +1312,7 @@ namespace PowerArhitecture.DataAccess.Decorators
         public async Task DeleteAsync(string entityName, object child, bool isCascadeDeleteEnabled,
             ISet<object> transientEntities)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingEvent(Session));
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
             await Session.DeleteAsync(entityName, child, isCascadeDeleteEnabled, transientEntities);
         }
 

@@ -1,11 +1,15 @@
 ﻿using System;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Common.Events
 {
-    public class UnhandledExceptionEvent : MessageEvent<Exception>
+    public class UnhandledExceptionEvent : IEvent
     {
-        public UnhandledExceptionEvent(Exception message) : base(message)
+        public UnhandledExceptionEvent(Exception exception)
         {
+            Exception = exception;
         }
+
+        public Exception Exception { get; }
     }
 }

@@ -10,7 +10,7 @@ using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class SequentialAsyncPriorityEvent : IEvent
+    public class SequentialAsyncPriorityEvent : IAsyncEvent
     {
         public Action<SequentialAsyncPriorityEventHandler> OnStarted { get; set; }
 
@@ -18,14 +18,9 @@ namespace PowerArhitecture.Tests.Common.Events
     }
 
 
-    public class SequentialAsyncPriorityEventHandler : BaseEventHandler<SequentialAsyncPriorityEvent>
+    public class SequentialAsyncPriorityEventHandler : IAsyncEventHandler<SequentialAsyncPriorityEvent>
     {
-        public override void Handle(SequentialAsyncPriorityEvent notification)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override async Task HandleAsync(SequentialAsyncPriorityEvent notification, CancellationToken cancellationToken)
+        public async Task HandleAsync(SequentialAsyncPriorityEvent notification, CancellationToken cancellationToken)
         {
             notification.OnStarted(this);
             await Task.Delay(100, cancellationToken);

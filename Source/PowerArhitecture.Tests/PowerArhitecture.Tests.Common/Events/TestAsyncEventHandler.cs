@@ -1,12 +1,16 @@
 ﻿using System;
-using PowerArhitecture.Common.Events;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class TestEvent : IEvent
+    public class TestAsyncEvent : IAsyncEvent
     {
-        public TestEvent(string message)
+        public TestAsyncEvent(string message)
         {
             Message = message;
         }
@@ -14,10 +18,11 @@ namespace PowerArhitecture.Tests.Common.Events
         public string Message { get; }
     }
 
-    public class TestEventHandler : IEventHandler<TestEvent>
+    public class TestAsyncEventHandler : IAsyncEventHandler<TestAsyncEvent>
     {
-        public void Handle(TestEvent notification)
+        public async Task HandleAsync(TestAsyncEvent notification, CancellationToken cancellationToken)
         {
+            await Task.Yield();
             ReceivedMesssage = notification.Message;
             CallCounter++;
         }

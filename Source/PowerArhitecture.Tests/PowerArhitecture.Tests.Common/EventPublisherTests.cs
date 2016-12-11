@@ -51,10 +51,10 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestSingletonEventHandlerAsync()
         {
-            var eventHandler = Container.GetInstance<TestEventHandler>();
+            var eventHandler = Container.GetInstance<TestAsyncEventHandler>();
             eventHandler.CallCounter = 0;
             var eventPublisher = Container.GetInstance<IEventPublisher>();
-            await eventPublisher.PublishAsync(new TestEvent("test"));
+            await eventPublisher.PublishAsync(new TestAsyncEvent("test"));
 
             Assert.AreEqual(1, eventHandler.CallCounter);
             Assert.AreEqual("test", eventHandler.ReceivedMesssage);
@@ -63,52 +63,50 @@ namespace PowerArhitecture.Tests.Common
         [Test]
         public async Task TestSingletonEventHandlerSyncThenAsync()
         {
-            var eventHandler = Container.GetInstance<TestEventHandler>();
-            eventHandler.CallCounter = 0;
             var eventPublisher = Container.GetInstance<IEventPublisher>();
-            eventPublisher.Publish(new TestEvent("test"));
+            var evt = new SyncAsyncEvent();
 
-            Assert.AreEqual(1, eventHandler.CallCounter);
-            Assert.AreEqual("test", eventHandler.ReceivedMesssage);
+            eventPublisher.Publish(evt);
+            Assert.AreEqual(1, evt.Counter);
 
-            await eventPublisher.PublishAsync(new TestEvent("test2"));
-
-            Assert.AreEqual(2, eventHandler.CallCounter);
-            Assert.AreEqual("test2", eventHandler.ReceivedMesssage);
+            await eventPublisher.PublishAsync(evt);
+            Assert.AreEqual(2, evt.Counter);
         }
 
         [Test]
         public async Task TestSingletonEventHandlerAsyncThenSync()
         {
-            var eventHandler = Container.GetInstance<TestEventHandler>();
-            eventHandler.CallCounter = 0;
             var eventPublisher = Container.GetInstance<IEventPublisher>();
-            await eventPublisher.PublishAsync(new TestEvent("test"));
+            var evt = new SyncAsyncEvent();
 
-            Assert.AreEqual(1, eventHandler.CallCounter);
-            Assert.AreEqual("test", eventHandler.ReceivedMesssage);
+            await eventPublisher.PublishAsync(evt);
+            Assert.AreEqual(1, evt.Counter);
 
-            eventPublisher.Publish(new TestEvent("test2"));
-
-            Assert.AreEqual(2, eventHandler.CallCounter);
-            Assert.AreEqual("test2", eventHandler.ReceivedMesssage);
+            eventPublisher.Publish(evt);
+            Assert.AreEqual(2, evt.Counter);
         }
 
         [Test]
         public void FaultyEventHandlerThrowing()
         {
             var eventPublisher = Container.GetInstance<IEventPublisher>();
-
-            Assert.ThrowsAsync<InvalidOperationException>(() => eventPublisher.PublishAsync(new FaultyEvent("test2")));
+            Assert.Throws<InvalidOperationException>(() => eventPublisher.Publish(new FaultyEvent("test2")));
         }
 
         [Test]
-        public void TwoEventsPerHandler()
+        public void FaultyEventHandlerThrowingAsync()
+        {
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
+            Assert.ThrowsAsync<InvalidOperationException>(() => eventPublisher.PublishAsync(new FaultyAsyncEvent("test2")));
+        }
+
+        [Test]
+        public void MultipleEventsPerHandler()
         {
             var eventPublisher = Container.GetInstance<IEventPublisher>();
 
-            var evt = new TwoEventsPerHandlerEvent();
-            var evt2 = new TwoEventsPerHandler2Event();
+            var evt = new MultipleEventsPerHandlerEvent();
+            var evt2 = new MultipleEventsPerHandler2Event();
             eventPublisher.Publish(evt);
             eventPublisher.Publish(evt2);
 
@@ -117,91 +115,17 @@ namespace PowerArhitecture.Tests.Common
         }
 
         [Test]
-        public async Task TwoEventsPerHandlerAsync()
+        public async Task MultipleEventsPerHandlerAsync()
         {
             var eventPublisher = Container.GetInstance<IEventPublisher>();
 
-            var evt = new TwoEventsPerHandlerEvent();
-            var evt2 = new TwoEventsPerHandler2Event();
+            var evt = new MultipleEventsPerHandlerAsyncEvent();
+            var evt2 = new MultipleEventsPerHandler2AsyncEvent();
             await eventPublisher.PublishAsync(evt);
             await eventPublisher.PublishAsync(evt2);
 
             Assert.IsTrue(evt.Success);
             Assert.IsTrue(evt2.Success);
-        }
-
-        [Test]
-        public void ThreeEventsPerHandler()
-        {
-            var eventPublisher = Container.GetInstance<IEventPublisher>();
-
-            var evt = new ThreeEventsPerHandlerEvent();
-            var evt2 = new ThreeEventsPerHandler2Event();
-            var evt3 = new ThreeEventsPerHandler3Event();
-            eventPublisher.Publish(evt);
-            eventPublisher.Publish(evt2);
-            eventPublisher.Publish(evt3);
-
-            Assert.IsTrue(evt.Success);
-            Assert.IsTrue(evt2.Success);
-            Assert.IsTrue(evt3.Success);
-        }
-
-        [Test]
-        public async Task ThreeEventsPerHandlerAsync()
-        {
-            var eventPublisher = Container.GetInstance<IEventPublisher>();
-
-            var evt = new ThreeEventsPerHandlerEvent();
-            var evt2 = new ThreeEventsPerHandler2Event();
-            var evt3 = new ThreeEventsPerHandler3Event();
-            await eventPublisher.PublishAsync(evt);
-            await eventPublisher.PublishAsync(evt2);
-            await eventPublisher.PublishAsync(evt3);
-
-            Assert.IsTrue(evt.Success);
-            Assert.IsTrue(evt2.Success);
-            Assert.IsTrue(evt3.Success);
-        }
-
-        [Test]
-        public void FourEventsPerHandler()
-        {
-            var eventPublisher = Container.GetInstance<IEventPublisher>();
-
-            var evt = new FourEventsPerHandlerEvent();
-            var evt2 = new FourEventsPerHandler2Event();
-            var evt3 = new FourEventsPerHandler3Event();
-            var evt4 = new FourEventsPerHandler4Event();
-            eventPublisher.Publish(evt);
-            eventPublisher.Publish(evt2);
-            eventPublisher.Publish(evt3);
-            eventPublisher.Publish(evt4);
-
-            Assert.IsTrue(evt.Success);
-            Assert.IsTrue(evt2.Success);
-            Assert.IsTrue(evt3.Success);
-            Assert.IsTrue(evt4.Success);
-        }
-
-        [Test]
-        public async Task FourEventsPerHandlerAsync()
-        {
-            var eventPublisher = Container.GetInstance<IEventPublisher>();
-
-            var evt = new ThreeEventsPerHandlerEvent();
-            var evt2 = new ThreeEventsPerHandler2Event();
-            var evt3 = new FourEventsPerHandler3Event();
-            var evt4 = new FourEventsPerHandler4Event();
-            await eventPublisher.PublishAsync(evt);
-            await eventPublisher.PublishAsync(evt2);
-            await eventPublisher.PublishAsync(evt3);
-            await eventPublisher.PublishAsync(evt4);
-
-            Assert.IsTrue(evt.Success);
-            Assert.IsTrue(evt2.Success);
-            Assert.IsTrue(evt3.Success);
-            Assert.IsTrue(evt4.Success);
         }
 
         [Test]

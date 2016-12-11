@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentValidation.Validators;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain.Specifications;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Attributes;
@@ -15,9 +16,9 @@ using PowerArhitecture.Validation.Specifications;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class ValidatorCreatedEventHandler : BaseEventHandler<ValidatorCreatedEvent>
+    public class ValidatorCreatedEventHandler : IEventHandler<ValidatorCreatedEvent>
     {
-        public override void Handle(ValidatorCreatedEvent e)
+        public void Handle(ValidatorCreatedEvent e)
         {
             if (e.ModelType == null || !typeof(IVersionedEntity).IsAssignableFrom(e.ModelType))
             {

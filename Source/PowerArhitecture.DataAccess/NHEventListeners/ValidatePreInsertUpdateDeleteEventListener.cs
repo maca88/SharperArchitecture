@@ -34,17 +34,21 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
     [NhEventListenerType(typeof(IPreCollectionUpdateEventListener), Order = int.MinValue)]
     [NhEventListenerType(typeof(IPreUpdateEventListener), Order = int.MinValue)]
     [NhEventListenerType(typeof(IPreDeleteEventListener), Order = int.MinValue)]
-    public class ValidatePreInsertUpdateDeleteEventHandler : BaseEventsHandler
-        <
-            //Reset cache
-            SessionFlushingEvent,
-            SessionFlushedEvent,
-            EntityDeletingEvent,
-            EntitySavingOrUpdatingEvent,
-            TransactionCommittedEvent,
-            //Validation events
-            EntitySavingEvent
-        >,
+    public class ValidatePreInsertUpdateDeleteEventHandler :
+        //Reset cache 
+        IEventHandler<SessionFlushingEvent>,
+        IAsyncEventHandler<SessionFlushingAsyncEvent>,
+        IEventHandler<SessionFlushedEvent>,
+        IAsyncEventHandler<SessionFlushedAsyncEvent>,
+        IEventHandler<EntityDeletingEvent>,
+        IAsyncEventHandler<EntityDeletingAsyncEvent>,
+        IEventHandler<EntitySavingOrUpdatingEvent>,
+        IAsyncEventHandler<EntitySavingOrUpdatingAsyncEvent>,
+        IEventHandler<TransactionCommittedEvent>,
+        //Validation events
+        IEventHandler<EntitySavingEvent>,
+        IAsyncEventHandler<EntitySavingAsyncEvent>,
+
         //Validation events
         IPreCollectionUpdateEventListener,
         IPreUpdateEventListener,
@@ -348,13 +352,13 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
         }
 
         // Validation for inserting has to be before the Id is set by NHibernate
-        public override void Handle(EntitySavingEvent e)
+        public void Handle(EntitySavingEvent e)
         {
             var @event = e.Event;
             Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
         }
 
-        public override Task HandleAsync(EntitySavingEvent e, CancellationToken cancellationToken)
+        public Task HandleAsync(EntitySavingAsyncEvent e, CancellationToken cancellationToken)
         {
             var @event = e.Event;
             return ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
@@ -402,56 +406,50 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
             return false;
         }
 
-        public override void Handle(SessionFlushingEvent e)
+        public void Handle(SessionFlushingEvent e)
         {
             Clear(e.Session);
         }
 
-        public override Task HandleAsync(SessionFlushingEvent e, CancellationToken cancellationToken)
-        {
-            Clear(e.Session);
-            return Task.CompletedTask;
-        }
-
-        public override void Handle(SessionFlushedEvent e)
-        {
-            Clear(e.Session);
-        }
-
-        public override Task HandleAsync(SessionFlushedEvent e, CancellationToken cancellationToken)
+        public Task HandleAsync(SessionFlushingAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
             return Task.CompletedTask;
         }
 
-        public override void Handle(TransactionCommittedEvent e)
+        public void Handle(SessionFlushedEvent e)
         {
             Clear(e.Session);
         }
 
-        public override Task HandleAsync(TransactionCommittedEvent e, CancellationToken cancellationToken)
+        public Task HandleAsync(SessionFlushedAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
             return Task.CompletedTask;
         }
 
-        public override void Handle(EntityDeletingEvent e)
+        public void Handle(TransactionCommittedEvent e)
         {
             Clear(e.Session);
         }
 
-        public override Task HandleAsync(EntityDeletingEvent e, CancellationToken cancellationToken)
+        public void Handle(EntityDeletingEvent e)
+        {
+            Clear(e.Session);
+        }
+
+        public Task HandleAsync(EntityDeletingAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
             return TaskHelper.CompletedTask;
         }
 
-        public override void Handle(EntitySavingOrUpdatingEvent e)
+        public void Handle(EntitySavingOrUpdatingEvent e)
         {
             Clear(e.Session);
         }
 
-        public override Task HandleAsync(EntitySavingOrUpdatingEvent e, CancellationToken cancellationToken)
+        public Task HandleAsync(EntitySavingOrUpdatingAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
             return TaskHelper.CompletedTask;

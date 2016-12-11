@@ -9,13 +9,13 @@ using FluentNHibernate.MappingModel.Collections;
 using FluentNHibernate.MappingModel.Identity;
 using PowerArhitecture.CodeList.Attributes;
 using PowerArhitecture.CodeList.Specifications;
-using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.CodeList.EventHandlers
 {
-    public class HibernateMappingsBuiltEventHandler : BaseEventHandler<HibernateMappingsBuiltEvent>
+    public class HibernateMappingsBuiltEventHandler : IEventHandler<HibernateMappingsBuiltEvent>
     {
         // TODO: configurable...COALESCE works everywhere but is slower than ISNULL which is available only for sql server
         private static readonly string _localizeFormula =
@@ -176,7 +176,7 @@ namespace PowerArhitecture.CodeList.EventHandlers
             return (property != null ? property.Name : type.Name) + "Code";
         }
 
-        public override void Handle(HibernateMappingsBuiltEvent e)
+        public void Handle(HibernateMappingsBuiltEvent e)
         {
             var lazyTypeMap = new Lazy<Dictionary<Type, ClassMapping>>(() =>
             {

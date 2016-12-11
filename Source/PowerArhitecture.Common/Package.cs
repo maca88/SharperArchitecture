@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using log4net;
 using log4net.Util;
-using MediatR;
 using PowerArhitecture.Common.Adapters;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Commands;
@@ -65,12 +64,12 @@ namespace PowerArhitecture.Common
                     !t.IsAbstract &&
                     !t.IsGenericType &&
                     (
-                        t.IsAssignableToGenericType(typeof(IRequestHandler<,>)) ||
-                        t.IsAssignableToGenericType(typeof(IAsyncRequestHandler<,>)) ||
-                        t.IsAssignableToGenericType(typeof(ICancellableAsyncRequestHandler<,>)) ||
-                        t.IsAssignableToGenericType(typeof(INotificationHandler<>)) ||
-                        t.IsAssignableToGenericType(typeof(IAsyncNotificationHandler<>)) ||
-                        t.IsAssignableToGenericType(typeof(ICancellableAsyncNotificationHandler<>))
+                        t.IsAssignableToGenericType(typeof(ICommandHandler<>)) ||
+                        t.IsAssignableToGenericType(typeof(ICommandHandler<,>)) ||
+                        t.IsAssignableToGenericType(typeof(IAsyncCommandHandler<>)) ||
+                        t.IsAssignableToGenericType(typeof(IAsyncCommandHandler<,>)) ||
+                        t.IsAssignableToGenericType(typeof(IEventHandler<>)) ||
+                        t.IsAssignableToGenericType(typeof(IAsyncEventHandler<>))
                     ) &&
                     !registeredTypes.Contains(t)
                 )
@@ -79,9 +78,11 @@ namespace PowerArhitecture.Common
                 {
                     Registration registration;
                     var injectAsCollection = false;
-                    if (o.Implementation.IsAssignableToGenericType(typeof(IRequestHandler<,>)) ||
-                        o.Implementation.IsAssignableToGenericType(typeof(IAsyncRequestHandler<,>)) ||
-                        o.Implementation.IsAssignableToGenericType(typeof(ICancellableAsyncRequestHandler<,>)))
+                    if (o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<>)) ||
+                        o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<,>)) ||
+                        o.Implementation.IsAssignableToGenericType(typeof(IAsyncCommandHandler<>)) ||
+                        o.Implementation.IsAssignableToGenericType(typeof(IAsyncCommandHandler<,>))
+                        )
                     {
                         registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
                         container.AddRegistration(o.Implementation, registration);
@@ -105,21 +106,8 @@ namespace PowerArhitecture.Common
                         }
                     }
                 });
-            container.Register<IMediator, Mediator>();
-            container.RegisterSingleton(new SingleInstanceFactory(container.GetInstance));
-            container.RegisterSingleton(
-                new MultiInstanceFactory(t =>
-                {
-                    var instances = container.TryGetAllInstances(t).OrderByDescending(o =>
-                    {
-                        return o.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ??
-                               PriorityAttribute.Default;
-                    });
-                    return instances;
-                }));
-
             container.RegisterSingleton<IEventPublisher, EventPublisher>();
-            container.Register<ICommandDispatcher, CommandDispatcher>();
+            container.RegisterSingleton<ICommandDispatcher, CommandDispatcher>();
         }
     }
 }

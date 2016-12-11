@@ -8,24 +8,26 @@ using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class TwoEventsPerHandlerEvent : IEvent
+    public class MultipleEventsPerHandlerEvent : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class TwoEventsPerHandler2Event : IEvent
+    public class MultipleEventsPerHandler2Event : IEvent
     {
         public bool Success { get; set; }
     }
 
-    public class TwoEventsPerHandlerEventHander : BaseEventsHandler<TwoEventsPerHandlerEvent, TwoEventsPerHandler2Event>
+    public class MultipleEventsPerHandlerEventHander : 
+        IEventHandler<MultipleEventsPerHandlerEvent>,
+        IEventHandler<MultipleEventsPerHandler2Event>
     {
-        public override void Handle(TwoEventsPerHandlerEvent @event)
+        public void Handle(MultipleEventsPerHandlerEvent @event)
         {
             @event.Success = true;
         }
 
-        public override void Handle(TwoEventsPerHandler2Event @event)
+        public void Handle(MultipleEventsPerHandler2Event @event)
         {
             @event.Success = true;
         }

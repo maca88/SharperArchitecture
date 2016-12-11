@@ -8,10 +8,11 @@ using PowerArhitecture.Common.Events;
 using PowerArhitecture.DataAccess.Attributes;
 using PowerArhitecture.DataAccess.Events;
 using NHibernate.Event;
+using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.DataAccess.EventListeners
 {
-    public class NhConfigurationEventHandler : BaseEventHandler<NhConfigurationEvent>
+    public class NhConfigurationEventHandler : IEventHandler<NhConfigurationEvent>
     {
         private readonly IEnumerable<ISaveOrUpdateEventListener> _saveOrUpdateEventListeners;
         private readonly IEnumerable<IFlushEventListener> _flushEventListeners;
@@ -57,7 +58,7 @@ namespace PowerArhitecture.DataAccess.EventListeners
             _postDeleteEventListeners = postDeleteEventListeners;
         }
 
-        public override void Handle(NhConfigurationEvent e)
+        public void Handle(NhConfigurationEvent e)
         {
             var config = e.Configuration;
             var eventListeners = config.EventListeners;

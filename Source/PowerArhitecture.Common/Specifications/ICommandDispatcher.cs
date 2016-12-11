@@ -13,12 +13,12 @@ namespace PowerArhitecture.Common.Specifications
 
         TResult Dispatch<TResult>(ICommand<TResult> command);
 
-        Task DispatchAsync(ICommand command);
+        Task DispatchAsync(IAsyncCommand command);
 
-        Task<TResult> DispatchAsync<TResult>(ICommand<TResult> command);
+        Task<TResult> DispatchAsync<TResult>(IAsyncCommand<TResult> command);
 
-        Task DispatchAsync(ICommand command, CancellationToken cancellationToken);
+        Task DispatchAsync(IAsyncCommand command, CancellationToken cancellationToken);
 
-        Task<TResult> DispatchAsync<TResult>(ICommand<TResult> command, CancellationToken cancellationToken);
+        Task<TResult> DispatchAsync<TResult>(IAsyncCommand<TResult> command, CancellationToken cancellationToken);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,72 +9,88 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Specifications;
+using SimpleInjector;
+using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Common.Events
 {
     public class EventPublisher : IEventPublisher
     {
-        private readonly IMediator _mediator;
-        private static readonly Func<Mediator, ICancellableAsyncNotification, IEnumerable> GetNotificationHandlersFunc;
-        private static readonly Func<object, ICancellableAsyncNotification, CancellationToken, Task> HandleFunc;
+        private delegate void InvokeHandle(object obj, IEvent @event);
+        private delegate Task InvokeHandleAsync(object obj, IAsyncEvent @event, CancellationToken token);
 
-        public static bool Lambda;
+        private readonly Container _container;
+        static readonly ConcurrentDictionary<Type, object> EventHandlerInvokers = new ConcurrentDictionary<Type, object>();
 
-        static EventPublisher()
+        public EventPublisher(Container container)
         {
-            var type = typeof(IMediator).Assembly.GetType("MediatR.Internal.CancellableAsyncNotificationHandlerWrapper");
-            var handleMethod = type.GetMethod("Handle");
-            var getNotificationHandlersMethod = typeof(Mediator).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Single(o =>
-                    o.Name == "GetNotificationHandlers" && o.GetParameters().Length == 1 &&
-                    o.GetParameters()[0].ParameterType == typeof(ICancellableAsyncNotification));
-
-            var instExpr = Expression.Parameter(typeof(Mediator), "instance");
-            var paramExpr = Expression.Parameter(typeof(ICancellableAsyncNotification), "message");
-            var expr =  Expression.Call(instExpr, getNotificationHandlersMethod, paramExpr);
-            GetNotificationHandlersFunc = Expression.Lambda<Func<Mediator, ICancellableAsyncNotification, IEnumerable>>(
-                Expression.Convert(expr, typeof(IEnumerable)), instExpr, paramExpr).Compile();
-
-            instExpr = Expression.Parameter(typeof(object), "instance");
-            paramExpr = Expression.Parameter(typeof(ICancellableAsyncNotification), "message");
-            var paramExpr2 = Expression.Parameter(typeof(CancellationToken), "token");
-            expr = Expression.Call(Expression.Convert(instExpr, type), handleMethod, paramExpr, paramExpr2);
-            HandleFunc = Expression.Lambda<Func<object, ICancellableAsyncNotification, CancellationToken, Task>>(expr, instExpr,
-                    paramExpr, paramExpr2).Compile();
-        }
-
-        /// <summary>
-        /// We cannot inject IMediator as it is registered as Transient because of the ICommandDispacther
-        /// </summary>
-        /// <param name="mediatorFactory"></param>
-        public EventPublisher(Func<IMediator> mediatorFactory)
-        {
-            _mediator = mediatorFactory();
+            _container = container;
         }
 
         public virtual void Publish(IEvent e)
         {
-            _mediator.Publish(e);
+            var eventType = e.GetType();
+            var handlerType = typeof(IEventHandler<>).MakeGenericType(e.GetType());
+            var handle = (InvokeHandle)EventHandlerInvokers.GetOrAdd(handlerType, t =>
+                CreateHandlerInvoker<InvokeHandle>(
+                    eventType, handlerType, "Handle"));
+            foreach (var obj in GetInstances(handlerType))
+            {
+                handle(obj, e);
+            }
         }
 
-        public virtual Task PublishAsync(IEvent e)
+        public virtual Task PublishAsync(IAsyncEvent e)
         {
             return PublishAsync(e, CancellationToken.None);
         }
 
-        public virtual async Task PublishAsync(IEvent e, CancellationToken cancellationToken)
+        public virtual async Task PublishAsync(IAsyncEvent e, CancellationToken cancellationToken)
         {
-            var list = GetNotificationHandlersFunc((Mediator) _mediator, e);
-            foreach (var item in list)
+            var eventType = e.GetType();
+            var handlerType = typeof(IAsyncEventHandler<>).MakeGenericType(e.GetType());
+            var handleAsync = (InvokeHandleAsync)EventHandlerInvokers.GetOrAdd(handlerType, t =>
+                CreateHandlerInvoker<InvokeHandleAsync>(
+                    eventType, handlerType, "HandleAsync",
+                    Expression.Parameter(typeof(CancellationToken), "token")));
+            foreach (var obj in GetInstances(handlerType))
             {
-                await HandleFunc(item, e, cancellationToken);
+                await handleAsync(obj, e, cancellationToken);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
             }
+        }
+
+        private IEnumerable<object> GetInstances(Type t)
+        {
+            return _container.TryGetAllInstances(t).OrderByDescending(o =>
+            {
+                return o.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ??
+                       PriorityAttribute.Default;
+            });
+        }
+
+        private static TResult CreateHandlerInvoker<TResult>(Type eventType, Type handlerType, string methodName, params ParameterExpression[] parameters)
+        {
+            var param1 = Expression.Parameter(typeof(object), "handler");
+            var param2 = Expression.Parameter(typeof(object), "obj");
+            var convertHandler = Expression.Convert(param1, handlerType);
+            var convertCommand = Expression.Convert(param2, eventType);
+            var callParams = new List<Expression>
+            {
+                convertCommand
+            }.Concat(parameters);
+            var lambdaParams = new List<ParameterExpression>
+            {
+                param1,
+                param2
+            }.Concat(parameters);
+            var callMethod = Expression.Call(convertHandler, handlerType.GetMethod(methodName), callParams);
+            return Expression.Lambda<TResult>(callMethod, lambdaParams).Compile();
         }
     }
 }

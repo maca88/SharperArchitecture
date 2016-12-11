@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Breeze.ContextProvider.NH;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 
 namespace PowerArhitecture.Breeze.EventHandlers
 {
-    public class SessionFactoryCreatedEventHandler : BaseEventHandler<SessionFactoryCreatedEvent>
+    public class SessionFactoryCreatedEventHandler : IEventHandler<SessionFactoryCreatedEvent>
     {
-        public override void Handle(SessionFactoryCreatedEvent @event)
+        public void Handle(SessionFactoryCreatedEvent @event)
         {
             NHibernateContractResolver.Instance.RegisterSessionFactory(@event.SessionFactory);
         }

@@ -10,10 +10,10 @@ namespace PowerArhitecture.Common.Specifications
 {
     public interface IEventPublisher
     {
-        void Publish(IEvent notification);
+        void Publish(IEvent @event);
 
-        Task PublishAsync(IEvent notification);
+        Task PublishAsync(IAsyncEvent @event);
 
-        Task PublishAsync(IEvent notification, CancellationToken cancellationToken);
+        Task PublishAsync(IAsyncEvent @event, CancellationToken cancellationToken);
     }
 }

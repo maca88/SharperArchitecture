@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Filters;
-using MediatR;
 using PowerArhitecture.Common.Attributes;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.WebApi.Internal;
 using PowerArhitecture.WebApi.Specifications;
@@ -28,7 +28,7 @@ namespace PowerArhitecture.WebApi
 
             var registration = Lifestyle.Singleton.CreateRegistration<TransactionManager>(container);
             container.AddRegistration(typeof(TransactionManager), registration);
-            container.AppendToCollection(typeof(INotificationHandler<SessionCreatedEvent>), registration);
+            container.AppendToCollection(typeof(IEventHandler<SessionCreatedEvent>), registration);
             container.RegisterHttpFilter(FilterScope.Action, registration);
         }
     }

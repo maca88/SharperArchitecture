@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NHibernate;
+using NHibernate.Event;
 using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
@@ -11,7 +13,7 @@ using NHibernate.Extensions;
 
 namespace PowerArhitecture.Notifications.EventListeners
 {
-    public class NotificationInsertingEventHandler : BaseEventHandler<EntitySavingEvent>
+    public class NotificationInsertingEventHandler : IEventHandler<EntitySavingEvent>, IAsyncEventHandler<EntitySavingAsyncEvent>
     {
         private readonly IEventPublisher _eventPublisher;
 
@@ -20,14 +22,25 @@ namespace PowerArhitecture.Notifications.EventListeners
             _eventPublisher = eventPublisher;
         }
 
-        public override void Handle(EntitySavingEvent e)
+        public void Handle(EntitySavingEvent e)
         {
-            var notification = e.Event.Entity as INotificationInternal;
+            Handle(e.Event);
+        }
+
+        public Task HandleAsync(EntitySavingAsyncEvent e, CancellationToken cancellationToken)
+        {
+            Handle(e.Event);
+            return Task.CompletedTask;
+        }
+
+        private void Handle(SaveOrUpdateEvent @event)
+        {
+            var notification = @event.Entity as INotificationInternal;
             if (notification == null)
             {
                 return;
             }
-            e.Event.Session.Subscribe(o => o.Transaction.AfterCommit(success =>
+            @event.Session.Subscribe(o => o.Transaction.AfterCommit(success =>
             {
                 if (success)
                 {

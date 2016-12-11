@@ -3,13 +3,14 @@ using Microsoft.AspNet.Identity;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.Authentication.EventHandlers
 {
     [Priority(1000)]
-    public class PopulateDbEventHandler : BaseEventHandler<PopulateDbEvent>
+    public class PopulateDbEventHandler : IEventHandler<PopulateDbEvent>
     {
         private readonly IAuthenticationConfiguration _authSettings;
         private readonly IPasswordHasher _passwordHasher;
@@ -22,7 +23,7 @@ namespace PowerArhitecture.Authentication.EventHandlers
             _userType = Type.GetType(authSettings.UserClass, true);
         }
 
-        public override void Handle(PopulateDbEvent e)
+        public void Handle(PopulateDbEvent e)
         {
             var unitOfWork = e.UnitOfWork;
             var systemUser = (IEntity)Activator.CreateInstance(_userType);

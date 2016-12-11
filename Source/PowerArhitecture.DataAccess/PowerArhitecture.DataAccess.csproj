@@ -49,10 +49,6 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediatR, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediatR.2.1.0\lib\net45\MediatR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -127,13 +123,18 @@
     <Compile Include="EventListeners\NhConfigurationEventHandler.cs" />
     <Compile Include="EventListeners\TransactionEventListener.cs" />
     <Compile Include="EventListeners\ValidatorCreatedEventHandler.cs" />
+    <Compile Include="Events\EntityDeletingAsyncEvent.cs" />
     <Compile Include="Events\EntityDeletingEvent.cs" />
+    <Compile Include="Events\EntitySavingAsyncEvent.cs" />
     <Compile Include="Events\EntitySavingEvent.cs" />
+    <Compile Include="Events\EntitySavingOrUpdatingAsyncEvent.cs" />
     <Compile Include="Events\EntitySavingOrUpdatingEvent.cs" />
     <Compile Include="Events\HibernateMappingsBuiltEvent.cs" />
     <Compile Include="Events\SessionCreatedEvent.cs" />
     <Compile Include="Events\SessionFactoryCreatedEvent.cs" />
+    <Compile Include="Events\SessionFlushedAsyncEvent.cs" />
     <Compile Include="Events\SessionFlushedEvent.cs" />
+    <Compile Include="Events\SessionFlushingAsyncEvent.cs" />
     <Compile Include="Events\SessionFlushingEvent.cs" />
     <Compile Include="Events\TransactionCommittedEvent.cs" />
     <Compile Include="Events\NhConfigurationEvent.cs" />

@@ -7,9 +7,9 @@ namespace PowerArhitecture.Tests.Common.Commands
     {
     }
 
-    public class TestCommandHandler : BaseCommandHandler<TestCommand, bool>
+    public class TestCommandHandler : ICommandHandler<TestCommand, bool>
     {
-        public override bool Handle(TestCommand command)
+        public bool Handle(TestCommand command)
         {
             return true;
         }

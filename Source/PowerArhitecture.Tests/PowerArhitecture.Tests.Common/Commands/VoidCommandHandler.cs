@@ -8,9 +8,9 @@ namespace PowerArhitecture.Tests.Common.Commands
         public bool Success { get; set; }
     }
 
-    public class VoidCommandHandler : BaseCommandHandler<VoidCommand>
+    public class VoidCommandHandler : ICommandHandler<VoidCommand>
     {
-        public override void Handle(VoidCommand command)
+        public void Handle(VoidCommand command)
         {
             command.Success = true;
         }

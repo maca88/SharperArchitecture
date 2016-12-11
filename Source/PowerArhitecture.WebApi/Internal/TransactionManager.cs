@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using MediatR;
 using NHibernate;
 using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Specifications;
@@ -25,7 +24,7 @@ namespace PowerArhitecture.WebApi.Internal
     /// Responsable for managing a transaction inside a WebApi request.
     /// </summary>
     [Priority(short.MaxValue)]
-    internal class TransactionManager : INotificationHandler<SessionCreatedEvent>, IActionFilter
+    internal class TransactionManager : IEventHandler<SessionCreatedEvent>, IActionFilter
     {
         private readonly IRequestMessageProvider _requestMessageProvider;
         private readonly Container _container;

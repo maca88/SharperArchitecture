@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using PowerArhitecture.Common.Events;
 using PowerArhitecture.Common.Specifications;
 
 namespace PowerArhitecture.Tests.Common.Events
 {
-    public class FaultyEvent : IEvent
+    public class FaultyAsyncEvent : IAsyncEvent
     {
-        public FaultyEvent(string message)
+        public FaultyAsyncEvent(string message)
         {
             Message = message;
         }
@@ -18,9 +18,9 @@ namespace PowerArhitecture.Tests.Common.Events
         public string Message { get; }
     }
 
-    public class FaultyEventHandler : IEventHandler<FaultyEvent>
+    public class FaultyAsyncEventHandler : IAsyncEventHandler<FaultyAsyncEvent>
     {
-        public void Handle(FaultyEvent notification)
+        public Task HandleAsync(FaultyAsyncEvent notification, CancellationToken cancellationToken)
         {
             throw new InvalidOperationException("error");
         }
