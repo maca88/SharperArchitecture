@@ -68,7 +68,8 @@
     <Compile Include="Attributes\RegularExpressionAttribute.cs" />
     <Compile Include="Attributes\ValidationAttribute.cs" />
     <Compile Include="CustomRulesetValidatorSelector.cs" />
-    <Compile Include="Internal\BusinessRuleValidator.cs" />
+    <Compile Include="Internal\BusinessRulesValidator.cs" />
+    <Compile Include="Internal\RuleSetValidationRule.cs" />
     <Compile Include="Internal\ValidatorDecorator.cs" />
     <Compile Include="Events\ValidatorCreatedEvent.cs" />
     <Compile Include="ExtendedValidationException.cs" />

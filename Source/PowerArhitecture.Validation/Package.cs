@@ -21,7 +21,7 @@ namespace PowerArhitecture.Validation
             foreach (var assembly in Assembly.GetExecutingAssembly().GetDependentAssemblies().Where(o => !o.IsDynamic))
             {
                 AssemblyScanner.FindValidatorsInAssembly(assembly)
-                    .Where(match => !match.ValidatorType.IsInterface)
+                    .Where(match => !match.ValidatorType.IsInterface && !match.ValidatorType.IsAbstract)
                     .ForEach(match =>
                     {
                         var serviceType = match.ValidatorType.GetGenericType(typeof(IValidator<>));
@@ -34,22 +34,31 @@ namespace PowerArhitecture.Validation
                         container.AddRegistration(serviceType, registration);
                     });
             }
-
-
-            //registration = Lifestyle.Singleton.CreateRegistration(typeof(Validator<>), container);
-            //container.RegisterConditional(typeof(IValidator<>), registration, o => !o.Handled);
-            //container.RegisterConditional(typeof(Validator<>), registration, o => !o.Handled);
             container.RegisterConditional(typeof(IValidator<>), typeof(Validator<>), Lifestyle.Singleton, o => !o.Handled);
-
             container.RegisterDecorator(typeof(IValidator<>), typeof(ValidatorDecorator<>), Lifestyle.Singleton);
 
             // Convention for business rules
-            AppConfiguration.GetDomainAssemblies()
+            Assembly.GetExecutingAssembly()
+                .GetDependentAssemblies()
                 .SelectMany(o => o.GetTypes())
-                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType && typeof(IBusinessRule).IsAssignableFrom(t))
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(IBusinessRule).IsAssignableFrom(t))
                 .Select(t => new { Implementation = t, Services = t.GetInterfaces().Where(o => o.IsAssignableToGenericType(typeof(IBusinessRule<,>))) })
                 .ForEach(o =>
                 {
+                    if (o.Implementation.IsGenericType)
+                    {
+                        var args = o.Implementation.GetGenericArguments();
+                        switch (args.Length)
+                        {
+                            case 1:
+                                container.AppendToCollection(typeof(IBusinessRule<,>).MakeGenericType(args[0], args[0]), o.Implementation);
+                                return;
+                            default:
+                                throw new NotSupportedException(
+                                    $"Business rules with more that one generic argument are not supported. Invalid business rule: {o.Implementation}" +
+                                    "Hint: make the rule as an abstract type or modify the type to contain only one generic argument");
+                        }
+                    }
                     registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
                     container.AddRegistration(o.Implementation, registration);
                     foreach (var serviceType in o.Services)

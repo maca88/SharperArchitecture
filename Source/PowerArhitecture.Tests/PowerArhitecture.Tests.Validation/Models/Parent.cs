@@ -60,12 +60,12 @@ namespace PowerArhitecture.Tests.Validation.Models
     public class SubChildBusinessRule : TestBusinessRule<SubChild, SubChild>
     { }
 
-    public class TestBusinessRule<TModel, TChild> : TestBusinessRule<TModel, TChild, byte>
+    public abstract class TestBusinessRule<TModel, TChild> : TestBusinessRule<TModel, TChild, byte>
         where TModel : class
         where TChild : class
     { }
 
-    public class TestBusinessRule<TModel, TChild, TType> : AbstractBusinessRule<TModel, TChild> 
+    public abstract class TestBusinessRule<TModel, TChild, TType> : AbstractBusinessRule<TModel, TChild> 
         where TModel : class
         where TChild : class
     {
@@ -95,6 +95,8 @@ namespace PowerArhitecture.Tests.Validation.Models
             CanValidateModels.Add(new Tuple<TChild, IBusinessRule>(child, this));
             return true;
         }
+
+        public override string[] RuleSets => new string[] {};
 
         public static void Clear()
         {

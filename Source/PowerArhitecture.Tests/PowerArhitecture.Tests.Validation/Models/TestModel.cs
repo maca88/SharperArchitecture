@@ -46,5 +46,7 @@ namespace PowerArhitecture.Tests.Validation.Models
             CanValidateCount++;
             return true;
         }
+
+        public override string[] RuleSets => new string[] {};
     }
 }

@@ -50,5 +50,7 @@ namespace PowerArhitecture.Validation
         public abstract ValidationFailure Validate(TChild child, ValidationContext context);
 
         public abstract bool CanValidate(TChild child, ValidationContext context);
+
+        public abstract string[] RuleSets { get; }
     }
 }

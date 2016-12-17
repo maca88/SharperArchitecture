@@ -11,6 +11,8 @@ namespace PowerArhitecture.Validation.Specifications
         ValidationFailure Validate(object child, ValidationContext context);
 
         bool CanValidate(object child, ValidationContext context);
+
+        string[] RuleSets { get; }
     }
 
     public interface IBusinessRule<TRoot> : IBusinessRule<TRoot, TRoot>
