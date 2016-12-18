@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using FluentValidation;
-using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Validation.Internal;
 using PowerArhitecture.Validation.Specifications;
 using SimpleInjector;
@@ -15,6 +14,9 @@ namespace PowerArhitecture.Validation
     {
         public void RegisterServices(Container container)
         {
+            var validatorCache = new ValidatorCache();
+            container.RegisterSingleton(validatorCache);
+
             var registration = Lifestyle.Singleton.CreateRegistration<ValidatorFactory>(container);
             container.AddRegistration(typeof(IValidatorFactory), registration);
 
@@ -48,16 +50,20 @@ namespace PowerArhitecture.Validation
                     if (o.Implementation.IsGenericType)
                     {
                         var args = o.Implementation.GetGenericArguments();
-                        switch (args.Length)
+                        if (args.Length > 2)
                         {
-                            case 1:
-                                container.AppendToCollection(typeof(IBusinessRule<,>).MakeGenericType(args[0], args[0]), o.Implementation);
-                                return;
-                            default:
-                                throw new NotSupportedException(
-                                    $"Business rules with more that one generic argument are not supported. Invalid business rule: {o.Implementation}" +
-                                    "Hint: make the rule as an abstract type or modify the type to contain only one generic argument");
+                            throw new NotSupportedException(
+                                    $"Business rules with more that two generic argument are not supported. Invalid business rule: {o.Implementation}" +
+                                    "Hint: make the rule as an abstract type or modify the type to contain two generic arguments or less");
                         }
+                        // Register the implementation as we will need the registration when adding root/child producers
+                        container.Register(o.Implementation, o.Implementation);
+                        validatorCache.AddGenericBusinessRule(o.Implementation);
+                        foreach (var serviceType in o.Services)
+                        {
+                            container.AppendToCollection(serviceType, o.Implementation);
+                        }
+                        return;
                     }
                     registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
                     container.AddRegistration(o.Implementation, registration);

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -13,47 +12,35 @@ using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Validation.Events;
 using PowerArhitecture.Validation.Specifications;
 using SimpleInjector;
-using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Validation.Internal
 {
     internal class ValidatorDecorator<TModel> : IValidator<TModel>, IEnumerable<IValidationRule>
     {
-        private readonly AbstractValidator<TModel> _validator;
-
         private const string DataKey = "_businessRules";
+        private readonly AbstractValidator<TModel> _validator;
+        private readonly Container _container;
+        private readonly ValidatorCache _cache;
 
-        private static List<InstanceProducer> _childProducers;
-        private static List<InstanceProducer> _rootProducers;
-
-        public ValidatorDecorator(IValidator<TModel> validator, Container container, IEventPublisher eventPublisher)
+        public ValidatorDecorator(IValidator<TModel> validator, Container container, IEventPublisher eventPublisher, ValidatorCache cache)
         {
             _validator = (AbstractValidator<TModel>)validator;
-            // Cache business rules that have different generic argument type for TRoot and TChild
+            _container = container;
+            _cache = cache;
             var registrations = container.GetCurrentRegistrations()
                 .Where(o => o.ServiceType.IsInterface &&
                     o.ServiceType.IsGenericType && 
                     o.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessRule<,>))
                 .Select(o => new {Producer = o, Type = o.ServiceType.GetGenericType(typeof(IBusinessRule<,>))})
-                .Where(o => o.Type != null && o.Type.GetGenericArguments().Any(a => a != typeof(TModel)))
+                .Where(o => o.Type != null)
                 .ToList();
-            _rootProducers = registrations
+            _cache.AddRootProducers<TModel>(registrations
                 .Where(o => o.Type.GetGenericArguments()[0] == typeof(TModel))
-                .Select(o => o.Producer)
-                .ToList();
-            _childProducers = registrations
+                .Select(o => o.Producer));
+            _cache.AddChildProducers<TModel>(registrations
                 .Where(o => o.Type.GetGenericArguments()[1] == typeof(TModel))
-                .Select(o => o.Producer)
-                .ToList();
-
-            // Cache generic business rules that cannot be retrieved with container.GetCurrentRegistrations and also rules
-            // that have the same generic argument type for TRoot and TChild
-            var collProducer = container.GetRegistration(typeof(IEnumerable<IBusinessRule<TModel, TModel>>));
-            if (collProducer != null)
-            {
-                _rootProducers.Add(collProducer);
-                _childProducers.Add(collProducer);
-            }
+                .Select(o => o.Producer));
+            AddProducersForGenericRules();
 
             var absValidator = (AbstractValidator<TModel>)validator;
             absValidator.AddRule(new BusinessRulesValidator(GetRulesToValidate));
@@ -132,7 +119,7 @@ namespace PowerArhitecture.Validation.Internal
             var dict = context.RootContextData.TryGetValue(DataKey, out dictObj)
                 ? dictObj as Dictionary<InstanceProducer, IBusinessRule> ?? new Dictionary<InstanceProducer, IBusinessRule>()
                 : new Dictionary<InstanceProducer, IBusinessRule>();
-            foreach (var producer in _childProducers.Where(o => dict.ContainsKey(o)))
+            foreach (var producer in _cache.GetChildProducers<TModel>().Where(o => dict.ContainsKey(o)))
             {
                 yield return dict[producer];
             }
@@ -157,6 +144,85 @@ namespace PowerArhitecture.Validation.Internal
             context.RootContextData[DataKey] = ExecuteBeforeValidation(context.InstanceToValidate, context);
         }
 
+        private void AddProducersForGenericRules()
+        {
+            var childModels = new HashSet<Type>();
+            var valRules = new List<IValidationRule>(_validator);
+            // Find all child models that are realted to this one by traversing all validation rules
+            while (valRules.Count > 0)
+            {
+                var valRule = valRules.First();
+                valRules.Remove(valRule);
+                foreach (var propVal in valRule.Validators)
+                {
+                    Type childValType = null;
+                    var collRule = propVal as ChildCollectionValidatorAdaptor;
+                    if (collRule != null)
+                    {
+                        childValType = collRule.ChildValidatorType.GetGenericType(typeof(IValidator<>));
+                    }
+                    else
+                    {
+                        var childRule = propVal as ChildValidatorAdaptor;
+                        if (childRule != null)
+                        {
+                            childValType = childRule.ValidatorType.GetGenericType(typeof(IValidator<>));
+                        }
+                    }
+                    if (childValType == null)
+                    {
+                        continue;
+                    }
+                    var childModel = childValType.GetGenericArguments()[0];
+                    childModels.Add(childModel);
+                    valRules.AddRange(_container.GetInstance(childValType) as IEnumerable<IValidationRule> ??
+                                      new List<IValidationRule>());
+                }
+            }
+
+            if (!childModels.Any())
+            {
+                return;
+            }
+
+            // Add root and child producers for the valid root/child combinations
+            foreach (var genRule in _cache.GetGenericBusinessRules())
+            {
+                var bussinesRuleType = genRule.GetGenericType(typeof(IBusinessRule<,>));
+                var rootType = bussinesRuleType.GetGenericArguments()[0];
+                var childType = bussinesRuleType.GetGenericArguments()[1];
+
+                // Check if the current model can be applied as TRoot
+                if (rootType == typeof(TModel) ||
+                    (rootType.IsGenericParameter && rootType.GetGenericParameterConstraints().All(o => o.IsAssignableFrom(typeof(TModel)))))
+                {
+                    foreach (var childModel in childModels)
+                    {
+                        // Check if the current  childmodel can be applied as TChild
+                        if (childType == childModel ||
+                            (childType.IsGenericParameter &&
+                             childType.GetGenericParameterConstraints().All(o => o.IsAssignableFrom(childModel))))
+                        {
+                            var genArgs = new List<Type>();
+                            if (rootType.IsGenericParameter)
+                            {
+                                genArgs.Add(typeof(TModel));
+                            }
+                            if (childType.IsGenericParameter)
+                            {
+                                genArgs.Add(childModel);
+                            }
+                            // Get registration by implementation type in order to avoid duplicates 
+                            var producer = _container.GetRegistration(genRule.MakeGenericType(genArgs.ToArray()));
+                            _cache.AddRootProducers<TModel>(producer);
+                            _cache.AddChildProducers(childModel, producer);
+                        }
+
+                    }
+                }
+            }
+        }
+
         private Dictionary<InstanceProducer, IBusinessRule> ExecuteBeforeValidation(object instance, ValidationContext context)
         {
             var list = new Dictionary<InstanceProducer, IBusinessRule>();
@@ -174,7 +240,7 @@ namespace PowerArhitecture.Validation.Internal
                 list.Add(producer, businessRule);
                 businessRule.BeforeValidation(instance, context);
             };
-            foreach (var producer in _rootProducers)
+            foreach (var producer in _cache.GetRootProducers<TModel>())
             {
                 if (producer.ServiceType.IsGenericType &&
                     producer.ServiceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))

@@ -70,6 +70,7 @@
     <Compile Include="CustomRulesetValidatorSelector.cs" />
     <Compile Include="Internal\BusinessRulesValidator.cs" />
     <Compile Include="Internal\RuleSetValidationRule.cs" />
+    <Compile Include="Internal\ValidatorCache.cs" />
     <Compile Include="Internal\ValidatorDecorator.cs" />
     <Compile Include="Events\ValidatorCreatedEvent.cs" />
     <Compile Include="ExtendedValidationException.cs" />

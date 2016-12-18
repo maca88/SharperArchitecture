@@ -33,14 +33,16 @@ namespace PowerArhitecture.Validation
             return CanValidate((TChild)child, context);
         }
 
-        protected ValidationFailure Failure(Expression<Func<TChild, object>> propertyExp, string errorMsg)
+        protected virtual ValidationFailure Failure(Expression<Func<TChild, object>> propertyExp, string errorMsg, ValidationContext context)
         {
-            return new ValidationFailure(propertyExp.GetFullPropertyName(), errorMsg);
+            var child = context.InstanceToValidate as TChild;
+            var attemptedValue = child != null ? propertyExp.Compile()(child) : null;
+            return new ValidationFailure(propertyExp.GetFullPropertyName(), errorMsg, attemptedValue);
         }
 
-        protected ValidationFailure Failure(string errorMsg)
+        protected virtual ValidationFailure Failure(string errorMsg, ValidationContext context)
         {
-            return new ValidationFailure("", errorMsg);
+            return new ValidationFailure(context.PropertyChain.ToString(), errorMsg, context.InstanceToValidate);
         }
 
         protected ValidationFailure Success => null;
