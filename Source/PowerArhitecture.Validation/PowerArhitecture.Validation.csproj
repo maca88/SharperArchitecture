@@ -73,7 +73,6 @@
     <Compile Include="Internal\ValidatorCache.cs" />
     <Compile Include="Internal\ValidatorDecorator.cs" />
     <Compile Include="Events\ValidatorCreatedEvent.cs" />
-    <Compile Include="ExtendedValidationException.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Specifications\IBusinessRule.cs" />
     <Compile Include="Specifications\IValidatorModifier.cs" />
@@ -98,9 +97,7 @@
       <Name>PowerArhitecture.Common</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>

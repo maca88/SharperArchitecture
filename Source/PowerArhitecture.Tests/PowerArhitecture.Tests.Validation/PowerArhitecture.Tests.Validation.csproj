@@ -86,6 +86,7 @@
     <Compile Include="Models\Attributes\NotEmptyModel.cs" />
     <Compile Include="Models\Attributes\NotNullModel.cs" />
     <Compile Include="Models\Attributes\RegularExpressionModel.cs" />
+    <Compile Include="Models\GenericRootModel.cs" />
     <Compile Include="Models\GenericRootChildModel.cs" />
     <Compile Include="Models\GenericChildModel.cs" />
     <Compile Include="Models\Parent.cs" />

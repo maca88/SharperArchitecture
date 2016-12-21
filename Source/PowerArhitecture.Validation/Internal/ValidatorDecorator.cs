@@ -174,15 +174,14 @@ namespace PowerArhitecture.Validation.Internal
                         continue;
                     }
                     var childModel = childValType.GetGenericArguments()[0];
+                    if (childModel == typeof(TModel))
+                    {
+                        continue;
+                    }
                     childModels.Add(childModel);
                     valRules.AddRange(_container.GetInstance(childValType) as IEnumerable<IValidationRule> ??
                                       new List<IValidationRule>());
                 }
-            }
-
-            if (!childModels.Any())
-            {
-                return;
             }
 
             // Add root and child producers for the valid root/child combinations
@@ -196,9 +195,17 @@ namespace PowerArhitecture.Validation.Internal
                 if (rootType == typeof(TModel) ||
                     (rootType.IsGenericParameter && rootType.GetGenericParameterConstraints().All(o => o.IsAssignableFrom(typeof(TModel)))))
                 {
+                    if (rootType == childType)
+                    {
+                        var genArgs = genRule.GetGenericArguments().Select(args => typeof(TModel)).ToArray();
+                        var producer = _container.GetRegistration(genRule.MakeGenericType(genArgs.ToArray()));
+                        _cache.AddRootProducers<TModel>(producer);
+                        _cache.AddChildProducers(typeof(TModel), producer);
+                    }
+
                     foreach (var childModel in childModels)
                     {
-                        // Check if the current  childmodel can be applied as TChild
+                        // Check if the current childmodel can be applied as TChild
                         if (childType == childModel ||
                             (childType.IsGenericParameter &&
                              childType.GetGenericParameterConstraints().All(o => o.IsAssignableFrom(childModel))))
@@ -217,7 +224,6 @@ namespace PowerArhitecture.Validation.Internal
                             _cache.AddRootProducers<TModel>(producer);
                             _cache.AddChildProducers(childModel, producer);
                         }
-
                     }
                 }
             }

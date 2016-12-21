@@ -38,7 +38,7 @@ namespace PowerArhitecture.Tests.Validation
         }
 
         [Test]
-        public void ValidateNesetdModelWithBusinessRule()
+        public void ValidateNestedModelWithBusinessRule()
         {
             var valFuns = new List<Func<IValidator<Parent>, Parent, ValidationResult>>
             {
@@ -176,7 +176,7 @@ namespace PowerArhitecture.Tests.Validation
         }
 
         [Test]
-        public async Task ValidateNesetdModelWithBusinessRuleAsync()
+        public async Task ValidateNestedModelWithBusinessRuleAsync()
         {
             var valFuns = new List<Func<IValidator<Parent>, Parent, Task<ValidationResult>>>
             {
@@ -385,6 +385,46 @@ namespace PowerArhitecture.Tests.Validation
             var childValidator = Container.GetInstance<IValidator<GenericRootChildChild>>();
             valResult = childValidator.Validate(child1);
             Assert.IsTrue(valResult.IsValid);
+        }
+
+        [Test]
+        public void GenericRootBusinessRuleShouldWork()
+        {
+            var child1 = new GenericRootModel();
+            var child2 = new GenericRootModel();
+            var child3 = new GenericRootModel { Name = "Test" };
+            var child4 = new GenericRootModel();
+            var model = new GenericRootModel
+            {
+                Children = new List<GenericRootModel>
+                {
+                    child1,
+                    child2,
+                    child3
+                },
+                Relation = child4
+            };
+            var validator = Container.GetInstance<IValidator<GenericRootModel>>();
+
+            var valResult = validator.Validate(model);
+            Assert.IsFalse(valResult.IsValid);
+            Assert.AreEqual(4, valResult.Errors.Count);
+            Assert.AreEqual(valResult.Errors[0].ErrorMessage, "Name should not be empty");
+            Assert.AreEqual(valResult.Errors[0].PropertyName, "Children[0]");
+            Assert.AreEqual(valResult.Errors[0].AttemptedValue, child1);
+            Assert.AreEqual(valResult.Errors[1].ErrorMessage, "Name should not be empty");
+            Assert.AreEqual(valResult.Errors[1].PropertyName, "Children[1]");
+            Assert.AreEqual(valResult.Errors[1].AttemptedValue, child2);
+            Assert.AreEqual(valResult.Errors[2].ErrorMessage, "Name should not be empty");
+            Assert.AreEqual(valResult.Errors[2].PropertyName, "Relation");
+            Assert.AreEqual(valResult.Errors[2].AttemptedValue, child4);
+            Assert.AreEqual(valResult.Errors[3].ErrorMessage, "Name should not be empty");
+            Assert.AreEqual(valResult.Errors[3].PropertyName, "");
+            Assert.AreEqual(valResult.Errors[3].AttemptedValue, model);
+
+            var childValidator = Container.GetInstance<IValidator<GenericRootModel>>();
+            valResult = childValidator.Validate(child1);
+            Assert.IsFalse(valResult.IsValid);
         }
     }
 }
