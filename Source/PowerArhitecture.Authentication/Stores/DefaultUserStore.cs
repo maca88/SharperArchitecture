@@ -2,59 +2,67 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
+using NHibernate.Linq;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Authentication.Specifications;
-using PowerArhitecture.Common.Specifications;
-using PowerArhitecture.DataAccess;
-using PowerArhitecture.DataAccess.Attributes;
+using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
-using Microsoft.AspNet.Identity;
-using NHibernate;
-using NHibernate.Criterion;
-using NHibernate.Linq;
 using IUser = PowerArhitecture.Authentication.Specifications.IUser;
 using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
-namespace PowerArhitecture.Authentication.Repositories
+namespace PowerArhitecture.Authentication.Stores
 {
-    //[Repository(AutoBind = false)]
-    public abstract class UserRepository<TUser, TRole> : Repository<TUser>, IUserRepository<TUser>
+    public class DefaultUserStore<TUser> :
+        IUserLoginStore<TUser, long>,
+        IUserClaimStore<TUser, long>,
+        IUserRoleStore<TUser, long>,
+        IUserPasswordStore<TUser, long>,
+        IQueryableUserStore<TUser, long>,
+        IUserSecurityStampStore<TUser, long>
         where TUser : class, IUser, IEntity<long>, new()
-        where TRole : class, IRole, IEntity<long>, new()
     {
         protected readonly IAuthenticationConfiguration Configuration;
-
-        protected UserRepository(ISession session, ILogger logger, IAuthenticationConfiguration configuration) 
-            : base(session, logger)
+        
+        public DefaultUserStore(IDbStore dbStore, IAuthenticationConfiguration configuration)
         {
             Configuration = configuration;
+            DbStore = dbStore;
         }
 
-        public virtual Task CreateAsync(TUser user)
+        protected IDbStore DbStore { get; }
+
+        public Task CreateAsync(TUser user)
         {
-            return SaveAsync(user);
+            return DbStore.SaveAsync(user);
         }
 
-        public virtual Task<TUser> FindByIdAsync(long userId)
+        public Task UpdateAsync(TUser user)
         {
-            return GetAsync(userId);
+            return DbStore.SaveAsync(user);
         }
 
-        public virtual Task<TUser> FindByNameAsync(string userName)
+        public Task DeleteAsync(TUser user)
         {
-            var query =  Query();
+            return DbStore.DeleteAsync(user);
+        }
+
+        public Task<TUser> FindByIdAsync(long userId)
+        {
+            return DbStore.GetAsync<TUser>(userId);
+        }
+
+        public Task<TUser> FindByNameAsync(string userName)
+        {
+            var query = DbStore.Query<TUser>();
             if (Configuration.Caching)
                 query = query.Cacheable();
             return query.FirstOrDefaultAsync(o => o.UserName == userName);
         }
 
-        public virtual Task AddLoginAsync(TUser user, UserLoginInfo login)
+        public Task AddLoginAsync(TUser user, UserLoginInfo login)
         {
             var item = new UserLogin
             {
@@ -63,10 +71,10 @@ namespace PowerArhitecture.Authentication.Repositories
                 LoginProvider = login.LoginProvider
             };
             user.AddLogin(item);
-            return Task.FromResult(0);
+            return DbStore.SaveAsync(item);
         }
 
-        public virtual Task RemoveLoginAsync(TUser user, UserLoginInfo login)
+        public Task RemoveLoginAsync(TUser user, UserLoginInfo login)
         {
             var id = ((IUser<long>)user).Id;
             var item = user.GetAllLogins()
@@ -76,10 +84,10 @@ namespace PowerArhitecture.Authentication.Repositories
                                             o.ProviderKey == login.ProviderKey);
             if (item != null)
                 user.RemoveLogin(item);
-            return Task.FromResult(0);
+            return DbStore.DeleteAsync(item);
         }
 
-        public virtual Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
+        public Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user)
         {
             IList<UserLoginInfo> result = user.GetAllLogins()
                 .Select(o => new UserLoginInfo(o.LoginProvider, o.ProviderKey))
@@ -87,22 +95,22 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(result);
         }
 
-        public virtual async Task<TUser> FindAsync(UserLoginInfo login)
+        public async Task<TUser> FindAsync(UserLoginInfo login)
         {
-            return (TUser) await Query<UserLogin>()
+            return (TUser) await DbStore.Query<UserLogin>()
                               .Where(o => o.LoginProvider == login.LoginProvider &&
                                           o.ProviderKey == login.ProviderKey)
                               .Select(o => o.User)
                               .SingleOrDefaultAsync();
         }
 
-        public virtual Task<IList<Claim>> GetClaimsAsync(TUser user)
+        public Task<IList<Claim>> GetClaimsAsync(TUser user)
         {
             IList<Claim> result = user.GetAllClaims().Select(claim => new Claim(claim.ClaimType, claim.ClaimValue)).ToList();
             return Task.FromResult(result);
         }
 
-        public virtual Task AddClaimAsync(TUser user, Claim claim)
+        public Task AddClaimAsync(TUser user, Claim claim)
         {
             var item = new UserClaim
             {
@@ -110,10 +118,10 @@ namespace PowerArhitecture.Authentication.Repositories
                 ClaimValue = claim.Value
             };
             user.AddClaim(item);
-            return Task.FromResult(0);
+            return DbStore.SaveAsync(item);
         }
 
-        public virtual Task RemoveClaimAsync(TUser user, Claim claim)
+        public Task RemoveClaimAsync(TUser user, Claim claim)
         {
             foreach (var item in user.GetAllClaims()
                 .Where(o => o.ClaimType == claim.Value && o.ClaimValue == claim.Value))
@@ -123,95 +131,85 @@ namespace PowerArhitecture.Authentication.Repositories
             return Task.FromResult(0);
         }
 
-        public virtual async Task AddToRoleAsync(TUser user, string role)
+        public async Task AddToRoleAsync(TUser user, string role)
         {
             var roleName = role.ToUpper();
-            var r = await Query<TRole>().Where(o => o.Name == roleName).SingleOrDefaultAsync();
+            var type = Package.RoleType;
+            var query = (IQueryable<IRole>) ExpressionHelper.GetMethodInfo<IDbStore>(o => o.Query<TUser>())
+                .GetGenericMethodDefinition()
+                .MakeGenericMethod(type)
+                .Invoke(DbStore, null);
+            var r = await query.Where(o => o.Name == roleName).FirstOrDefaultAsync();
             if (r == null)
-                throw new InvalidOperationException(string.Format("Role '{0}' not found", role ));
+                throw new InvalidOperationException($"Role '{role}' not found");
             r.AddUser(user);
         }
 
-        public virtual Task RemoveFromRoleAsync(TUser user, string role)
+        public Task RemoveFromRoleAsync(TUser user, string role)
         {
             user.RemoveFromRole(role);
             return Task.FromResult(0);
         }
 
-        public virtual Task<IList<string>> GetRolesAsync(TUser user)
+        public Task<IList<string>> GetRolesAsync(TUser user)
         {
             IList<string> roles = user.GetRoles().Select(o => o.Name).ToList();
             return Task.FromResult(roles);
         }
 
-        public virtual Task<bool> IsInRoleAsync(TUser user, string role)
+        public Task<bool> IsInRoleAsync(TUser user, string role)
         {
             var inRole = user.IsInRole(role.ToUpper());
             return Task.FromResult(inRole);
         }
 
-        public virtual Task SetPasswordHashAsync(TUser user, string passwordHash)
+        public Task SetPasswordHashAsync(TUser user, string passwordHash)
         {
             user.PasswordHash = passwordHash;
             return Task.FromResult(0);
         }
 
-        public virtual Task<string> GetPasswordHashAsync(TUser user)
+        public Task<string> GetPasswordHashAsync(TUser user)
         {
             return Task.FromResult(user.PasswordHash);
         }
 
-        public virtual Task<bool> HasPasswordAsync(TUser user)
+        public Task<bool> HasPasswordAsync(TUser user)
         {
             return Task.FromResult(user.PasswordHash != null);
         }
 
-        public virtual Task SetSecurityStampAsync(TUser user, string stamp)
+        public Task SetSecurityStampAsync(TUser user, string stamp)
         {
             user.SecurityStamp = stamp;
             return Task.FromResult(0);
         }
 
-        public virtual Task<string> GetSecurityStampAsync(TUser user)
+        public Task<string> GetSecurityStampAsync(TUser user)
         {
             return Task.FromResult(user.SecurityStamp);
         }
 
-        public virtual async Task<TUser> GetUserAsync(string userName)
+        public Task<TUser> GetUserAsync(string userName)
         {
-            return (TUser)await Session.CreateCriteria(typeof(TUser))
-                .Add(Restrictions.Eq("UserName", userName))
-                .SetCacheable(Configuration.Caching)
-                .UniqueResultAsync();
+            var query = DbStore.Query<TUser>()
+                .Where(o => o.UserName == userName);
+            if (Configuration.Caching)
+            {
+                query = query.Cacheable();
+            }
+            return query.FirstOrDefaultAsync();
         }
 
-        //public virtual async Task<TUser> GetCurrentAsync()
-        //{
-        //    var userName = User?.Identity?.Name;
-        //    if (string.IsNullOrEmpty(userName))
-        //        return null;
-        //    return await GetUserAsync(userName);
-        //}
-
-        public virtual Task<TUser> GetSystemUserAsync()
+        public Task<TUser> GetSystemUserAsync()
         {
             return GetUserAsync(Configuration.SystemUserName);
         }
 
-        public virtual void Dispose()
+        public IQueryable<TUser> Users => DbStore.Query<TUser>();
+
+        void IDisposable.Dispose()
         {
         }
-    }
-
-    public interface IUserRepository<TUser>
-        : IRepository<TUser>, IUserLoginStore<TUser, long>, IUserClaimStore<TUser, long>, IUserRoleStore<TUser, long>,
-        IUserPasswordStore<TUser, long>, IUserSecurityStampStore<TUser, long>
-        where TUser : class, IUser, IEntity<long>, new()
-    {
-        //Task<TUser> GetCurrentAsync();
-
-        Task<TUser> GetSystemUserAsync();
-
-        Task<TUser> GetUserAsync(string userName);
     }
 }

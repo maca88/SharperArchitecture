@@ -40,12 +40,20 @@
       <HintPath>..\..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FluentNHibernate, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentNHibernateX.1.2.0-Alpha1\lib\net45\FluentNHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FluentValidation.6.4.0-beta6\lib\Net45\FluentValidation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Moq, Version=4.5.23.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
@@ -64,6 +72,10 @@
       <HintPath>..\..\packages\SimpleInjector.3.3.1\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SimpleInjector.Extensions.ExecutionContextScoping, Version=3.3.1.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SimpleInjector.Extensions.ExecutionContextScoping.3.3.1\lib\net45\SimpleInjector.Extensions.ExecutionContextScoping.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Interactive.Async, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Interactive.Async.3.0.0\lib\net45\System.Interactive.Async.dll</HintPath>
@@ -80,12 +92,29 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AuthenticationTests.cs" />
+    <Compile Include="Entities\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\PowerArhitecture.Authentication\PowerArhitecture.Authentication.csproj">
       <Project>{33479929-7cc8-428b-91bd-d11745a7be82}</Project>
       <Name>PowerArhitecture.Authentication</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PowerArhitecture.Common\PowerArhitecture.Common.csproj">
+      <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
+      <Name>PowerArhitecture.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PowerArhitecture.DataAccess\PowerArhitecture.DataAccess.csproj">
+      <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
+      <Name>PowerArhitecture.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PowerArhitecture.Domain\PowerArhitecture.Domain.csproj">
+      <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>
+      <Name>PowerArhitecture.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\PowerArhitecture.Validation\PowerArhitecture.Validation.csproj">
+      <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
+      <Name>PowerArhitecture.Validation</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerArhitecture.Tests.Common\PowerArhitecture.Tests.Common.csproj">
       <Project>{7b6de807-7ab9-47b6-9289-21cfd6385d36}</Project>

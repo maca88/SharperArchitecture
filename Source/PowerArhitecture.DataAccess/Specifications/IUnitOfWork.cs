@@ -6,44 +6,8 @@ using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.DataAccess.Specifications
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork : IDbStore, IDisposable
     {
-        IQueryable<TModel> Query<TModel>() where TModel : class, IEntity<long>, new();
-
-        IQueryable<TModel> Query<TModel, TId>() where TModel : class, IEntity<TId>, new();
-
-        IRepository<TModel> GetRepository<TModel>() where TModel : class, IEntity<long>, new();
-
-        IRepository<TModel, TId> GetRepository<TModel, TId>() where TModel : class, IEntity<TId>, new();
-
-        TRepo GetCustomRepository<TRepo>() where TRepo : class, IRepository;
-
-        void Save<TModel>(TModel model) where TModel : IEntity;
-
-        Task SaveAsync<TModel>(TModel model) where TModel : IEntity;
-
-        void Save(params IEntity[] models);
-
-        Task SaveAsync(params IEntity[] models);
-
-        void Delete<TModel>(TModel model) where TModel : IEntity;
-
-        Task DeleteAsync<TModel>(TModel model) where TModel : IEntity;
-
-        TModel Get<TModel, TId>(TId id) where TModel : IEntity<TId>;
-
-        Task<TModel> GetAsync<TModel, TId>(TId id) where TModel : IEntity<TId>;
-
-        TModel Get<TModel>(long id) where TModel : IEntity<long>;
-
-        Task<TModel> GetAsync<TModel>(long id) where TModel : IEntity<long>;
-
-        void Refresh<TModel>(TModel model) where TModel : IEntity;
-
-        Task RefreshAsync<TModel>(TModel model) where TModel : IEntity;
-
-        //IEnumerable<Type> FindMappedTypes(Func<Type, bool> condition);
-
         void Flush();
 
         Task FlushAsync();
@@ -55,6 +19,5 @@ namespace PowerArhitecture.DataAccess.Specifications
         void Rollback();
 
         IUnitOfWorkImplementor GetUnitOfWorkImplementation();
-
     }
 }

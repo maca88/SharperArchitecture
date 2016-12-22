@@ -219,7 +219,7 @@ namespace System.Reflection
                     prevValue = value;
                     value = property.GetValue(value, null);
                     if (value == defValue) return new GetMemberResult(value, currentMember, prevValue);
-                    currentType = property.PropertyType;
+                    currentType = value?.GetType() ?? property.PropertyType;
                     continue;
                 }
                 var field = GetField(currentType, memberName);
@@ -230,7 +230,7 @@ namespace System.Reflection
                     prevValue = value;
                     value = field.GetValue(value);
                     if (value == defValue) return new GetMemberResult(value, currentMember, prevValue);
-                    currentType = field.FieldType;
+                    currentType = value?.GetType() ?? field.FieldType;
                     continue;
                 }
                 var method = GetMethod(currentType, memberName);

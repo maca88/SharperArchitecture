@@ -10,6 +10,7 @@ using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Util;
 using PowerArhitecture.Breeze.Specification;
+using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Extensions;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation;
@@ -158,7 +159,7 @@ namespace PowerArhitecture.Breeze
 
         protected override bool HandleSaveException(Exception e, SaveWorkState saveWorkState)
         {
-            var ve = e as ExtendedValidationException;
+            var ve = e as EntityValidationException;
             if (ve == null)
                 return false;
             var entityErrors = new List<EntityError>();

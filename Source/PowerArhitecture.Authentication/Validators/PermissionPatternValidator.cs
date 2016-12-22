@@ -1,12 +1,8 @@
 ﻿using System.Text.RegularExpressions;
-using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Common.Internationalization;
 using PowerArhitecture.Validation;
 using FluentValidation.Results;
 using PowerArhitecture.Authentication.Specifications;
-using PowerArhitecture.Common.Specifications;
-using PowerArhitecture.Domain;
-using IRole = PowerArhitecture.Authentication.Specifications.IRole;
 
 namespace PowerArhitecture.Authentication.Validators
 {

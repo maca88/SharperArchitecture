@@ -7,11 +7,11 @@ namespace PowerArhitecture.DataAccess.Events
 {
     public class PopulateDbEvent : IEvent
     {
-        public PopulateDbEvent(IUnitOfWork unitOfWork)
+        public PopulateDbEvent(ISession session)
         {
-            UnitOfWork = unitOfWork;
+            Session = session;
         }
 
-        public IUnitOfWork UnitOfWork { get; }
+        public ISession Session { get; }
     }
 }

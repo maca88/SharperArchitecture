@@ -19,6 +19,7 @@ using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Validation;
 using PowerArhitecture.Validation.Specifications;
+using PowerArhitecture.Tests.Common.Extensions;
 
 namespace PowerArhitecture.Tests.CodeList
 {
@@ -50,11 +51,11 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void QueryingByCodeShouldWork()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {
-                    var cl = unitOfWork.Query<SimpleCodeList, string>()
+                    var cl = unitOfWork.Query<SimpleCodeList>()
                         .First(o => o.Code == "Code1");
                     Assert.NotNull(cl);
 
@@ -71,11 +72,11 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void QueryingByIdShouldWork()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {
-                    var cl = unitOfWork.Query<SimpleCodeList, string>()
+                    var cl = unitOfWork.Query<SimpleCodeList>()
                         .First(o => o.Id == "Code1");
                     Assert.NotNull(cl);
 
@@ -92,18 +93,18 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void QueryingLocalizableCodeListByIdShouldWork()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
                     unitOfWork.DefaultSession.EnableFilter("Language")
                         .SetParameter("Current", "sl")
                         .SetParameter("Fallback", "en");
-                    var bmw = unitOfWork.Query<Car, string>()
+                    var bmw = unitOfWork.Query<Car>()
                         .First(o => o.Id == "BMW");
                     Assert.NotNull(bmw);
 
-                    bmw = unitOfWork.Query<Car, string>()
+                    bmw = unitOfWork.Query<Car>()
                         .First(o => o.Id == "BMW");
                     Assert.NotNull(bmw);
 
@@ -120,11 +121,11 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void IdAndCodeMustBeEqual()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {
-                    var cls = unitOfWork.Query<SimpleCodeList, string>()
+                    var cls = unitOfWork.Query<SimpleCodeList>()
                         .ToList();
                     foreach (var cl in cls)
                     {
@@ -144,14 +145,14 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void LocalizationWithLanguageFilter()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
                     unitOfWork.DefaultSession.EnableFilter("Language")
                         .SetParameter("Current", "sl")
                         .SetParameter("Fallback", "en");
-                    var bmw = unitOfWork.Query<Car, string>()
+                    var bmw = unitOfWork.Query<Car>()
                         .First(o => o.Code == "BMW");
                     Assert.AreEqual("BMW Slo", bmw.Name);
 
@@ -168,21 +169,21 @@ namespace PowerArhitecture.Tests.CodeList
         [Test]
         public void LocalizationWithCustomLanguageFilter()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
                     unitOfWork.DefaultSession.EnableFilter("Language")
                         .SetParameter("Current", "sl")
                         .SetParameter("Fallback", "en");
-                    var cl = unitOfWork.Query<CustomLanguageFilter, string>()
+                    var cl = unitOfWork.Query<CustomLanguageFilter>()
                         .First(o => o.Code == "Code1");
                     Assert.AreEqual("SL", cl.Name);
                     Assert.AreEqual("CustomSL", cl.Custom);
                     Assert.AreEqual("Custom2SL", cl.CurrentCustom2);
 
                     // Fallback
-                    cl = unitOfWork.Query<CustomLanguageFilter, string>()
+                    cl = unitOfWork.Query<CustomLanguageFilter>()
                         .First(o => o.Code == "Code2");
                     Assert.AreEqual("EN", cl.Name);
                     Assert.AreEqual("Custom2EN", cl.CurrentCustom2);
@@ -214,7 +215,7 @@ namespace PowerArhitecture.Tests.CodeList
             FillCustomLanguageFilters(entities);
             FillSimpleCodeList(entities);
 
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {

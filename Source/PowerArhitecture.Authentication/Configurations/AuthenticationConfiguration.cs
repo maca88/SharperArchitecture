@@ -19,20 +19,12 @@ namespace PowerArhitecture.Authentication.Configurations
 
         public virtual string SystemUserName { get; set; }
 
-        public virtual string UserClass { get; set; }
-
         public virtual bool Caching { get; set; }
-
-        public Type GetUserType()
-        {
-            return Type.GetType(UserClass, true);
-        }
 
         private void FillFromConfig()
         {
             SystemUserPassword = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserPassword);
             SystemUserName = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserName);
-            UserClass = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.UserClass);
             Caching = AppConfiguration.GetSetting<bool>(AuthenticationConfigurationKeys.Caching);
         }
     }

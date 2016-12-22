@@ -106,7 +106,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
             bmw.Child = audi;
 
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 //Save only the root entity (because the default conventions the children will be saved too)
@@ -184,7 +184,7 @@ namespace PowerArhitecture.Tests.DataAccess
         {
             var currentUser = Thread.CurrentPrincipal.Identity.Name;
             var car = new VersionCarWithStringUser { Model = "BMW" };
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 unitOfWork.Save(car); //A flush will happen as we set the id generator to indentity
                 Assert.AreEqual(1, car.Id);
@@ -221,7 +221,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var audiWheel1 = new VersionWheelWithStringUser { Dimension = 18 };
             var audiWheel2 = new VersionWheelWithStringUser { Dimension = 18 };
 
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 unitOfWork.DefaultSession.FlushMode = FlushMode.Never;
                 
@@ -334,7 +334,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var user = new User { UserName = currentUserName };
             var user2 = new User { UserName = newUserName };
 
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 //Create two users
                 unitOfWork.Save(user);
@@ -353,7 +353,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
                 Thread.Sleep(2000);
 
-                //Update
+                //UpdateContainer.GetInstance<IUnitOfWorkFactory>().Create()
                 car.Model = "Audi";
                 unitOfWork.Save(car);
                 unitOfWork.Flush();
@@ -378,7 +378,7 @@ namespace PowerArhitecture.Tests.DataAccess
             var audiWheel1 = new VersionWheelWithEntityUser { Dimension = 18 };
             var audiWheel2 = new VersionWheelWithEntityUser { Dimension = 18 };
 
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 AuditUserProvider.CacheUserIds = true; //Will reduce the number of total queries from 15 to 10
                 

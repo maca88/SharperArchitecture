@@ -11,7 +11,6 @@ using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Enums;
 using PowerArhitecture.Common.Extensions;
-using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Domain.Attributes;
 using PowerArhitecture.Validation.Attributes;
@@ -37,7 +36,7 @@ namespace PowerArhitecture.Authentication.Entities
             return UserRoles.Select(o => o.Role).Any(o => o.Name == role);
         }
 
-        public virtual IIdentity Identity { get { return this; } }
+        public virtual IIdentity Identity => this;
 
         [Length(50)]
         [NotNull]

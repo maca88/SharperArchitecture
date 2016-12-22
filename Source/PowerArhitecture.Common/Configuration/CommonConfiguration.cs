@@ -8,10 +8,6 @@ namespace PowerArhitecture.Common.Configuration
 {
     public partial class CommonConfiguration : Specifications.ICommonConfiguration
     {
-        public CommonConfiguration()
-        {
-            Ninject = new NinjectConfiguration();
-        }
         public virtual string DefaultCulture
         {
             get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Common.DefaultCulture:string"); }
@@ -24,6 +20,5 @@ namespace PowerArhitecture.Common.Configuration
         {
             get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Common.DefaultTranslationsPath:string"); }
         }
-        public virtual NinjectConfiguration Ninject { get; private set; }
     }
 }

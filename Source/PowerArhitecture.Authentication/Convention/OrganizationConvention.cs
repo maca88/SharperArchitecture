@@ -12,21 +12,20 @@ using PowerArhitecture.Common.Configuration;
 
 namespace PowerArhitecture.Authentication.Convention
 {
-    //public class OrganizationConvention : IReferenceConvention
-    //{
-    //    private readonly Type _organizationType;
+    public class OrganizationConvention : IReferenceConvention
+    {
+        private readonly Type _organizationType;
 
-    //    public OrganizationConvention()
-    //    {
-    //        var organizationClass = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.OrganizationClass);
-    //        _organizationType = Type.GetType(organizationClass, true);
-    //    }
+        public OrganizationConvention()
+        {
+            _organizationType = Package.OrganizationType;
+        }
 
-    //    public void Apply(IManyToOneInstance instance)
-    //    {
-    //        if (!typeof(IOrganization).IsAssignableFrom(instance.Property.PropertyType)) return;
+        public void Apply(IManyToOneInstance instance)
+        {
+            if (!typeof(IOrganization).IsAssignableFrom(instance.Property.PropertyType)) return;
 
-    //        instance.OverrideInferredClass(_organizationType);
-    //    }
-    //}
+            instance.OverrideInferredClass(_organizationType);
+        }
+    }
 }

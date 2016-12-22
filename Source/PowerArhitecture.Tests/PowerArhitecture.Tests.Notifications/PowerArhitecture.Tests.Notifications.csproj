@@ -138,10 +138,6 @@
       <Project>{7BE609C2-FEBE-4428-8B2D-B1FD72B5F0E7}</Project>
       <Name>PowerArhitecture.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\PowerArhitecture.Notifications\PowerArhitecture.Notifications.csproj">
-      <Project>{524097aa-f724-4074-ab0d-83e14019f9ca}</Project>
-      <Name>PowerArhitecture.Notifications</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\PowerArhitecture.Validation\PowerArhitecture.Validation.csproj">
       <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
       <Name>PowerArhitecture.Validation</Name>

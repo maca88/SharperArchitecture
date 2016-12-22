@@ -17,8 +17,7 @@ namespace PowerArhitecture.Authentication.Convention
 
         public PrincipalConvention()
         {
-            var userClass = AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.UserClass);
-            _userType = Type.GetType(userClass, true);
+            _userType = Package.UserType;
         }
 
         public void Apply(IManyToOneInstance instance)

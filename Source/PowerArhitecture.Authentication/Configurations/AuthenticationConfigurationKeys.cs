@@ -10,8 +10,6 @@ namespace PowerArhitecture.Authentication.Configurations
     {
         public const string SystemUserPassword = "PowerArhitecture.Authentication.SystemUserPassword:string";
         public const string SystemUserName = "PowerArhitecture.Authentication.SystemUserName:string";
-        public const string UserClass = "PowerArhitecture.Authentication.UserClass:string";
-        public const string AdditionalUserIncludes = "PowerArhitecture.Authentication.AdditionalUserIncludes:string";
         public const string Caching = "PowerArhitecture.Authentication.Caching:bool";
     }
 }

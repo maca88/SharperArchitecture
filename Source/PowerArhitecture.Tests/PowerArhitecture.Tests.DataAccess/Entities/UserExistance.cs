@@ -55,6 +55,8 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         {
             return true;
         }
+
+        public override string[] RuleSets { get; }
     }
 
     public class UserExistanceValidator : Validator<UserExistance>

@@ -1,23 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using PowerArhitecture.Common.Helpers;
 using PowerArhitecture.Common.Specifications;
-using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
 using PowerArhitecture.Notifications.Entities;
-using PowerArhitecture.Validation.Specifications;
 using NHibernate;
-using NHibernate.Linq;
 using PowerArhitecture.Domain;
 using PowerArhitecture.Notifications.Specifications;
 
 namespace PowerArhitecture.Notifications
 {
+    public class GetUnReadNotificationsQuery<TRecipient, TNotification, TNotificationRecipient> : IQuery<IEnumerable<TNotification>>
+        where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>, new()
+    {
+        public GetUnReadNotificationsQuery(TRecipient recipient)
+        {
+            Recipient = recipient;
+        }
+
+        public TRecipient Recipient { get; }
+    }
+
+    public class GetUnReadNotificationsQueryHandler<TRecipient, TNotification, TNotificationRecipient> :
+        IQueryHandler<GetUnReadNotificationsQuery<TRecipient, TNotification, TNotificationRecipient>, IEnumerable<TNotification>>
+        where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()
+        where TNotificationRecipient : NotificationRecipient<TRecipient, TNotification, TNotificationRecipient>, new()
+    {
+        private readonly IDbStore _dbStore;
+        //Create a fake notification instance as the instance contains the recipient compare expression
+        private readonly TNotification _notification = new TNotification();
+
+        public GetUnReadNotificationsQueryHandler(IDbStore dbStore)
+        {
+            _dbStore = dbStore;
+        }
+
+        public IEnumerable<TNotification> Handle(GetUnReadNotificationsQuery<TRecipient, TNotification, TNotificationRecipient> query)
+        {
+            return _dbStore.Query<TNotificationRecipient>()
+                .Where(o => o.ReadDate == null)
+                .Where(_notification.GetCompareRecipientExpression(query.Recipient))
+                .Select(o => o.Notification);
+        }
+    }
+
+
     public abstract class NotificationRepository<TRecipient, TNotification, TNotificationRecipient> 
         : Repository<TNotification>, INotificationRepository<TRecipient, TNotification>
         where TNotification : Notification<TRecipient, TNotification, TNotificationRecipient>, new()

@@ -83,7 +83,6 @@
   <ItemGroup>
     <Compile Include="Attributes\IsolationLevelAttribute.cs" />
     <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
-    <Compile Include="Attributes\RepositoryAttribute.cs" />
     <Compile Include="Comparers\EntityEqualComparer.cs" />
     <Compile Include="Comparers\TypeInheritanceComparer.cs" />
     <Compile Include="Configurations\ConventionsConfiguration.cs" />
@@ -119,6 +118,8 @@
     <Compile Include="Conventions\Mssql\MssqlUniqueMultipleNullsConvention.cs" />
     <Compile Include="Conventions\VersionedEntityConvention.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="EntityValidationException.cs" />
+    <Compile Include="Internal\DbStore.cs" />
     <Compile Include="EventListeners\EntityPreUpdateInsertEventListener.cs" />
     <Compile Include="EventListeners\NhConfigurationEventHandler.cs" />
     <Compile Include="EventListeners\TransactionEventListener.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="Factories\UnitOfWorkFactory.cs" />
     <Compile Include="Interceptors\NhibernateInterceptor.cs" />
     <Compile Include="Internal\AsyncHelpers.cs" />
+    <Compile Include="Internal\DefaultQueryProcessor.cs" />
     <Compile Include="MappingSteps\CustomCollectionStep.cs" />
     <Compile Include="MappingSteps\CustomHasManyStep.cs" />
     <Compile Include="MappingSteps\CustomPropertyStep.cs" />
@@ -169,11 +171,17 @@
     <Compile Include="Providers\AuditUserProvider.cs" />
     <Compile Include="Providers\SessionFactoryProvider.cs" />
     <Compile Include="Providers\SessionProvider.cs" />
+    <Compile Include="Specifications\IAsyncQuery.cs" />
+    <Compile Include="Specifications\IAsyncQueryHandler.cs" />
     <Compile Include="Specifications\IAuditUserProvider.cs" />
+    <Compile Include="Specifications\IDbStore.cs" />
     <Compile Include="Specifications\IFluentConventionsConfiguration.cs" />
     <Compile Include="Specifications\IFluentAutoMappingConfiguration.cs" />
     <Compile Include="Specifications\IFluentDatabaseConfiguration.cs" />
     <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
+    <Compile Include="Specifications\IQuery.cs" />
+    <Compile Include="Specifications\IQueryHandler.cs" />
+    <Compile Include="Specifications\IQueryProcessor.cs" />
     <Compile Include="Specifications\ISessionFactoryProvider.cs" />
     <Compile Include="Specifications\ISessionProvider.cs" />
     <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
@@ -181,11 +189,9 @@
     <Compile Include="Decorators\CustomAutoPersistenceModel.cs" />
     <Compile Include="MappingSteps\CustomHasManyToManyStep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repository.cs" />
     <Compile Include="SessionFactoryInfo.cs" />
     <Compile Include="Specifications\ICreateSchemaConvention.cs" />
     <Compile Include="Specifications\ISchemaConvention.cs" />
-    <Compile Include="Specifications\IRepository.cs" />
     <Compile Include="Specifications\IUpdateSchemaConvention.cs" />
     <Compile Include="Specifications\IUnitOfWork.cs" />
     <Compile Include="Specifications\IUnitOfWorkFactory.cs" />

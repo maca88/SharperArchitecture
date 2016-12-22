@@ -84,6 +84,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessRules\DeleteSystemUserBusinessRule.cs" />
+    <Compile Include="BusinessRules\DuplicateUserNameBusinessRule.cs" />
+    <Compile Include="BusinessRules\UserNameFormatBusinessRule.cs" />
     <Compile Include="Configurations\AuthenticationConfiguration.cs" />
     <Compile Include="Configurations\AuthenticationConfigurationKeys.cs" />
     <Compile Include="Convention\CacheConvention.cs" />
@@ -139,8 +142,8 @@
       <DependentUpon>T4FluentNH.tt</DependentUpon>
     </Compile>
     <Compile Include="Entities\Role.cs" />
-    <Compile Include="Repositories\RoleRepository.cs" />
-    <Compile Include="Repositories\UserRepository.cs" />
+    <Compile Include="Stores\DefaultRoleStore.cs" />
+    <Compile Include="Stores\DefaultUserStore.cs" />
     <Compile Include="Specifications\IPasswordValidator.cs" />
     <Compile Include="Specifications\IRole.cs" />
     <Compile Include="Entities\User.cs" />
@@ -157,9 +160,9 @@
     <Compile Include="UserSetting.generated.cs">
       <DependentUpon>T4FluentNH.tt</DependentUpon>
     </Compile>
+    <Compile Include="Validators\IdentityValidator.cs" />
     <Compile Include="Validators\PasswordValidator.cs" />
     <Compile Include="Validators\PermissionPatternValidator.cs" />
-    <Compile Include="Validators\UserValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

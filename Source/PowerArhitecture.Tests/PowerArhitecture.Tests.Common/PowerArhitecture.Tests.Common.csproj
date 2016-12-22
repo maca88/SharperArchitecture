@@ -114,6 +114,7 @@
     <Compile Include="Events\TestAsyncEventHandler.cs" />
     <Compile Include="Events\TestEventHandler.cs" />
     <Compile Include="Events\MultipleEventsPerHandlerEventHander.cs" />
+    <Compile Include="Extensions\DbStoreExtensions.cs" />
     <Compile Include="Internacionalization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActionBootstrapperExtension.cs" />

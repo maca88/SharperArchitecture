@@ -11,6 +11,5 @@ namespace PowerArhitecture.Common.Specifications
         string DefaultCulture { get; }
         string TranslationsByCulturePattern { get; }
         string DefaultTranslationsPath { get; }
-        Configuration.NinjectConfiguration Ninject { get; }
     }
 }

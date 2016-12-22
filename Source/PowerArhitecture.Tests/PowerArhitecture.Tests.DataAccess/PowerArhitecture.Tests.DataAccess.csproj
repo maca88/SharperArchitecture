@@ -114,6 +114,7 @@
       <HintPath>..\..\packages\System.Interactive.Async.3.0.0\lib\net45\System.Interactive.Async.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
@@ -129,7 +130,6 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Attributes\IsolationAttribute.cs" />
     <Compile Include="Entities\AttrMssqlIndexAttribute.cs" />
     <Compile Include="Entities\AttrIndexAttribute.cs" />
     <Compile Include="Entities\AttrLazyLoad.cs" />
@@ -147,14 +147,13 @@
     <Compile Include="Entities\Versioning\VersionWheelWithEntityUser.cs" />
     <Compile Include="Entities\Versioning\VersionWheelWithStringUser.cs" />
     <Compile Include="EntityValidationTests.cs" />
-    <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="MultiDatabasesTests.cs" />
-    <Compile Include="MultiDatabase\BarRepository.cs" />
     <Compile Include="MultiDatabase\BazModels\BazModel.cs" />
-    <Compile Include="MultiDatabase\BazRepository.cs" />
-    <Compile Include="MultiDatabase\MultiRepositories.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LifecycleTests.cs" />
+    <Compile Include="Queries\GetAllUsersAsyncQuery.cs" />
+    <Compile Include="Queries\GetAllUsersQuery.cs" />
+    <Compile Include="QueryHandlerTests.cs" />
     <Compile Include="VersionedEntityRequiredLastModified.cs" />
     <Compile Include="VersionEntityTests.cs" />
   </ItemGroup>

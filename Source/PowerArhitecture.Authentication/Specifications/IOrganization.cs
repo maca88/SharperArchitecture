@@ -11,10 +11,5 @@ namespace PowerArhitecture.Authentication.Specifications
 
     public interface IOrganization : IVersionedEntity
     {
-        //ISet<OrganizationRole> OrganizationRoles { get; }
-
-        //void AddOrganizationRole(OrganizationRole organizationRole);
-
-        //void RemoveOrganizationRole(OrganizationRole organizationRole);
     }
 }

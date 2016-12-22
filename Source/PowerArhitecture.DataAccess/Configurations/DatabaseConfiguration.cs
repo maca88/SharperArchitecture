@@ -40,7 +40,6 @@ namespace PowerArhitecture.DataAccess.Configurations
         public virtual Action<FluentConfiguration> FluentConfigurationAction { get; internal set; }
         public virtual Action<Configuration> ConfigurationCompletedAction { get; internal set; }
         public virtual Action<IFluentAutoMappingConfiguration> AutoMappingConfigurationAction { get; internal set; }
-        internal virtual Dictionary<Type, Type> RepositoryTypes { get; } = new Dictionary<Type, Type>();
 
         private void FillFromConfig()
         {

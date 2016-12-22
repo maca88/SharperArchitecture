@@ -38,7 +38,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomatically()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity {Name = "Test"};
                 ValidableEntityChild child;
@@ -89,7 +89,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public async Task VariuosChildSubChildDeletionShouldTriggerRootToValidateAutomaticallyAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
                 ValidableEntityChild child;
@@ -140,7 +140,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void ShouldNotLeakWhenTheTransactionIsNotCommited()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 var entity = new ValidableEntity { Name = "Test" };
                 ValidableEntityChild child;
@@ -178,7 +178,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void VariuosIdentityChildSubChildDeletionShouldTriggerRootToValidateAutomatically()
         {
             //ValidableEntityValidationContextFiller.FilledCount = 0;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 var entity = new IdentityValidableEntity { Name = "Test" };
                 IdentityValidableChildEntity child;
@@ -221,9 +221,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidRootShouldThrowOnFlushAutomaticValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -256,9 +256,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidRootShouldThrowOnFlushAutomaticValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -291,9 +291,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidRootShouldThrowOnAutomaticValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -317,9 +317,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidRootShouldThrowOnAutomaticValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -343,7 +343,7 @@ namespace PowerArhitecture.Tests.DataAccess
         public void AutoValidationShouldNotThrowWhenChildIsSwitchedToANonRegisteredParent()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -374,9 +374,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void PersistedChildShouldBeValidatedWhenAttachedToTransientParent()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -414,7 +414,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void PersistedIdentityChildShouldNotBeValidatedWhenAttachedToTransientParent()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -447,7 +447,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void RootChildShouldNotThrowAStackOverflowException()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -482,9 +482,9 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void InvalidRootChildThrowOnAutomaticValidation()
         {
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -521,9 +521,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -548,9 +548,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidChildShouldThrowOnAutomaticRootValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -577,7 +577,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<PowerArhitectureException> (() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -605,7 +605,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityBusinessRule.FilledCount = 0;
             Assert.ThrowsAsync<PowerArhitectureException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -631,9 +631,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidDeletedChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -660,9 +660,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidDeletedChildShouldThrowOnAutomaticRootValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -688,7 +688,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void InvalidDeletedIdentityChildShouldNotThrowOnAutomaticRootValidation()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -712,7 +712,7 @@ namespace PowerArhitecture.Tests.DataAccess
         [Test]
         public void DeletedIdentityParentShouldNotThrowOnAutomaticValidation()
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -741,9 +741,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidManuallyDeletedChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -770,9 +770,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidManuallyDeletedChildShouldThrowOnAutomaticRootValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -799,9 +799,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidInsertedChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -829,9 +829,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidInsertedChildShouldThrowOnAutomaticRootValidationAsync()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.ThrowsAsync<ExtendedValidationException>(async () =>
+            Assert.ThrowsAsync<EntityValidationException>(async () =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -859,9 +859,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidSubChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -888,7 +888,7 @@ namespace PowerArhitecture.Tests.DataAccess
             ValidableEntityBusinessRule.FilledCount = 0;
             Assert.Throws<PowerArhitectureException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -914,9 +914,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidDeletedSubChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -943,9 +943,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidManuallyDeletedSubChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -973,9 +973,9 @@ namespace PowerArhitecture.Tests.DataAccess
         public void InvalidInsertedSubChildShouldThrowOnAutomaticRootValidation()
         {
             ValidableEntityBusinessRule.FilledCount = 0;
-            Assert.Throws<ExtendedValidationException>(() =>
+            Assert.Throws<EntityValidationException>(() =>
             {
-                using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+                using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
                     try
                     {
@@ -1011,7 +1011,7 @@ namespace PowerArhitecture.Tests.DataAccess
             }
 
             var wasCommited = false;
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>().GetUnitOfWorkImplementation())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
             {
                 try
                 {
@@ -1035,7 +1035,7 @@ namespace PowerArhitecture.Tests.DataAccess
 
         protected override void FillData(ISessionFactory sessionFactory)
         {
-            using (var unitOfWork = Container.GetInstance<IUnitOfWork>())
+            using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create())
             {
                 try
                 {

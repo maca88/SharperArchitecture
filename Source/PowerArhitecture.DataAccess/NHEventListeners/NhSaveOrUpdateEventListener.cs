@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -53,7 +54,8 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 var userType = SetAuditProperties(@event.Entity, reqLastModifiedProp);
                 if (userType != null)
                 {
-                    SetCurrentUser(@event.Entity, await GetCurrentUserAsync(@event.Session, userType), reqLastModifiedProp);
+                    SetCurrentUser(@event.Entity, await GetCurrentUserAsync(@event.Session, userType), reqLastModifiedProp,
+                        @event.Session.GetEntityPersister(@event.EntityName, @event.Entity));
                 }
                 await EventPublisher.PublishAsync(new EntitySavingAsyncEvent(@event));
             }
@@ -72,7 +74,8 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                 var userType = SetAuditProperties(@event.Entity, reqLastModifiedProp);
                 if (userType != null)
                 {
-                    SetCurrentUser(@event.Entity, GetCurrentUser(@event.Session, userType), reqLastModifiedProp);
+                    SetCurrentUser(@event.Entity, GetCurrentUser(@event.Session, userType), reqLastModifiedProp, 
+                        @event.Session.GetEntityPersister(@event.EntityName, @event.Entity));
                 }
                 EventPublisher.Publish(new EntitySavingEvent(@event));
             }
@@ -100,26 +103,49 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
 
         private object GetCurrentUser(ISession session, Type userType)
         {
-            var currentUser = _auditUserProvider.GetCurrentUser(session, userType);
-            if (currentUser == null)
-            {
-                throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
-            }
-            return currentUser;
+            return _auditUserProvider.GetCurrentUser(session, userType);
         }
 
         private async Task<object> GetCurrentUserAsync(ISession session, Type userType)
         {
-            var currentUser = await _auditUserProvider.GetCurrentUserAsync(session, userType);
-            if (currentUser == null)
+            return await _auditUserProvider.GetCurrentUserAsync(session, userType);
+        }
+
+        private readonly ConcurrentDictionary<IEntityPersister, Tuple<bool, bool>> _auditByRequired = 
+            new ConcurrentDictionary<IEntityPersister, Tuple<bool, bool>>();
+
+        private void SetCurrentUser(object obj, object currentUser, bool requiredLastModifiedProp, IEntityPersister persister)
+        {
+            var isCreatedByRequired = true;
+            var isModifiedByRequired = true;
+            if (persister != null)
+            {
+                var tuple = _auditByRequired.GetOrAdd(persister, p =>
+                {
+                    var results = new Dictionary<string, bool>
+                    {
+                        {"CreatedBy", true},
+                        {"LastModifiedBy", true}
+                    };
+                    for (var i = 0; i < p.ClassMetadata.PropertyNames.Length; i++)
+                    {
+                        var propName = p.ClassMetadata.PropertyNames[i];
+                        if (results.ContainsKey(propName))
+                        {
+                            results[propName] = !p.ClassMetadata.PropertyNullability[i];
+                        }
+                    }
+                    return new Tuple<bool, bool>(results["CreatedBy"], results["LastModifiedBy"]);
+                });
+                isCreatedByRequired = tuple.Item1;
+                isModifiedByRequired = tuple.Item2;
+            }
+
+            if (currentUser == null && (isCreatedByRequired || isModifiedByRequired))
             {
                 throw new PowerArhitectureException("IAuditUserProvider failed to get the current user");
             }
-            return currentUser;
-        }
 
-        private void SetCurrentUser(object obj, object currentUser, bool requiredLastModifiedProp)
-        {
             if (obj.GetMemberValue("CreatedBy") == null)
                 obj.SetMemberValue("CreatedBy", currentUser);
             if (obj.GetMemberValue("LastModifiedBy") == null && requiredLastModifiedProp)

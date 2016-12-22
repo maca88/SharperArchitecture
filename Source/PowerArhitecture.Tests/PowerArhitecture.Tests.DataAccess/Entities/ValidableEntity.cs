@@ -104,6 +104,8 @@ namespace PowerArhitecture.Tests.DataAccess.Entities
         {
             return true;
         }
+
+        public override string[] RuleSets => ValidationRuleSet.InsertUpdate;
     }
 
     public class ValidableEntityChildValidator : Validator<ValidableEntityChild>
