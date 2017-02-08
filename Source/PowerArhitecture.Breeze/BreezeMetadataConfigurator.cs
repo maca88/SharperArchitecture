@@ -305,24 +305,43 @@ namespace PowerArhitecture.Breeze
                             dataProp.Validators.Add(validator);
                         }
                     }
-                    //This is not the right approach as we then have to load all navigation properties in order to save the entity
+
+                    // Skip scalar navigation properties as those are already been covered with the data properties
+                    // The client side validator must verify if the navigation property is loaded
+                    // Client problem: Validators on array are not cleared when an item is added to the array (array is the same instance)
                     //var entityType = structType as EntityType;
                     //if (entityType == null) continue;
-                    //foreach (var navProp in entityType.NavigationProperties)
+                    //foreach (var navProp in entityType.NavigationProperties.Where(o => !o.IsScalar && membersRules.Contains(o.NameOnServer)))
                     //{
-                    //    var source = navProp.ForeignKeyNamesOnServer ?? new List<string>();
-                    //    var fkPropName = source.FirstOrDefault();
-                    //    if (fkPropName == null) 
-                    //        continue; //null for inverse fks
-
-                    //    var prop = entityType.DataProperties.First(o => (o.NameOnServer == fkPropName));
-                    //    if (prop.IsNullable) continue;
-                    //    var notNullVal = new Validator
+                    //    var propRules = membersRules[navProp.NameOnServer];
+                    //    foreach (var propRule in propRules
+                    //        .Where(o => o.RuleSet == null || ValidationRuleSet.AttributeInsertUpdateDefault.Contains(o.RuleSet)))
                     //    {
-                    //        Name = "fvNotNull"
-                    //    };
-                    //    notNullVal.MergeLeft(FluentValidators.GetParamaters(new NotNullValidator()));
-                    //    navProp.Validators.Add(notNullVal);
+                    //        var currVal = propRule.CurrentValidator;
+                    //        var name = FluentValidators.GetName(currVal);
+                    //        if (name == null) continue; //add only registered validators
+                    //        navProp.Validators.Remove(name);
+
+                    //        var validator = new Validator { Name = name };
+                    //        validator.MergeLeft(FluentValidators.GetParamaters(currVal));
+                    //        navProp.Validators.Add(validator);
+                    //    }
+                    //    //if (navProp.IsScalar)
+                    //    //{
+                    //    //    var source = navProp.ForeignKeyNamesOnServer ?? new List<string>();
+                    //    //    var fkPropName = source.FirstOrDefault();
+                    //    //    if (fkPropName == null)
+                    //    //        continue; //null for inverse fks
+
+                    //    //    var prop = entityType.DataProperties.First(o => (o.NameOnServer == fkPropName));
+                    //    //    if (prop.IsNullable) continue;
+                    //    //    var notNullVal = new Validator
+                    //    //    {
+                    //    //        Name = "fvNotNull"
+                    //    //    };
+                    //    //    notNullVal.MergeLeft(FluentValidators.GetParamaters(new NotNullValidator()));
+                    //    //    navProp.Validators.Add(notNullVal);
+                    //    //}
                     //}
                 }
 

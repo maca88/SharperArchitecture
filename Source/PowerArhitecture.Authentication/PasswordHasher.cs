@@ -19,9 +19,16 @@ namespace PowerArhitecture.Authentication
 
         public PasswordVerificationResult VerifyHashedPassword(string hashedPassword, string providedPassword)
         {
-            return _cryptography.Decrypt(hashedPassword) == providedPassword
-                ? PasswordVerificationResult.Success
-                : PasswordVerificationResult.Failed;
+            return _cryptography.IsDecryptSupported
+                ? (_cryptography.Decrypt(hashedPassword) == providedPassword
+                    ? PasswordVerificationResult.Success
+                    : PasswordVerificationResult.Failed
+                    )
+                : (_cryptography.Encrypt(providedPassword) == hashedPassword
+                    ? PasswordVerificationResult.Success
+                    : PasswordVerificationResult.Failed
+                    )
+                ;
         }
     }
 }

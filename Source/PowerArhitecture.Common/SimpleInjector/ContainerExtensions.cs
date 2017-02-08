@@ -5,8 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.SimpleInjector;
+using PowerArhitecture.Common.Specifications;
 
 namespace SimpleInjector.Extensions
 {
@@ -84,6 +86,18 @@ namespace SimpleInjector.Extensions
         {
             IServiceProvider provider = container;
             return provider.GetService(serviceType);
+        }
+
+        public static void RunStartupTasks(this Container container)
+        {
+            foreach (var task in container.GetAllInstances<IStartupTask>().OrderByDescending(o =>
+            {
+                var attr = o.GetType().GetCustomAttribute<PriorityAttribute>();
+                return attr?.Priority ?? PriorityAttribute.Default;
+            }))
+            {
+                task.Run();
+            }
         }
     }
 }

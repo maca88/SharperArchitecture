@@ -20,7 +20,7 @@ namespace PowerArhitecture.Validation
             var registration = Lifestyle.Singleton.CreateRegistration<ValidatorFactory>(container);
             container.AddRegistration(typeof(IValidatorFactory), registration);
 
-            foreach (var assembly in Assembly.GetExecutingAssembly().GetDependentAssemblies().Where(o => !o.IsDynamic))
+            foreach (var assembly in Assembly.GetExecutingAssembly().GetDependentAssemblies())
             {
                 AssemblyScanner.FindValidatorsInAssembly(assembly)
                     .Where(match => !match.ValidatorType.IsInterface && !match.ValidatorType.IsAbstract)

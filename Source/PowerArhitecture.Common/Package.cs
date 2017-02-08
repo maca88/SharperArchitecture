@@ -51,13 +51,16 @@ namespace PowerArhitecture.Common
                 }
             };
 
+            container.RegisterCollection<IStartupTask>(typeof(IStartupTask).Assembly.GetDependentAssemblies());
+
             var registeredTypes = container
                 .GetCurrentRegistrations()
                 .Select(o => o.Registration.ImplementationType)
                 .ToHashSet();
 
             // MediatR
-            AppConfiguration.GetDomainAssemblies()
+            Assembly.GetExecutingAssembly()
+                .GetDependentAssemblies()
                 .SelectMany(o => o.GetTypes())
                 .Where(t =>
                     t.IsClass &&

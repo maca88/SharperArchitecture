@@ -10,6 +10,7 @@ using PowerArhitecture.Authentication.Configurations;
 using PowerArhitecture.Authentication.Entities;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Authentication.Stores;
+using PowerArhitecture.Authentication.Validators;
 using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Validation.Specifications;
 using SimpleInjector;
@@ -33,19 +34,22 @@ namespace PowerArhitecture.Authentication
             container.RegisterSingleton<IAuthenticationConfiguration, AuthenticationConfiguration>();
 
             container.Register(typeof(IUserLoginStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
+            container.Register(typeof(IUserStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
             container.Register(typeof(IUserClaimStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
             container.Register(typeof(IUserRoleStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
             container.Register(typeof(IQueryableUserStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
             container.Register(typeof(IUserPasswordStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
             container.Register(typeof(IUserSecurityStampStore<,>), typeof(DefaultUserStore<>), Lifestyle.Scoped);
+            container.Register(typeof(UserManager<,>), typeof(UserManager<,>), Lifestyle.Scoped);
 
             container.Register(typeof(IRoleStore<,>), typeof(DefaultRoleStore<>), Lifestyle.Scoped);
             container.Register(typeof(IQueryableRoleStore<,>), typeof(DefaultRoleStore<>), Lifestyle.Scoped);
 
+            container.Register(typeof(IIdentityValidator<>), typeof(IdentityValidator<>), Lifestyle.Scoped);
+
             // Find out the user implementation
             var userImpls = Assembly.GetExecutingAssembly()
                 .GetDependentAssemblies()
-                .Where(o => !o.IsDynamic)
                 .SelectMany(o => o.GetTypes())
                 .Where(o => !o.IsAbstract && !o.IsGenericType && o.IsAssignableToGenericType(typeof(User<,,,,,,>)))
                 .ToList();
@@ -63,6 +67,14 @@ namespace PowerArhitecture.Authentication
             var userGenArgs = UserType.GetGenericType(typeof(User<,,,,,,>)).GetGenericArguments();
             RoleType = userGenArgs[2];
             OrganizationType = userGenArgs[5];
+
+            container.RegisterInitializer(service =>
+            {
+                service.Instance.SetMemberValue("PasswordHasher", container.GetInstance<IPasswordHasher>());
+                service.Instance.SetMemberValue("PasswordValidator", container.GetInstance<IPasswordValidator>());
+                service.Instance.SetMemberValue("UserValidator", container.GetInstance(typeof(IIdentityValidator<>).MakeGenericType(UserType)));
+            },
+                context => context.Registration.ImplementationType.IsAssignableToGenericType(typeof(UserManager<,>)));
         }
     }
 }

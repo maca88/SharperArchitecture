@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentNHibernate.Automapping;
 using FluentNHibernate.Cfg;
+using FluentNHibernate.Conventions;
 using NHibernate.Cfg;
+using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess.Specifications;
+using PowerArhitecture.Domain;
 
 namespace PowerArhitecture.DataAccess.Configurations
 {
@@ -108,6 +111,17 @@ namespace PowerArhitecture.DataAccess.Configurations
         public DatabaseConfiguration Build()
         {
             _configuration.AutoMappingConfigurationAction?.Invoke(_configuration.AutoMappingConfiguration);
+            if (!_configuration.EntityAssemblies.Any())
+            {
+                _configuration.EntityAssemblies.AddRange(AppConfiguration.GetDomainAssemblies()
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof(IEntity).IsAssignableFrom(o))));
+            }
+            if (!_configuration.ConventionAssemblies.Any())
+            {
+                _configuration.ConventionAssemblies.AddRange(AppConfiguration.GetDomainAssemblies()
+                    .Where(assembly => assembly != Assembly.GetAssembly(typeof(IAutomappingConfiguration)))
+                    .Where(assembly => assembly.GetTypes().Any(o => typeof(IConvention).IsAssignableFrom(o))));
+            }
             return _configuration;
         }
     }

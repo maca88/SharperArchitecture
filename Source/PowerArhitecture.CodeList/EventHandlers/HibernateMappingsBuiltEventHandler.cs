@@ -152,6 +152,10 @@ namespace PowerArhitecture.CodeList.EventHandlers
         public ColumnMapping Apply(CollectionMapping colectionMap, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
         {
             var keyName = GetKeyName(null, colectionMap.ContainingEntityType);
+            if (typeof(ILocalizableCodeListLanguage).IsAssignableFrom(colectionMap.ChildType))
+            {
+                keyName = "CodeListCode";
+            }
             var codeListAttr = colectionMap.ContainingEntityType.GetCustomAttribute<CodeListConfigurationAttribute>(false);
             var length = codeListAttr?.CodeLength ?? 20;
             var col = colectionMap.Key.Columns.First();

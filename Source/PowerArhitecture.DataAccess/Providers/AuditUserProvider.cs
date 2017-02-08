@@ -148,12 +148,21 @@ namespace PowerArhitecture.DataAccess.Providers
                 return UserInfo.NotFound;
             }
 
+            Claim idClaim = null;
+            var claimPrincipal = principal as ClaimsPrincipal;
+            if (claimPrincipal != null)
+            {
+                idClaim = claimPrincipal.Claims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier);
+            }
             var genPrincipal = principal as GenericPrincipal;
             if (genPrincipal != null)
             {
-                var idClaim = genPrincipal.FindFirst(ClaimTypes.NameIdentifier);
-                var objId = idClaim != null ? idClaim.Value : DefaultUserId;
+                idClaim = genPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+            }
 
+            if (genPrincipal != null || claimPrincipal != null)
+            {
+                var objId = idClaim != null ? idClaim.Value : DefaultUserId;
                 if (objId != null)
                 {
                     var userMetaData = GetUserMetadata(session, userType);

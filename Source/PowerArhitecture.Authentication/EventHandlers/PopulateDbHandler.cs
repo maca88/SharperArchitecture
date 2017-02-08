@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Security.Principal;
+using System.Threading;
 using Microsoft.AspNet.Identity;
 using PowerArhitecture.Authentication.Specifications;
 using PowerArhitecture.Common.Attributes;
@@ -32,6 +36,10 @@ namespace PowerArhitecture.Authentication.EventHandlers
             userType.GetProperty("PasswordHash").SetValue(systemUser, _passwordHasher.HashPassword(_authSettings.SystemUserPassword));
 
             session.Save(systemUser);
+
+            var identity = new GenericIdentity(_authSettings.SystemUserName);
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, systemUser.GetId().ToString()));
+            Thread.CurrentPrincipal = new GenericPrincipal(identity, null);
         }
     }
 }

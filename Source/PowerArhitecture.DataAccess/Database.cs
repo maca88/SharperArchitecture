@@ -67,17 +67,8 @@ namespace PowerArhitecture.DataAccess
             DatabaseConfiguration dbConfiguration)
         {
             var cfg = dbConfiguration.NHibernateConfiguration;
-            var entityAssemblies = dbConfiguration.EntityAssemblies.Any()
-                ? dbConfiguration.EntityAssemblies
-                : AppConfiguration.GetDomainAssemblies()
-                    .Where(assembly => assembly.GetTypes().Any(o => typeof (IEntity).IsAssignableFrom(o))).ToList();
-
-            var conventionAssemblies = dbConfiguration.ConventionAssemblies.Any()
-                ? dbConfiguration.ConventionAssemblies
-                : AppConfiguration.GetDomainAssemblies()
-                    .Where(assembly => assembly != Assembly.GetAssembly(typeof (IAutomappingConfiguration)))
-                    .Where(assembly => assembly.GetTypes().Any(o => typeof (IConvention).IsAssignableFrom(o)))
-                    .ToList();
+            var entityAssemblies = dbConfiguration.EntityAssemblies;
+            var conventionAssemblies = dbConfiguration.ConventionAssemblies;
 
             var automappingConfiguration = dbConfiguration.AutoMappingConfiguration;
             automappingConfiguration.AddStepAssemblies(StepAssemblies.Value);
@@ -104,7 +95,7 @@ namespace PowerArhitecture.DataAccess
                     })
                     .ExposeConfiguration(configuration =>
                     {
-                        if (configuration.Interceptor == null)
+                        if (configuration.Interceptor == null || configuration.Interceptor.GetType() == typeof(EmptyInterceptor))
                         {
                             configuration.SetInterceptor(new NhibernateInterceptor());
                         }

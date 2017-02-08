@@ -62,8 +62,12 @@ namespace PowerArhitecture.DataAccess
 
             container.Register<IDbStore, DbStore>(Lifestyle.Scoped);
             container.RegisterSingleton<IQueryProcessor, DefaultQueryProcessor>();
-            container.Register(typeof(IQueryHandler<,>), AppConfiguration.GetDomainAssemblies(), Lifestyle.Scoped);
-            container.Register(typeof(IAsyncQueryHandler<,>), AppConfiguration.GetDomainAssemblies(), Lifestyle.Scoped);
+
+            var depAssemblies = Assembly.GetExecutingAssembly()
+                .GetDependentAssemblies()
+                .ToList();
+            container.Register(typeof(IQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
+            container.Register(typeof(IAsyncQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
 
             // Registration for the default database session
             registration = Lifestyle.Scoped.CreateRegistration(() =>

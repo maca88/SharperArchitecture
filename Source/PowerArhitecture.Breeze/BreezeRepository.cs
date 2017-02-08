@@ -20,13 +20,15 @@ namespace PowerArhitecture.Breeze
     public class BreezeRepository : NHContext, IBreezeRepository
     {
         private readonly BreezeMetadataConfigurator _metadataConfigurator;
-        private readonly List<IBreezeInterceptor> _interceptors;
+        private readonly IEnumerable<IBreezeInterceptor> _interceptors;
         private readonly object _saveLock = new object();
         private readonly AsyncLock _asyncSavelock = new AsyncLock();
         private Action<List<EntityInfo>> _beforeSaveAction;
         private Func<List<EntityInfo>, Task> _beforeSaveFunc;
 
-        public BreezeRepository(List<IBreezeInterceptor> interceptors, ISession session, BreezeMetadataConfigurator metadataConfigurator) : base(session)
+        public BreezeRepository(IEnumerable<IBreezeInterceptor> interceptors, ISession session, 
+            BreezeMetadataConfigurator metadataConfigurator, IBreezeConfigurator breezeConfigurator) 
+            : base(session, breezeConfigurator)
         {
             _metadataConfigurator = metadataConfigurator;
             _interceptors = interceptors;

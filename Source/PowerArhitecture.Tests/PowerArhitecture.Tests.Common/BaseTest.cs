@@ -39,7 +39,6 @@ namespace PowerArhitecture.Tests.Common
         protected virtual void Cleanup()
         {
             Container.Dispose();
-            Bootstrap.Bootstrapper.Reset();
         }
 
         protected virtual Container CreateContainer()

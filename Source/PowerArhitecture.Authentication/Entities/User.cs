@@ -46,7 +46,7 @@ namespace PowerArhitecture.Authentication.Entities
         [NotNull]
         public virtual string PasswordHash { get; set; }
 
-        public virtual string SecurityStamp { get; set; }
+        public virtual string SecurityStamp { get; set; } = Guid.NewGuid().ToString();
 
         public virtual string CultureName { get; set; }
 
@@ -95,11 +95,11 @@ namespace PowerArhitecture.Authentication.Entities
                 (
                     Organization != null &&
                     (
-                        Organization.OrganizationRoles.Select(o => o.Role).Any(o => o.RolePermissions.Any(p => Regex.IsMatch(p.Permission.Name, permPattern))) ||
+                        Organization.OrganizationRoles.Select(o => o.Role).Any(o => o.RolePermissions.Any(p => Regex.IsMatch(p.Permission.FullName, permPattern))) ||
                         Organization.OrganizationRoles.Select(o => o.Role).Any(o => o.PermissionPatterns.Any(p => Regex.IsMatch(pattern, p.Pattern)))
                     )
                 ) ||
-                UserRoles.Select(o => o.Role).Any(o => o.RolePermissions.Any(p => Regex.IsMatch(p.Permission.Name, permPattern))) ||
+                UserRoles.Select(o => o.Role).Any(o => o.RolePermissions.Any(p => Regex.IsMatch(p.Permission.FullName, permPattern))) ||
                 UserRoles.Select(o => o.Role).Any(o => o.PermissionPatterns.Any(p => Regex.IsMatch(pattern, p.Pattern)));
         }
 

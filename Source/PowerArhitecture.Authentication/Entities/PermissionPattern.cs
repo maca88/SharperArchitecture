@@ -27,12 +27,12 @@ namespace PowerArhitecture.Authentication.Entities
         #region Role
 
         [ReadOnly(true)]
-        public virtual long? RoleId
+        public virtual long RoleId
         {
             get
             {
                 if (_roleIdSet) return _roleId;
-                return Role == null ? default(long?) : Role.Id;
+                return Role?.Id ?? default(long);
             }
             set
             {
@@ -41,7 +41,7 @@ namespace PowerArhitecture.Authentication.Entities
             }
         }
 
-        private long? _roleId;
+        private long _roleId;
 
         private bool _roleIdSet;
 

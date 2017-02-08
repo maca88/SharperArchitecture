@@ -1,7 +1,7 @@
 ﻿namespace PowerArhitecture.Common.Specifications
 {
-    public interface ITask
+    public interface IStartupTask
     {
-         
+        void Run();
     }
 }

@@ -36,5 +36,11 @@ namespace PowerArhitecture.CodeList
         {
             this.RemoveOneToMany(o => o.Names, name, o => o.CodeList);
         }
+
+        // Id can be changed via Code so we have to check CreatedDate
+        public override bool IsTransient()
+        {
+            return CreatedDate == DateTime.MinValue;
+        }
     }
 }

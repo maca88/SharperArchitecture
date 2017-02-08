@@ -25,8 +25,8 @@ var paFiles = [
     getPaPath('Domain', 'pdb'),
     getPaPath('Validation'),
     getPaPath('Validation', 'pdb'),
-    getPaPath('Notifications'),
-    getPaPath('Notifications', 'pdb')
+    getPaPath('WebApi'),
+    getPaPath('WebApi', 'pdb')
 ];
 
 var outBasePath = './build/';
