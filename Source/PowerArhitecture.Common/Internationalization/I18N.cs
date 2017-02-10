@@ -18,17 +18,18 @@ namespace PowerArhitecture.Common.Internationalization
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             
             //Using GetFullPath so we can combine absolute and relative paths
-            var defTranslPath = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonConfigurationKeys.DefaultTranslationsPath)));
-            if(!File.Exists(defTranslPath))
-                throw new FileNotFoundException(string.Format("Default translation file not found. Path: {0}", defTranslPath));
-            Translator.Default.RegisterTranslation(defTranslPath);
-
-            
+            var translDirectory = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsPath)));
             var translPattern = AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsByCulturePattern);
-            var directoryPath = Path.GetDirectoryName(defTranslPath) ?? baseDir;
+            var defaultCulture = AppConfiguration.GetSetting<string>(CommonConfigurationKeys.DefaultCulture);
+            var defaultTranslPath = Path.Combine(translDirectory, string.Format(translPattern, defaultCulture));
+
+            if (!File.Exists(defaultTranslPath))
+                throw new FileNotFoundException($"Default translation file not found. Path: {defaultTranslPath}");
+            Translator.Default.RegisterTranslation(defaultTranslPath);
+
             foreach(var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                if (!File.Exists(Path.Combine(directoryPath, string.Format(translPattern, (culture.Name)))))
+                if (!File.Exists(Path.Combine(translDirectory, string.Format(translPattern, culture.Name))))
                     continue;
                 var translator = new Translator
                 {
@@ -36,7 +37,7 @@ namespace PowerArhitecture.Common.Internationalization
                     FormatCallback = TranslatorFormatter.Custom
                 };
                 Translators.Add(culture.Name, translator);
-                translator.RegisterTranslationsByCulture(translPattern, culture, directoryPath);
+                translator.RegisterTranslationsByCulture(translPattern, culture, translDirectory);
             }
         }
 

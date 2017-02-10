@@ -10,6 +10,6 @@ namespace PowerArhitecture.Common.Configuration
     {
         public const string DefaultCulture = "PowerArhitecture.Common.DefaultCulture:string";
         public const string TranslationsByCulturePattern = "PowerArhitecture.Common.TranslationsByCulturePattern:string";
-        public const string DefaultTranslationsPath = "PowerArhitecture.Common.DefaultTranslationsPath:string";
+        public const string TranslationsPath = "PowerArhitecture.Common.TranslationsPath:string";
     }
 }
