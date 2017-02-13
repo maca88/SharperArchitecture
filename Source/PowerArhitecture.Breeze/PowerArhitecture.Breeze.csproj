@@ -154,9 +154,6 @@
     <Compile Include="Metadata\BaseTypeJsonConverter.cs" />
     <Compile Include="Metadata\Validator.cs" />
     <Compile Include="Metadata\Validators.cs" />
-    <Compile Include="CustomBreezeNHControllerAttribute.cs" />
-    <Compile Include="CustomBreezeNHQueryableAttribute.cs" />
-    <Compile Include="CustomNHQueryHelper.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Metadata\StructuralTypes.cs" />
