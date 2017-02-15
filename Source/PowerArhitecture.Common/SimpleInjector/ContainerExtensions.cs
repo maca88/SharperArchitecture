@@ -90,11 +90,7 @@ namespace SimpleInjector.Extensions
 
         public static void RunStartupTasks(this Container container)
         {
-            foreach (var task in container.GetAllInstances<IStartupTask>().OrderByDescending(o =>
-            {
-                var attr = o.GetType().GetCustomAttribute<PriorityAttribute>();
-                return attr?.Priority ?? PriorityAttribute.Default;
-            }))
+            foreach (var task in container.GetAllInstances<IStartupTask>().OrderByDescending(o => o.GetType().GetPriority()))
             {
                 task.Run();
             }

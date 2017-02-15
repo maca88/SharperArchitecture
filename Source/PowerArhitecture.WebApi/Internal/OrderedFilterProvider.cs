@@ -63,9 +63,9 @@ namespace PowerArhitecture.WebApi.Internal
                 .Select(o => new
                 {
                     FilterInfo = new FilterInfo(o, scope),
-                    Priority = o.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? PriorityAttribute.Default
+                    Priority = o.GetType().GetPriority()
                 })
-                .OrderBy(o => o.Priority)
+                .OrderByDescending(o => o.Priority)
                 .Select(o => o.FilterInfo);
         }
     }

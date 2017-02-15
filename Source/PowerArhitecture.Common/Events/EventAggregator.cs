@@ -16,15 +16,20 @@ using SimpleInjector.Extensions;
 
 namespace PowerArhitecture.Common.Events
 {
-    public class EventPublisher : IEventPublisher
+    public delegate void EventHandler<in TEvent>(TEvent @event) where TEvent : IEvent;
+    public delegate Task AsyncEventHandler<in TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IAsyncEvent;
+
+    public class EventAggregator : IEventPublisher, IEventSubscriber
     {
         private delegate void InvokeHandle(object obj, IEvent @event);
         private delegate Task InvokeHandleAsync(object obj, IAsyncEvent @event, CancellationToken token);
 
         private readonly Container _container;
-        static readonly ConcurrentDictionary<Type, object> EventHandlerInvokers = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _eventHandlerInvokers = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<object, DelegateEventHandler> _delegateEventHandlers = 
+            new ConcurrentDictionary<object, DelegateEventHandler>();
 
-        public EventPublisher(Container container)
+        public EventAggregator(Container container)
         {
             _container = container;
         }
@@ -33,7 +38,7 @@ namespace PowerArhitecture.Common.Events
         {
             var eventType = e.GetType();
             var handlerType = typeof(IEventHandler<>).MakeGenericType(e.GetType());
-            var handle = (InvokeHandle)EventHandlerInvokers.GetOrAdd(handlerType, t =>
+            var handle = (InvokeHandle)_eventHandlerInvokers.GetOrAdd(handlerType, t =>
                 CreateHandlerInvoker<InvokeHandle>(
                     eventType, handlerType, "Handle"));
             foreach (var obj in GetInstances(handlerType))
@@ -51,7 +56,7 @@ namespace PowerArhitecture.Common.Events
         {
             var eventType = e.GetType();
             var handlerType = typeof(IAsyncEventHandler<>).MakeGenericType(e.GetType());
-            var handleAsync = (InvokeHandleAsync)EventHandlerInvokers.GetOrAdd(handlerType, t =>
+            var handleAsync = (InvokeHandleAsync)_eventHandlerInvokers.GetOrAdd(handlerType, t =>
                 CreateHandlerInvoker<InvokeHandleAsync>(
                     eventType, handlerType, "HandleAsync",
                     Expression.Parameter(typeof(CancellationToken), "token")));
@@ -65,13 +70,50 @@ namespace PowerArhitecture.Common.Events
             }
         }
 
+        public void Subscribe<TEvent>(EventHandler<TEvent> handlerDelegate, short priority = default(short)) where TEvent : IEvent
+        {
+            var handler = new DelegateEventHandler<TEvent>(handlerDelegate, priority);
+            _delegateEventHandlers.AddOrUpdate(handlerDelegate, handler, (k, v) => handler);
+        }
+
+        public bool Unsubscribe<TEvent>(EventHandler<TEvent> handlerDelegate) where TEvent : IEvent
+        {
+            DelegateEventHandler handler;
+            return _delegateEventHandlers.TryRemove(handlerDelegate, out handler);
+        }
+
+        public void Subscribe<TEvent>(AsyncEventHandler<TEvent> handlerDelegate, short priority = default(short)) where TEvent : IAsyncEvent
+        {
+            var handler = new AsyncDelegateEventHandler<TEvent>(handlerDelegate, priority);
+            _delegateEventHandlers.AddOrUpdate(handlerDelegate, handler, (k, v) => handler);
+        }
+
+        public bool Unsubscribe<TEvent>(AsyncEventHandler<TEvent> handlerDelegate) where TEvent : IAsyncEvent
+        {
+            DelegateEventHandler handler;
+            return _delegateEventHandlers.TryRemove(handlerDelegate, out handler);
+        }
+
         private IEnumerable<object> GetInstances(Type t)
         {
-            return _container.TryGetAllInstances(t).OrderByDescending(o =>
-            {
-                return o.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ??
-                       PriorityAttribute.Default;
-            });
+            return _container
+                .TryGetAllInstances(t)
+                .Select(o => new
+                {
+                    Instance = o,
+                    Priority = o.GetType().GetPriority()
+                })
+                .Union(
+                    _delegateEventHandlers.Values
+                    .Where(t.IsInstanceOfType)
+                    .Select(o => new
+                    {
+                        Instance = (object)o,
+                        o.Priority
+                    })
+                )
+                .OrderByDescending(o => o.Priority)
+                .Select(o => o.Instance);
         }
 
         private static TResult CreateHandlerInvoker<TResult>(Type eventType, Type handlerType, string methodName, params ParameterExpression[] parameters)

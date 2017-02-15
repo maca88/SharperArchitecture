@@ -9,7 +9,9 @@ using PowerArhitecture.Domain;
 using NHibernate;
 using NHibernate.Linq;
 using PowerArhitecture.Common.Exceptions;
+using PowerArhitecture.Common.Specifications;
 using PowerArhitecture.DataAccess.Configurations;
+using PowerArhitecture.DataAccess.Events;
 using PowerArhitecture.DataAccess.Extensions;
 using SimpleInjector;
 using SimpleInjector.Extensions.ExecutionContextScoping;
@@ -22,14 +24,18 @@ namespace PowerArhitecture.DataAccess
         private readonly Scope _scope;
         private readonly TransactionScope _transactionScope;
         private readonly Container _container;
+        private readonly IEventSubscriber _eventSubscriber;
         private readonly ConcurrentDictionary<string, ISession> _sessions = new ConcurrentDictionary<string, ISession>();
+        private readonly string _guid = Guid.NewGuid().ToString();
 
-        public UnitOfWork(Container container, IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+        public UnitOfWork(Container container, IEventSubscriber eventSubscriber, IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
             _container = container;
             IsolationLevel = isolationLevel;
             _scope = _container.BeginExecutionContextScope();
-            _scope.SetItem(ScopeKey, true);
+            _scope.SetItem(ScopeKey, _guid);
+            _eventSubscriber = eventSubscriber;
+            _eventSubscriber.Subscribe<SessionCreatedEvent>(OnSessionCreated);
             if (Database.MultipleDatabases)
             {
                 _transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
@@ -154,6 +160,7 @@ namespace PowerArhitecture.DataAccess
         public void Dispose()
         {
             _scope?.Dispose();
+            _eventSubscriber.Unsubscribe<SessionCreatedEvent>(OnSessionCreated);
             _transactionScope?.Dispose();
             _sessions.Clear();
         }
@@ -171,6 +178,23 @@ namespace PowerArhitecture.DataAccess
             return _sessions.TryGetValue(dbConfigName, out session);
         }
 
+        private void OnSessionCreated(SessionCreatedEvent @event)
+        {
+            var scope = Lifestyle.Scoped.GetCurrentScope(_container);
+            if (scope.GetItem(ScopeKey) as string != _guid)
+            {
+                return;
+            }
+            @event.Session.BeginTransaction(IsolationLevel);
+            if (_sessions.ContainsKey(@event.DatabaseConfigurationName))
+            {
+                return;
+            }
+            _sessions.AddOrUpdate(@event.DatabaseConfigurationName,
+                s => @event.Session,
+                (s, session) => session);
+        }
+
         private ISession GetOrAddSession(string dbConfigName)
         {
             if (!Database.ContainsDatabaseConfiguration(dbConfigName))
@@ -182,7 +206,6 @@ namespace PowerArhitecture.DataAccess
             return _sessions.GetOrAdd(dbConfigName, k =>
             {
                 var session = _container.GetDatabaseService<ISession>(dbConfigName);
-                session.BeginTransaction(IsolationLevel);
                 return session;
             });
         }

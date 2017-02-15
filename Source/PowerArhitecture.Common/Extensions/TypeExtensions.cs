@@ -6,15 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PowerArhitecture.Common.Attributes;
 
 namespace System
 {
     public static class TypeExtensions
     {
-        private static readonly Type[] DateTimeTypes = {typeof(DateTime), typeof(DateTime?)};
         private const BindingFlags AllBinding = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static;
-
-        static TypeExtensions(){}
 
         public static bool IsSimpleType(this Type type)
         {
@@ -28,6 +26,16 @@ namespace System
         public static bool IsNullable(this Type type)
         {
             return Nullable.GetUnderlyingType(type) != null;
+        }
+
+        /// <summary>
+        /// Returns the value of the PriorityAttribute if exists, otherwise a default value will be returned
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static short GetPriority(this Type type)
+        {
+            return type.GetCustomAttribute<PriorityAttribute>()?.Priority ?? default(short);
         }
 
         /// <summary>
@@ -73,11 +81,6 @@ namespace System
                 }
                 givenType = baseType;
             }
-        }
-
-        public static bool IsDateTime(this Type type)
-        {
-            return DateTimeTypes.Contains(type);
         }
 
         public static bool IsEnumerableType(this Type type)
@@ -230,55 +233,6 @@ namespace System
                 yield return type;
                 type = type.GetTypeInfo().BaseType;
             }
-        }
-
-        /// <summary>
-        ///   Returns list of all unique interfaces implemented given types, including their base interfaces.
-        /// </summary>
-        /// <param name="types"> </param>
-        /// <returns> </returns>
-        public static Type[] GetAllInterfaces(params Type[] types)
-        {
-            if (types == null)
-            {
-                return Type.EmptyTypes;
-            }
-
-            var interfaces = new HashSet<Type>();
-            for (var index = 0; index < types.Length; index++)
-            {
-                var type = types[index];
-                if (type == null)
-                {
-                    continue;
-                }
-
-                if (type.IsInterface)
-                {
-                    if (interfaces.Add(type) == false)
-                    {
-                        continue;
-                    }
-                }
-
-                var innerInterfaces = type.GetInterfaces();
-                for (var i = 0; i < innerInterfaces.Length; i++)
-                {
-                    var @interface = innerInterfaces[i];
-                    interfaces.Add(@interface);
-                }
-            }
-
-            return Sort(interfaces);
-        }
-
-        private static Type[] Sort(ICollection<Type> types)
-        {
-            var array = new Type[types.Count];
-            types.CopyTo(array, 0);
-            //NOTE: is there a better, stable way to sort Types. We will need to revise this once we allow open generics
-            Array.Sort(array, (l, r) => string.Compare(l.AssemblyQualifiedName, r.AssemblyQualifiedName, StringComparison.OrdinalIgnoreCase));
-            return array;
         }
     }
 }

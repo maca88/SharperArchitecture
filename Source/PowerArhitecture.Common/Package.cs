@@ -53,6 +53,7 @@ namespace PowerArhitecture.Common
 
             container.RegisterCollection<IStartupTask>(typeof(IStartupTask).Assembly.GetDependentAssemblies());
 
+            Registration registration;
             var registeredTypes = container
                 .GetCurrentRegistrations()
                 .Select(o => o.Registration.ImplementationType)
@@ -79,7 +80,7 @@ namespace PowerArhitecture.Common
                 .Select(t => new { Implementation = t, Services = t.GetInterfaces() })
                 .ForEach(o =>
                 {
-                    Registration registration;
+                    
                     var injectAsCollection = false;
                     if (o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<>)) ||
                         o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<,>)) ||
@@ -109,7 +110,12 @@ namespace PowerArhitecture.Common
                         }
                     }
                 });
-            container.RegisterSingleton<IEventPublisher, EventPublisher>();
+
+            registration = Lifestyle.Singleton.CreateRegistration<EventAggregator>(container);
+            container.AddRegistration(typeof(EventAggregator), registration);
+            container.AddRegistration(typeof(IEventPublisher), registration);
+            container.AddRegistration(typeof(IEventSubscriber), registration);
+
             container.RegisterSingleton<ICommandDispatcher, CommandDispatcher>();
         }
     }

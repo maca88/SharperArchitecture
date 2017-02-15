@@ -53,6 +53,51 @@ namespace PowerArhitecture.Tests.DataAccess
         }
 
         [Test]
+        public void SessionShouldBeRegisteredWithinUnitOfWork()
+        {
+            var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
+            using (var unitOfWork = unitOfWorkFactory.Create().GetUnitOfWorkImplementation())
+            {
+                var session = Container.GetInstance<ISession>();
+                var sessionFactory = session.SessionFactory; // trigger initialization
+                Assert.AreEqual(1, unitOfWork.GetActiveSessions().Count());
+                Assert.AreEqual(unitOfWork.GetActiveSessions().First(), session.Unwrap());
+            }
+        }
+
+        [Test]
+        public void SessionShouldBeRegisteredWithinNestedUnitOfWork()
+        {
+            var unitOfWorkFactory = Container.GetInstance<IUnitOfWorkFactory>();
+            using (var unitOfWork = unitOfWorkFactory.Create().GetUnitOfWorkImplementation())
+            {
+                var session = Container.GetInstance<ISession>();
+                var sessionFactory = session.SessionFactory; // trigger initialization
+                Assert.AreEqual(1, unitOfWork.GetActiveSessions().Count());
+                Assert.AreEqual(unitOfWork.GetActiveSessions().First(), session.Unwrap());
+
+                using (var unitOfWork2 = unitOfWorkFactory.Create().GetUnitOfWorkImplementation())
+                {
+                    var session2 = Container.GetInstance<ISession>();
+                    var sessionFactory2 = session2.SessionFactory; // trigger initialization
+
+                    Assert.AreNotEqual(session, session2);
+                    Assert.AreEqual(1, unitOfWork.GetActiveSessions().Count());
+                    Assert.AreEqual(unitOfWork.GetActiveSessions().First(), session.Unwrap());
+                    Assert.AreEqual(1, unitOfWork2.GetActiveSessions().Count());
+                    Assert.AreEqual(unitOfWork2.GetActiveSessions().First(), session2.Unwrap());
+
+                    unitOfWork2.Commit();
+                }
+
+                Assert.AreEqual(1, unitOfWork.GetActiveSessions().Count());
+                Assert.AreEqual(unitOfWork.GetActiveSessions().First(), session.Unwrap());
+
+                unitOfWork.Commit();
+            }
+        }
+
+        [Test]
         public void QueryHandlerMustBeScoped()
         {
             Assert.Throws<ActivationException>(() => Container.GetInstance<IQueryHandler<GetAllUsersQuery, IEnumerable<User>>>());

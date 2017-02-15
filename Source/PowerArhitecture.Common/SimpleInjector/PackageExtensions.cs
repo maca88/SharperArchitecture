@@ -86,7 +86,7 @@ namespace SimpleInjector
                 where typeof(IPackage).IsAssignableFrom(type)
                 where !type.IsAbstract
                 where !type.IsGenericTypeDefinition
-                orderby type.GetCustomAttribute<PriorityAttribute>()?.Priority ?? PriorityAttribute.Default descending
+                orderby type.GetPriority() descending
                 select type)
                 .ToArray();
 

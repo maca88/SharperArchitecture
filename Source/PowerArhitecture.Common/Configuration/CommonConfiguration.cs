@@ -10,15 +10,15 @@ namespace PowerArhitecture.Common.Configuration
     {
         public virtual string DefaultCulture
         {
-            get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Common.DefaultCulture:string"); }
+            get { return AppConfiguration.GetSetting<string>(CommonConfigurationKeys.DefaultCulture); }
         }
         public virtual string TranslationsByCulturePattern
         {
-            get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Common.TranslationsByCulturePattern:string"); }
+            get { return AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsByCulturePattern); }
         }
-        public virtual string DefaultTranslationsPath
+        public virtual string TranslationsPath
         {
-            get { return AppConfiguration.GetSetting<string>("PowerArhitecture.Common.DefaultTranslationsPath:string"); }
+            get { return AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsPath); }
         }
     }
 }

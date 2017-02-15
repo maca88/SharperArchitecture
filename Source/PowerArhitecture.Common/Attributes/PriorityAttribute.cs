@@ -2,10 +2,9 @@
 
 namespace PowerArhitecture.Common.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class)]
     public class PriorityAttribute : Attribute
     {
-        public const short Default = 0;
-
         public PriorityAttribute(short priority)
         {
             Priority = priority;

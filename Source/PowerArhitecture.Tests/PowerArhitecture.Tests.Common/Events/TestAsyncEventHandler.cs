@@ -29,6 +29,6 @@ namespace PowerArhitecture.Tests.Common.Events
 
         public string ReceivedMesssage { get; private set; }
 
-        public int CallCounter { get; set; }
+        public static int CallCounter { get; set; }
     }
 }
