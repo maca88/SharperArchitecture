@@ -5,11 +5,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Breeze.ContextProvider.NH;
+using PowerArhitecture.Breeze.Configuration;
 using PowerArhitecture.Breeze.Specification;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.DataAccess;
 using PowerArhitecture.DataAccess.Specifications;
 using SimpleInjector;
+using SimpleInjector.Diagnostics;
 using SimpleInjector.Packaging;
 
 namespace PowerArhitecture.Breeze
@@ -28,21 +30,11 @@ namespace PowerArhitecture.Breeze
                         : container.GetInstance<ISessionFactoryProvider>().Get(dbConfig.Name).GetClassMetadata(type);
                 }, container.GetInstance<IBreezeConfigurator>());
             });
+
             container.RegisterSingleton<IBreezeConfigurator, BreezeConfigurator>();
+            container.RegisterSingleton<IBreezeConfiguration>(new BreezeConfiguration());
 
-            container.RegisterSingleton<BreezeMetadataConfigurator>();
-            container.Register<IBreezeRepository, BreezeRepository>(Lifestyle.Scoped);
-
-            var interceptors = Assembly.GetExecutingAssembly()
-                .GetDependentAssemblies()
-                .SelectMany(o => o.GetTypes())
-                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType && typeof(IBreezeInterceptor).IsAssignableFrom(t))
-                .ToList();
-            foreach (var interceptor in interceptors)
-            {
-                container.Register(interceptor, interceptor, Lifestyle.Singleton);
-            }
-            container.RegisterCollection<IBreezeInterceptor>(interceptors);
+            container.Register<IBreezeContext, BreezeContext>(Lifestyle.Scoped);
         }
     }
 }

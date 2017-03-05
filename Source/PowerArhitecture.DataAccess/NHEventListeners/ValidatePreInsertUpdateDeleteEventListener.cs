@@ -127,7 +127,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                     if (!validationResult.IsValid)
                     {
                         Clear(session);
-                        throw new EntityValidationException(validationResult.Errors, entity, valInfo.ModelType,
+                        throw new EntityValidationException(validationResult.Errors, valInfo.Model, valInfo.ModelType,
                             valInfo.RuleSets);
                     }
                 }
@@ -168,7 +168,7 @@ namespace PowerArhitecture.DataAccess.NHEventListeners
                     if (!validationResult.IsValid)
                     {
                         Clear(session);
-                        throw new EntityValidationException(validationResult.Errors, entity, valInfo.ModelType,
+                        throw new EntityValidationException(validationResult.Errors, valInfo.Model, valInfo.ModelType,
                             valInfo.RuleSets);
                     }
                 }
