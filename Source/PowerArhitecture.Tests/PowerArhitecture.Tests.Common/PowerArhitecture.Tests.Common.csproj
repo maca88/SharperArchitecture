@@ -100,6 +100,7 @@
     <Compile Include="DatabaseBaseTest.cs" />
     <Compile Include="EventPublisherTests.cs" />
     <Compile Include="Events\FaultyAsyncEventHandler.cs" />
+    <Compile Include="Events\TransientEventHandler.cs" />
     <Compile Include="Events\FaultyEventHandler.cs" />
     <Compile Include="Events\MultipleEventsPerHandlerAsyncEventHander.cs" />
     <Compile Include="Events\SequentialAsyncPriorityEventHandler.cs" />

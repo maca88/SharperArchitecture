@@ -12,7 +12,9 @@ using PowerArhitecture.Common.Attributes;
 using PowerArhitecture.Common.Commands;
 using PowerArhitecture.Common.Configuration;
 using PowerArhitecture.Common.Cryptographics;
+using PowerArhitecture.Common.Enums;
 using PowerArhitecture.Common.Events;
+using PowerArhitecture.Common.Exceptions;
 using PowerArhitecture.Common.Extensions;
 using PowerArhitecture.Common.JsonNet;
 using PowerArhitecture.Common.Publishers;
@@ -93,7 +95,22 @@ namespace PowerArhitecture.Common
                     }
                     else
                     {
-                        registration = Lifestyle.Singleton.CreateRegistration(o.Implementation, container);
+                        var attr = o.Implementation.GetCustomAttribute<LifetimeAttribute>()
+                                   ?? new LifetimeAttribute(Lifetime.Singleton);
+                        switch (attr.Lifetime)
+                        {
+                            case Lifetime.Singleton:
+                                registration = Lifestyle.Singleton.CreateRegistration(o.Implementation, container);
+                                break;
+                            case Lifetime.Scoped:
+                                registration = Lifestyle.Scoped.CreateRegistration(o.Implementation, container);
+                                break;
+                            case Lifetime.Transient:
+                                registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
+                                break;
+                            default:
+                                throw new PowerArhitectureException($"Invalid {nameof(Lifetime)} value: {attr.Lifetime}");
+                        }
                         container.AddRegistration(o.Implementation, registration);
                         injectAsCollection = true;
                     }

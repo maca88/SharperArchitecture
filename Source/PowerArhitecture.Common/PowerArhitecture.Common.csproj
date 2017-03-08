@@ -136,6 +136,7 @@
   <ItemGroup>
     <Compile Include="Attributes\ConventionAttribute.cs" />
     <Compile Include="Attributes\EnumStringAttribute.cs" />
+    <Compile Include="Attributes\LifetimeAttribute.cs" />
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
@@ -143,6 +144,7 @@
     <Compile Include="Configuration\AppConfiguration.cs" />
     <Compile Include="Configuration\CommonConfiguration.cs" />
     <Compile Include="Configuration\CommonConfigurationKeys.cs" />
+    <Compile Include="Enums\Lifetime.cs" />
     <Compile Include="Events\AsyncDelegateEventHandler.cs" />
     <Compile Include="Events\DelegateEventHandler.cs" />
     <Compile Include="SimpleInjector\ContainerExtensions.cs" />

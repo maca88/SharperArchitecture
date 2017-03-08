@@ -60,6 +60,15 @@ namespace PowerArhitecture.Tests.Common
         }
 
         [Test]
+        public void TransientEventHandlerMustBeTransient()
+        {
+            var eventHandler = Container.GetInstance<TransientEventHandler>();
+            var eventHandler2 = Container.GetInstance<TransientEventHandler>();
+
+            Assert.AreNotEqual(eventHandler, eventHandler2);
+        }
+
+        [Test]
         public void TestSingletonEventHandler()
         {
             TestEventHandler.CallCounter = 0;
@@ -70,6 +79,24 @@ namespace PowerArhitecture.Tests.Common
 
             Assert.AreEqual(1, TestEventHandler.CallCounter);
             Assert.AreEqual("test", eventHandler.ReceivedMesssage);
+        }
+
+        [Test]
+        public void TestTransientEventHandler()
+        {
+            TransientEventHandler.CallCounter = 0;
+            TransientEventHandler.CreatedTimes = 0;
+
+            var eventPublisher = Container.GetInstance<IEventPublisher>();
+            eventPublisher.Publish(new TransientEvent("test"));
+
+            Assert.AreEqual(1, TransientEventHandler.CallCounter);
+            Assert.AreEqual(1, TransientEventHandler.CreatedTimes);
+
+            eventPublisher.Publish(new TransientEvent("test"));
+
+            Assert.AreEqual(2, TransientEventHandler.CallCounter);
+            Assert.AreEqual(2, TransientEventHandler.CreatedTimes);
         }
 
         [Test]
