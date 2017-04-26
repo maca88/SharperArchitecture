@@ -1,2 +1,2 @@
-PowerArhitecture
+SharperArchitecture
 ================

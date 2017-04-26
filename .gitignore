@@ -153,4 +153,4 @@ node_modules
 bower_components
 
 Source/packages/*
-Source/PowerArhitecture.Tests/PowerArhitecture.Tests.WebApi.Server/Mappings/
+Source/SharperArchitecture.Tests/SharperArchitecture.Tests.WebApi.Server/Mappings/

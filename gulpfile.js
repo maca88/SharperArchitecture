@@ -7,7 +7,7 @@ var basePath = './Source/';
 
 var getPaPath = function(name, ext){
     ext = ext || 'dll';
-    return basePath + 'PowerArhitecture.' + name + '/bin/Debug/PowerArhitecture.' + name + '.' + ext;
+    return basePath + 'SharperArchitecture.' + name + '/bin/Debug/SharperArchitecture.' + name + '.' + ext;
 };
 
 var paFiles = [
@@ -35,5 +35,5 @@ gulp.task('copy', function() {
     return gulp.src(paFiles)
     .pipe(flatten())
     .pipe(gulp.dest(outBasePath))
-    .pipe(gulp.dest('C:/Workspace/Git/Bar/packages/PowerArhitecture/'));
+    .pipe(gulp.dest('C:/Workspace/Git/Bar/packages/SharperArchitecture/'));
 });
