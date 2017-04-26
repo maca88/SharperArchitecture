@@ -42,7 +42,7 @@ namespace SharperArchitecture.Common.SimpleInjector
 
         public void Register(Type serviceType, Type implementationType, string key)
         {
-            Register(serviceType, implementationType, key, GetDefaultLifestyle(serviceType, implementationType));
+            Register(serviceType, implementationType, key, GetDefaultLifestyle(implementationType));
         }
 
         public void Register(Type serviceType, Type implementationType, string key, Lifestyle lifestyle)
@@ -52,7 +52,7 @@ namespace SharperArchitecture.Common.SimpleInjector
 
         public void Register(Type serviceType, Func<object> instanceCreator, string key)
         {
-            Register(serviceType, instanceCreator, key, GetDefaultLifestyle(serviceType, serviceType));
+            Register(serviceType, instanceCreator, key, GetDefaultLifestyle(serviceType));
         }
 
         public void Register(Type serviceType, Func<object> instanceCreator, string key, Lifestyle lifestyle)
@@ -69,10 +69,9 @@ namespace SharperArchitecture.Common.SimpleInjector
             serviceProducers.AddOrUpdate(key, s => producer, (k, v) => producer);
         }
 
-        private Lifestyle GetDefaultLifestyle(Type serviceType, Type implementationType)
+        private Lifestyle GetDefaultLifestyle(Type implementationType)
         {
-            return _container.Options.LifestyleSelectionBehavior
-                .SelectLifestyle(serviceType, implementationType);
+            return _container.Options.LifestyleSelectionBehavior.SelectLifestyle(implementationType);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace SharperArchitecture.Validation.Extensions
                 propVal = delegVal.InnerValidator; //Get the actual validator
             var propValType = propVal.GetType();
             var messageId = propRule.GetMessageId(includePropName);
-            var propName = propRule.DisplayName.GetString() ?? propRule.PropertyName;
+            var propName = propRule.DisplayName.GetString(null) ?? propRule.PropertyName;
             string errorMsg = null;
 
             #region NotNullValidator
