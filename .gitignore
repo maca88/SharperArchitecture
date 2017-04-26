@@ -154,3 +154,4 @@ bower_components
 
 Source/packages/*
 Source/SharperArchitecture.Tests/SharperArchitecture.Tests.WebApi.Server/Mappings/
+.vs/
