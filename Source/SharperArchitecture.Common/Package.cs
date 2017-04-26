@@ -11,13 +11,14 @@ using SharperArchitecture.Common.Adapters;
 using SharperArchitecture.Common.Attributes;
 using SharperArchitecture.Common.Commands;
 using SharperArchitecture.Common.Configuration;
-using SharperArchitecture.Common.Cryptographics;
 using SharperArchitecture.Common.Enums;
 using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Exceptions;
 using SharperArchitecture.Common.Extensions;
 using SharperArchitecture.Common.JsonNet;
 using SharperArchitecture.Common.Publishers;
+using SharperArchitecture.Common.Queries;
+using SharperArchitecture.Common.Queries.Internal;
 using SharperArchitecture.Common.SimpleInjector;
 using SharperArchitecture.Common.Specifications;
 using SimpleInjector;
@@ -32,13 +33,14 @@ namespace SharperArchitecture.Common
         public void RegisterServices(Container container)
         {
             container.RegisterSingleton<UnhandledExceptionPublisher>();
-            container.RegisterSingleton<ICryptography, Sha1Cryptography>();
 
             container.AllowResolvingLazyFactories();
             container.AllowResolvingFuncFactories();
 
             container.RegisterSingleton<IMultipleContractResolver>(new MultipleContractResolver());
             container.RegisterSingleton<ICommonConfiguration>(new CommonConfiguration());
+
+            container.RegisterSingleton<IQueryProcessor, DefaultQueryProcessor>();
 
             container.RegisterConditional(typeof(ILogger),
                 c => typeof(Log4NetAdapter<>).MakeGenericType(c.Consumer.ImplementationType),
@@ -82,38 +84,37 @@ namespace SharperArchitecture.Common
                 .Select(t => new { Implementation = t, Services = t.GetInterfaces() })
                 .ForEach(o =>
                 {
-                    
                     var injectAsCollection = false;
+                    Lifetime defaultLifeTime;
                     if (o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<>)) ||
                         o.Implementation.IsAssignableToGenericType(typeof(ICommandHandler<,>)) ||
                         o.Implementation.IsAssignableToGenericType(typeof(IAsyncCommandHandler<>)) ||
                         o.Implementation.IsAssignableToGenericType(typeof(IAsyncCommandHandler<,>))
                         )
                     {
-                        registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
-                        container.AddRegistration(o.Implementation, registration);
+                        defaultLifeTime = Lifetime.Transient;
                     }
                     else
                     {
-                        var attr = o.Implementation.GetCustomAttribute<LifetimeAttribute>()
-                                   ?? new LifetimeAttribute(Lifetime.Singleton);
-                        switch (attr.Lifetime)
-                        {
-                            case Lifetime.Singleton:
-                                registration = Lifestyle.Singleton.CreateRegistration(o.Implementation, container);
-                                break;
-                            case Lifetime.Scoped:
-                                registration = Lifestyle.Scoped.CreateRegistration(o.Implementation, container);
-                                break;
-                            case Lifetime.Transient:
-                                registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
-                                break;
-                            default:
-                                throw new SharperArchitectureException($"Invalid {nameof(Lifetime)} value: {attr.Lifetime}");
-                        }
-                        container.AddRegistration(o.Implementation, registration);
+                        defaultLifeTime = Lifetime.Singleton;
                         injectAsCollection = true;
                     }
+                    var attr = o.Implementation.GetCustomAttribute<LifetimeAttribute>() ?? new LifetimeAttribute(defaultLifeTime);
+                    switch (attr.Lifetime)
+                    {
+                        case Lifetime.Singleton:
+                            registration = Lifestyle.Singleton.CreateRegistration(o.Implementation, container);
+                            break;
+                        case Lifetime.Scoped:
+                            registration = Lifestyle.Scoped.CreateRegistration(o.Implementation, container);
+                            break;
+                        case Lifetime.Transient:
+                            registration = Lifestyle.Transient.CreateRegistration(o.Implementation, container);
+                            break;
+                        default:
+                            throw new SharperArchitectureException($"Invalid {nameof(Lifetime)} value: {attr.Lifetime}");
+                    }
+                    container.AddRegistration(o.Implementation, registration);
 
                     foreach (var serviceType in o.Services)
                     {

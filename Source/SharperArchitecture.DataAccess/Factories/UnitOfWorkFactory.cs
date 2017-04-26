@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Specifications;
 using SimpleInjector;

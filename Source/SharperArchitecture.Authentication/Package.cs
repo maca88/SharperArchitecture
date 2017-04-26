@@ -5,17 +5,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
-using SharperArchitecture.Authentication.BusinessRules;
 using SharperArchitecture.Authentication.Configurations;
 using SharperArchitecture.Authentication.Entities;
 using SharperArchitecture.Authentication.Specifications;
 using SharperArchitecture.Authentication.Stores;
 using SharperArchitecture.Authentication.Validators;
 using SharperArchitecture.Common.Exceptions;
-using SharperArchitecture.Validation.Specifications;
 using SimpleInjector;
-using SimpleInjector.Advanced;
-using SimpleInjector.Extensions;
 using SimpleInjector.Packaging;
 
 namespace SharperArchitecture.Authentication

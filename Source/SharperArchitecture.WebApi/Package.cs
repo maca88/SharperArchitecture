@@ -2,6 +2,7 @@
 using System.Web.Http;
 using System.Web.Http.Filters;
 using SharperArchitecture.Common.Attributes;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Events;
 using SharperArchitecture.WebApi.Internal;

@@ -9,6 +9,7 @@ using FluentNHibernate.MappingModel.Collections;
 using FluentNHibernate.MappingModel.Identity;
 using SharperArchitecture.CodeList.Attributes;
 using SharperArchitecture.CodeList.Specifications;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Exceptions;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Events;

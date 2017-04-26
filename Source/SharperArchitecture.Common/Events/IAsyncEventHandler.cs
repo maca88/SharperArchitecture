@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace SharperArchitecture.Common.Specifications
+namespace SharperArchitecture.Common.Events
 {
     public interface IAsyncEventHandler<in TEvent> where TEvent : IAsyncEvent
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentNHibernate.Automapping;
 using FluentNHibernate.MappingModel;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Events;
 

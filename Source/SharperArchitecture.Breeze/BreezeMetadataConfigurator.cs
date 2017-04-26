@@ -20,6 +20,7 @@ using SharperArchitecture.Breeze.Attributes;
 using SharperArchitecture.Breeze.Events;
 using SharperArchitecture.Breeze.Specification;
 using SharperArchitecture.Common.Configuration;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Exceptions;
 using SharperArchitecture.Common.Internationalization;
 using SharperArchitecture.Common.Specifications;

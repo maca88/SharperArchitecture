@@ -19,7 +19,7 @@ using NHibernate.Persister.Entity;
 using NHibernate.Stat;
 using NHibernate.Transaction;
 using NHibernate.Type;
-using SharperArchitecture.Common.Specifications;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.DataAccess.Events;
 using SharperArchitecture.DataAccess.Providers;
 using SimpleInjector;

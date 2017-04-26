@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Breeze.ContextProvider.NH.Metadata;
 using NHibernate;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 
 namespace SharperArchitecture.Breeze.Events

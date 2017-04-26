@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NHibernate;
 using NUnit.Framework;
+using SharperArchitecture.Common.Queries;
 using SharperArchitecture.DataAccess;
 using SharperArchitecture.DataAccess.Specifications;
 using SharperArchitecture.Domain;

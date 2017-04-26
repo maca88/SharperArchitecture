@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharperArchitecture.DataAccess.Specifications;
+﻿using System.Threading.Tasks;
 using SimpleInjector;
 
-namespace SharperArchitecture.DataAccess.Internal
+namespace SharperArchitecture.Common.Queries.Internal
 {
     internal class DefaultQueryProcessor : IQueryProcessor
     {

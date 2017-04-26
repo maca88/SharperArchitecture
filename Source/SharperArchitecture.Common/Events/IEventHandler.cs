@@ -1,6 +1,6 @@
 ﻿
 
-namespace SharperArchitecture.Common.Specifications
+namespace SharperArchitecture.Common.Events
 {
     public interface IEventHandler<in TEvent>  where TEvent : IEvent
     {

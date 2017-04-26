@@ -17,6 +17,7 @@ using SharperArchitecture.DataAccess.Extensions;
 using SharperArchitecture.WebApi.Specifications;
 using SimpleInjector;
 using System.Transactions;
+using SharperArchitecture.Common.Events;
 
 namespace SharperArchitecture.WebApi.Internal
 {

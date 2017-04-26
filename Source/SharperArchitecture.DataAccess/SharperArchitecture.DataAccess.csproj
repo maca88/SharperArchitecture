@@ -228,7 +228,6 @@
     <Compile Include="Factories\UnitOfWorkFactory.cs" />
     <Compile Include="Interceptors\NhibernateInterceptor.cs" />
     <Compile Include="Internal\AsyncHelpers.cs" />
-    <Compile Include="Internal\DefaultQueryProcessor.cs" />
     <Compile Include="MappingSteps\CustomCollectionStep.cs" />
     <Compile Include="MappingSteps\CustomHasManyStep.cs" />
     <Compile Include="MappingSteps\CustomPropertyStep.cs" />
@@ -244,17 +243,12 @@
     <Compile Include="Providers\AuditUserProvider.cs" />
     <Compile Include="Providers\SessionFactoryProvider.cs" />
     <Compile Include="Providers\SessionProvider.cs" />
-    <Compile Include="Specifications\IAsyncQuery.cs" />
-    <Compile Include="Specifications\IAsyncQueryHandler.cs" />
     <Compile Include="Specifications\IAuditUserProvider.cs" />
     <Compile Include="Specifications\IDbStore.cs" />
     <Compile Include="Specifications\IFluentConventionsConfiguration.cs" />
     <Compile Include="Specifications\IFluentAutoMappingConfiguration.cs" />
     <Compile Include="Specifications\IFluentDatabaseConfiguration.cs" />
     <Compile Include="Specifications\IFluentHiLoIdConfiguration.cs" />
-    <Compile Include="Specifications\IQuery.cs" />
-    <Compile Include="Specifications\IQueryHandler.cs" />
-    <Compile Include="Specifications\IQueryProcessor.cs" />
     <Compile Include="Specifications\ISessionFactoryProvider.cs" />
     <Compile Include="Specifications\ISessionProvider.cs" />
     <Compile Include="Specifications\IUnitOfWorkImplementor.cs" />
@@ -298,7 +292,6 @@
     <Folder Include="Enums\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

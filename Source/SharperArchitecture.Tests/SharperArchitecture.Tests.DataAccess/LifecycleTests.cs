@@ -12,6 +12,7 @@ using NHibernate;
 using NHibernate.Transform;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using SharperArchitecture.Common.Queries;
 using SharperArchitecture.Common.SimpleInjector;
 using SharperArchitecture.DataAccess;
 using SharperArchitecture.DataAccess.Attributes;

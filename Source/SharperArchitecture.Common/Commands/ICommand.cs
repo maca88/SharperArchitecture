@@ -1,6 +1,6 @@
 ﻿
 
-namespace SharperArchitecture.Common.Specifications
+namespace SharperArchitecture.Common.Commands
 {
     public interface ICommand
     {

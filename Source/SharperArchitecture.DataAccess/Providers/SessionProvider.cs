@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NHibernate;
 using NHibernate.Event;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Configurations;
 using SharperArchitecture.DataAccess.Decorators;

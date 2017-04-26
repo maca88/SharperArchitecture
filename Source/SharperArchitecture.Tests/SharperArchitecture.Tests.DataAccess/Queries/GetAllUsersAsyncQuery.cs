@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NHibernate.Linq;
+using SharperArchitecture.Common.Queries;
 using SharperArchitecture.DataAccess.Specifications;
 using SharperArchitecture.Tests.DataAccess.Entities;
 

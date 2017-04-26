@@ -8,6 +8,7 @@ using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
 using FluentValidation.Validators;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.Validation.Events;
 using SharperArchitecture.Validation.Specifications;

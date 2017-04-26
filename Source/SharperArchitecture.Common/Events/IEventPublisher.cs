@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using SharperArchitecture.Common.Events;
 
-namespace SharperArchitecture.Common.Specifications
+namespace SharperArchitecture.Common.Events
 {
     public interface IEventPublisher
     {

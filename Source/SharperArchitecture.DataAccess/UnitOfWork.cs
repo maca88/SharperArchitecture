@@ -8,6 +8,7 @@ using SharperArchitecture.DataAccess.Specifications;
 using SharperArchitecture.Domain;
 using NHibernate;
 using NHibernate.Linq;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Exceptions;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Configurations;

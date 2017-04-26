@@ -12,6 +12,7 @@ using NHibernate.Cfg;
 using NHibernate.Util;
 using SharperArchitecture.Breeze.Events;
 using SharperArchitecture.Breeze.Specification;
+using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess;
 using SharperArchitecture.DataAccess.Extensions;

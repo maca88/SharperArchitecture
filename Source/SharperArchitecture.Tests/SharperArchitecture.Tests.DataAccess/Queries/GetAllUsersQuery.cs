@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SharperArchitecture.Common.Queries;
 using SharperArchitecture.DataAccess.Specifications;
 using SharperArchitecture.Tests.DataAccess.Entities;
 

@@ -5,6 +5,7 @@ using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNet.Identity;
 using NUnit.Framework;
+using SharperArchitecture.Authentication.Configurations;
 using SharperArchitecture.Authentication.Specifications;
 using SharperArchitecture.DataAccess;
 using SharperArchitecture.Domain;
@@ -14,7 +15,6 @@ using SharperArchitecture.Validation;
 using SharperArchitecture.Validation.Specifications;
 using SimpleInjector;
 using SimpleInjector.Extensions.ExecutionContextScoping;
-using PasswordHasher = SharperArchitecture.Authentication.PasswordHasher;
 
 namespace SharperArchitecture.Tests.Authentication
 {
@@ -24,13 +24,13 @@ namespace SharperArchitecture.Tests.Authentication
         public AuthenticationTests()
         {
             EntityAssemblies.Add(typeof(AuthenticationTests).Assembly);
-            EntityAssemblies.Add(typeof(PasswordHasher).Assembly);
-            ConventionAssemblies.Add(typeof(PasswordHasher).Assembly);
+            EntityAssemblies.Add(typeof(AuthenticationConfiguration).Assembly);
+            ConventionAssemblies.Add(typeof(AuthenticationConfiguration).Assembly);
             TestAssemblies.Add(typeof(Entity).Assembly);
             TestAssemblies.Add(typeof(Database).Assembly);
             TestAssemblies.Add(typeof(ValidationRuleSet).Assembly);
             TestAssemblies.Add(typeof(AuthenticationTests).Assembly);
-            TestAssemblies.Add(typeof(PasswordHasher).Assembly);
+            TestAssemblies.Add(typeof(AuthenticationConfiguration).Assembly);
         }
 
         [Test]

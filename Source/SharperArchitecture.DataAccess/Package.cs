@@ -4,6 +4,8 @@ using System.Reflection;
 using NHibernate;
 using NHibernate.Event;
 using SharperArchitecture.Common.Configuration;
+using SharperArchitecture.Common.Events;
+using SharperArchitecture.Common.Queries;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess.Configurations;
 using SharperArchitecture.DataAccess.EventListeners;
@@ -61,7 +63,6 @@ namespace SharperArchitecture.DataAccess
             container.RegisterSingleton<IAuditUserProvider, AuditUserProvider>();
 
             container.Register<IDbStore, DbStore>(Lifestyle.Scoped);
-            container.RegisterSingleton<IQueryProcessor, DefaultQueryProcessor>();
 
             var depAssemblies = Assembly.GetExecutingAssembly()
                 .GetDependentAssemblies()
