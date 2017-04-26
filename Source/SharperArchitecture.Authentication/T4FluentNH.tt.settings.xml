@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <BaseEntityType>SharperArchitecture.Domain.IEntity</BaseEntityType>
+  <EntityTypes>
+    <EntityType>
+      <DerivedFromType>SharperArchitecture.Domain.IEntity</DerivedFromType>
+      <IdentifierPropertyName>Id</IdentifierPropertyName>
+      <IdentifierPropertyType>System.Int64</IdentifierPropertyType>
+      <KeyColumn>
+        <Prefix></Prefix>
+        <Postfix>Id</Postfix>
+      </KeyColumn>
+    </EntityType>
+  </EntityTypes>
+  <Strict>False</Strict>
+  <SyntheticProperties>
+    <Generate>True</Generate>
+    <Comment></Comment>
+    <AddNotNullAttribute>False</AddNotNullAttribute>
+    <AddLengthAttribute>False</AddLengthAttribute>
+    <CustomAttributes>
+      <CustomAttribute>ReadOnly(true)</CustomAttribute>
+    </CustomAttributes>
+  </SyntheticProperties>
+  <SyntheticProperties>True</SyntheticProperties>
+  <NotNullAttribute>SharperArchitecture.Validation.Attributes.NotNullAttribute</NotNullAttribute>
+  <DefaultCollectionMapType>Set</DefaultCollectionMapType>
+</Settings>

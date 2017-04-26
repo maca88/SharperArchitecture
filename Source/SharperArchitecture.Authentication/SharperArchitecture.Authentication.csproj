@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{33479929-7CC8-428B-91BD-D11745A7BE82}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharperArchitecture.Authentication</RootNamespace>
+    <AssemblyName>SharperArchitecture.Authentication</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FluentNHibernate, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentNHibernateX.1.2.0-Alpha1\lib\net45\FluentNHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentValidation.6.4.0-beta6\lib\Net45\FluentValidation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.6.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.6\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate, Version=4.1.0.1001, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernateX.2.0.0-Alpha1\lib\net40\NHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate.Extensions, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernateX.Extensions.1.2.0.0-Alpha1\lib\net452\NHibernate.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.3.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.3.2\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.NonGeneric, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.NonGeneric.4.3.0\lib\net46\System.Collections.NonGeneric.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.Process, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.Process.4.3.0\lib\net46\System.Diagnostics.Process.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.StackTrace, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.StackTrace.4.3.0\lib\net46\System.Diagnostics.StackTrace.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.TraceSource, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.TraceSource.4.3.0\lib\net46\System.Diagnostics.TraceSource.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Interactive.Async, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.Async.3.1.1\lib\net46\System.Interactive.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Watcher, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Watcher.4.3.0\lib\net46\System.IO.FileSystem.Watcher.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.NameResolution, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.NameResolution.4.3.0\lib\net46\System.Net.NameResolution.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reflection.TypeExtensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reflection.TypeExtensions.4.3.0\lib\net46\System.Reflection.TypeExtensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Formatters, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Serialization.Formatters.4.3.0\lib\net46\System.Runtime.Serialization.Formatters.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Threading.Thread, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Thread.4.3.0\lib\net46\System.Threading.Thread.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.XmlDocument, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Xml.XmlDocument.4.3.0\lib\net46\System.Xml.XmlDocument.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BusinessRules\DeleteSystemUserBusinessRule.cs" />
+    <Compile Include="BusinessRules\DuplicateUserNameBusinessRule.cs" />
+    <Compile Include="BusinessRules\UserNameFormatBusinessRule.cs" />
+    <Compile Include="Configurations\AuthenticationConfiguration.cs" />
+    <Compile Include="Configurations\AuthenticationConfigurationKeys.cs" />
+    <Compile Include="Convention\CacheConvention.cs" />
+    <Compile Include="Convention\OrganizationConvention.cs" />
+    <Compile Include="Convention\PrincipalConvention.cs" />
+    <Compile Include="Entities\Organization.cs" />
+    <Compile Include="Entities\OrganizationRole.cs" />
+    <Compile Include="Entities\RolePermission.cs" />
+    <Compile Include="Entities\UserClaim.cs" />
+    <Compile Include="Entities\Permission.cs" />
+    <Compile Include="Entities\PermissionPattern.cs" />
+    <Compile Include="Entities\UserLogin.cs" />
+    <Compile Include="Entities\UserRole.cs" />
+    <Compile Include="Entities\UserSetting.cs" />
+    <Compile Include="EventHandlers\UserInsertingUpdatingEventHandler.cs" />
+    <Compile Include="EventHandlers\PopulateDbHandler.cs" />
+    <Compile Include="Organization%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="OrganizationRole%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Package.cs" />
+    <Compile Include="PasswordHasher.cs" />
+    <Compile Include="Permission.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PermissionPattern%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PermissionTemplate\T4Permission.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>T4Permission.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Role%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="RolePermission%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Specifications\IAuthenticationConfiguration.cs" />
+    <Compile Include="Specifications\IOrganization.cs" />
+    <Compile Include="Specifications\IPermissionPattern.cs" />
+    <Compile Include="Specifications\IUser.cs" />
+    <Compile Include="User%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserClaim.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserLogin.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\Role.cs" />
+    <Compile Include="Stores\DefaultRoleStore.cs" />
+    <Compile Include="Stores\DefaultUserStore.cs" />
+    <Compile Include="Specifications\IPasswordValidator.cs" />
+    <Compile Include="Specifications\IRole.cs" />
+    <Compile Include="Entities\User.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StartupTasks\SyncTask.cs" />
+    <Compile Include="T4FluentNH.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserRole%28TUser_ TUserRole_ TRole_ TRolePermission_ TPermissionPattern_ TOrganization_ TOrganizationRole%29.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserSetting.generated.cs">
+      <DependentUpon>T4FluentNH.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Validators\IdentityValidator.cs" />
+    <Compile Include="Validators\PasswordValidator.cs" />
+    <Compile Include="Validators\PermissionPatternValidator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <EmbeddedResource Include="PermissionTemplate\Rights.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="PermissionTemplate\Build.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Build.txt</LastGenOutput>
+    </None>
+    <None Include="PermissionTemplate\Permissions.ttinclude" />
+    <None Include="packages.config" />
+    <None Include="PermissionTemplate\T4Permission.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>T4Permission.cs</LastGenOutput>
+    </None>
+    <None Include="T4FluentNH.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>T4FluentNH.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SharperArchitecture.Common\SharperArchitecture.Common.csproj">
+      <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
+      <Name>SharperArchitecture.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharperArchitecture.DataAccess\SharperArchitecture.DataAccess.csproj">
+      <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
+      <Name>SharperArchitecture.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharperArchitecture.Domain\SharperArchitecture.Domain.csproj">
+      <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>
+      <Name>SharperArchitecture.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharperArchitecture.Validation\SharperArchitecture.Validation.csproj">
+      <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
+      <Name>SharperArchitecture.Validation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PermissionTemplate\Build.txt">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
+    </Content>
+    <Content Include="PermissionTemplate\T4Permission.tt.settings.xml" />
+    <Content Include="T4FluentNH.tt.settings.xml" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

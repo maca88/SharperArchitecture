@@ -1,0 +1,205 @@
+﻿<#@ include file="../../SharperArchitecture.Common/Imports.ttinclude"#>
+<#@ include file="../../SharperArchitecture.Common/Utils.ttinclude"#>
+<#@ include file="../../SharperArchitecture.Common/Header.ttinclude"#>
+<#@ include file="../../SharperArchitecture.Common/VsHelperInit.ttinclude"#>
+
+<#
+var settings = XmlSettings.Load(VSHelper.Host.TemplateFile + ".settings.xml");
+Run(settings);
+#>
+
+<#+
+public void Run(XmlSettings settings)
+{
+    var permTable = settings.PermissionTableName;
+    var csSettings = settings.CSharp;
+    var tsSettings = settings.TypeScript;
+	var localizationXml = XDocument.Load(string.Format(@"{0}\{1}", Host.ResolvePath(""), settings.XmlPermissionFileName));
+	var moduleName = localizationXml.XPathSelectElement("/module").Attribute("name").Value;
+	var unitOfWork = new DatabaseUnitOfWork(settings.ConnectionString);
+	var objectTree = new ClassTree(string.Empty);
+	foreach(var item in localizationXml.XPathSelectElements("/module/permissions//permission"))
+	{
+		var name = item.Attribute("name").Value;
+		var ns = item.Attribute("namespace") != null ? item.Attribute("namespace").Value : null;
+	
+
+		var lId = unitOfWork.ExecuteScalar<long?>(
+				string.Format("SELECT Id FROM {0} WHERE Name = @Name AND Namespace {1} AND Module = @Module", permTable, ns == null ? "IS NULL" : "= @Ns"),
+				new SqlParameter("@Name", name),
+				new SqlParameter("@Ns", ns),
+				new SqlParameter("@Module", moduleName));
+		if(lId.HasValue)
+		{
+			objectTree.AddClass(lId.Value, name, ns);
+			continue;
+		} 
+		var lastId = unitOfWork.ExecuteScalar<long?>(string.Format("SELECT MAX(Id) FROM {0}", permTable)) ?? 0;
+		lastId++;
+		Warning(string.Format("Insering new {0} with id '{1}'", permTable, lastId));
+		unitOfWork.ExecuteNonQuery(string.Format("INSERT INTO {0} (Id, Name, Namespace, Module) VALUES(@Id, @Name, @Ns, @Module)", permTable),
+			new SqlParameter("@Id", lastId),
+			new SqlParameter("@Name", name),
+			new SqlParameter("@Ns", ns),
+			new SqlParameter("@Module", moduleName));
+
+
+		objectTree.AddClass(lastId, name, ns);
+		
+	}
+	unitOfWork.Dispose();
+
+    if (tsSettings.Generate)
+    {
+        var tsFilePath = Path.GetDirectoryName(VSHelper.CurrentProject.FileName) + "\\" + tsSettings.RelativePath;
+	    File.WriteAllText(tsFilePath, GenerateTScriptClasses(moduleName, tsSettings.Namespace, objectTree));
+    }
+    
+
+#>
+<#=GenerateCSharpClasses(moduleName, csSettings.Namespace, objectTree)#>
+<#+
+}
+#region CsClasses
+
+public string GenerateCSharpClasses(string moduleName, string rightsNamespace, ClassTree objectTree)
+{
+    return 
+		" namespace " + rightsNamespace + Environment.NewLine + 
+		"{" + Environment.NewLine + 
+        "\tpublic static class " + moduleName + Environment.NewLine + 
+        "\t{" + Environment.NewLine + 
+		WriteCSharpClasses(objectTree, moduleName);
+}
+string WriteCSharpClasses(ClassTree classTree, string moduleName)
+{
+	var content = classTree.SubClassTrees.Aggregate("", (current, child) => current + WriteCSharpClass(child.Value, moduleName));
+    content = classTree.Classes.Aggregate(content, (current, item) => current + string.Format("\t\tpublic const string {0} = \"{1}.{0}\";{2}", item.Value, moduleName, Environment.NewLine));
+    content += string.Format("\t\tpublic const string _ = \"{0}\";{1}\t}}{1}}}", moduleName, Environment.NewLine);
+    return content;
+}
+
+string WriteCSharpClass(ClassTree locClass, string moduleName)
+{
+	var classString = "";
+	var tabs = "\t";
+	for(var i=0; i < locClass.DepthLevel; i++)
+	{
+		tabs += "\t";
+	}
+	classString += tabs + "public static class " + locClass.Name +"\r\n";
+	classString += tabs + "{\r\n";
+
+    classString = locClass.SubClassTrees.Aggregate(classString, (current, item) => current + WriteCSharpClass(item.Value, moduleName));
+
+    classString = locClass.Classes.Aggregate(classString, (current, item) => current + (tabs + "\tpublic const string " + item.Value + " = \"" + moduleName + "." + locClass.FullName + "." + item.Value + "\";\r\n"));
+
+    classString += tabs + "\tpublic const string _ = \"" + moduleName +"."+ locClass.FullName +"\";\r\n";
+
+	classString += tabs + "}\r\n";
+	return classString;
+}
+
+#endregion
+
+public string ToLowerFirstChar(string value)
+{
+    return char.ToLower(value[0]) + value.Substring(1);
+}
+
+#>
+
+
+<#+
+public string GenerateTScriptClasses(string moduleName, string rightsNamespace, ClassTree objectTree)
+{
+    var classesNamespace = rightsNamespace + ".classes";
+    return 
+		"module " + rightsNamespace + " {" + Environment.NewLine + 
+		string.Format("{0}export module classes {{{1}", "\t", Environment.NewLine) +
+		WriteTScriptClasses(objectTree, moduleName, classesNamespace) +
+		string.Format("{0}}}{2}{1}{2}}}", "\t", 
+			string.Format("{0}export var {1}:{2}.{3} = new {2}.{3}();{4}", "\t", ToLowerFirstChar(moduleName), classesNamespace, moduleName, Environment.NewLine) ,
+		Environment.NewLine);
+}
+
+string WriteTScriptClasses(ClassTree classTree, string moduleName, string rightsNamespace)
+{
+    var content = WriteTScriptClass(classTree, moduleName, rightsNamespace);
+    return classTree.AllSubClassTrees.Aggregate(content, (current, child) => current + WriteTScriptClass(child, moduleName, rightsNamespace));
+}
+
+string WriteTScriptClass(ClassTree locClass, string moduleName, string rightsNamespace)
+{
+	var classString = "";
+	var tabs = "\t\t";
+    var clsName = locClass.DepthLevel < 2 ? (string.IsNullOrEmpty(locClass.Name) ? moduleName : locClass.Name) : locClass.GetUniqueName();
+	classString += tabs + "export class " + clsName +" {\r\n";
+
+    classString = locClass.Classes.Aggregate(classString, (current, item) => current + (tabs + string.Format("{0}public {1}: string = \"{2}\";{3}", "\t", 
+		ToLowerFirstChar(item.Value), (moduleName + "." + locClass.FullName + "." + item.Value).Replace("..", ".").TrimEnd('.'), Environment.NewLine)));
+    classString = locClass.SubClassTrees.Aggregate(classString, (current, item) => current + (tabs + string.Format("{0}public {1}: {2}.{3} = new {2}.{3}();{4}", "\t", 
+		ToLowerFirstChar(item.Key), rightsNamespace, item.Value.GetUniqueName(), Environment.NewLine)));
+    classString += tabs + string.Format("{0}public _: string = \"{1}\";{2}", "\t", (moduleName +"."+ locClass.FullName).Replace("..", ".").TrimEnd('.'), Environment.NewLine);
+	classString += tabs + "}\r\n";
+	return classString;
+}
+#>
+
+
+<#+
+
+    public class LanguageSettings
+    {
+        public bool Generate { get; set; }
+
+        public string Namespace { get; set; }
+
+        public string RelativePath { get; set; }
+    }
+
+    public class XmlSettings
+    {
+        public static XmlSettings Load(string path)
+        {
+            if(!File.Exists(path))
+                throw new FileNotFoundException(string.Format("Missing settings at: '{0}'", path));
+
+            var xElement = XElement.Load(path);
+            
+            var settings = new XmlSettings
+            {
+                ConnectionString = xElement.XPathSelectElement("/ConnectionString").Value,
+                PermissionTableName = xElement.XPathSelectElement("/PermissionTableName").Value,
+                XmlPermissionFileName = xElement.XPathSelectElement("/XmlPermissionFileName").Value,
+                TypeScript = new LanguageSettings
+                {
+                    Generate = xElement.XPathSelectElement("/TypeScript/Generate").Value.ToUpperInvariant() == "TRUE",
+                    Namespace = xElement.XPathSelectElement("/TypeScript/Namespace").Value,
+                    RelativePath = xElement.XPathSelectElement("/TypeScript/RelativePath").Value,
+                },
+                CSharp = new LanguageSettings
+                {
+                    Generate = xElement.XPathSelectElement("/CSharp/Generate").Value.ToUpperInvariant() == "TRUE",
+                    Namespace = xElement.XPathSelectElement("/CSharp/Namespace").Value,
+                    RelativePath = xElement.XPathSelectElement("/CSharp/RelativePath").Value,
+                },
+            };
+            if(string.IsNullOrEmpty(settings.XmlPermissionFileName))
+                throw new Exception("XmlPermissionFileName is not set");
+            return settings;
+        }
+
+        public string ConnectionString { get; set; }
+
+        public string PermissionTableName { get; set; }
+
+        public string XmlPermissionFileName { get; set; }
+
+        public LanguageSettings TypeScript { get; set; }
+
+        public LanguageSettings CSharp { get; set; }
+
+
+    }
+#>

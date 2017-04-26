@@ -1,0 +1,38 @@
+﻿<#@ template language="C#" hostSpecific="true"   #>
+<#@ output extension=".txt" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="../../SharperArchitecture.Common/Utils.ttinclude"#>
+
+<#
+
+    var regex = new Regex(@"[<@#]+\s*include[^>]+>");
+    var tmplDir = Path.GetDirectoryName(Host.TemplateFile);
+    var commonProj = new DirectoryInfo(tmplDir).Parent.Parent.FullName + "\\SharperArchitecture.Common\\";
+    var destDir = new DirectoryInfo(tmplDir).FullName;
+    var imports = File.ReadAllText(Path.Combine(commonProj, "Imports.ttinclude"));
+    var header = File.ReadAllText(Path.Combine(commonProj, "Header.ttinclude"));
+    var utils = regex.Replace(File.ReadAllText(Path.Combine(commonProj, "Utils.ttinclude")), "");
+    var vsHelper = regex.Replace(File.ReadAllText(Path.Combine(commonProj, "VsHelperInit.ttinclude")), "");
+    var core = regex.Replace(File.ReadAllText(Path.Combine(tmplDir, "Permissions.ttinclude")), "");
+    var manager = Manager.Create(Host, GenerationEnvironment);
+    var resultPath = Path.Combine(destDir + "\\", "T4Permission.tt");
+    Warning(resultPath);
+    manager.StartNewFile("");
+#>
+<#="<" + "#" + "@" +  " template language=\"C#\" debug=\"true\" hostSpecific=\"true\"" + "#" + ">"#>
+<#=imports#>
+<#=header#>
+<#=vsHelper#>
+<#=core#>
+<#=utils#>
+
+<#
+    manager.EndBlock(); 
+    File.WriteAllText(resultPath, manager.GetAllContent());
+#>*/

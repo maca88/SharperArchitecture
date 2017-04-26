@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <BaseEntity>SharperArchitecture.Domain.IEntity</BaseEntity>
+  <IdentifierPropertyType>long</IdentifierPropertyType>
+  <Strict>False</Strict>
+  <SyntheticProperties>True</SyntheticProperties>
+  <NotNullAttribute>SharperArchitecture.Validation.Attributes.NotNullAttribute</NotNullAttribute>
+  <DefaultCollectionMapType>Set</DefaultCollectionMapType>
+  <KeyColumn>
+    <Prefix></Prefix>
+    <Postfix>Id</Postfix>
+  </KeyColumn>
+</Settings>

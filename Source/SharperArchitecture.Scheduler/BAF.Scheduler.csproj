@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3766D356-257E-40F1-8D05-CF612DD6159D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BAF.Scheduler</RootNamespace>
+    <AssemblyName>BAF.Scheduler</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper">
+      <HintPath>..\packages\AutoMapper.3.1.0\lib\net40\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper.Net4">
+      <HintPath>..\packages\AutoMapper.3.1.0\lib\net40\AutoMapper.Net4.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging">
+      <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="HibernatingRhinos.Profiler.Appender">
+      <HintPath>..\packages\NHProf\HibernatingRhinos.Profiler.Appender.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Extensions.Logging">
+      <HintPath>..\packages\Ninject.Extensions.Logging.3.2.1.0\lib\net45-full\Ninject.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Extensions.Logging.Log4Net, Version=3.0.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Ninject.Extensions.Logging.Log4net.3.0.2-unstable-9009\lib\net45-full\Ninject.Extensions.Logging.Log4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz">
+      <HintPath>..\packages\Quartz.2.2.1\lib\net40\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdoDelegates\BAFAdoDelegate.cs" />
+    <Compile Include="AdoDelegates\MySQLDelegate.cs" />
+    <Compile Include="AdoDelegates\OracleDelegate.cs" />
+    <Compile Include="AdoDelegates\SQLiteDelegate.cs" />
+    <Compile Include="AdoDelegates\SqlServerDelegate.cs" />
+    <Compile Include="BAFJobStoreTX.cs" />
+    <Compile Include="BAFScheduler.cs" />
+    <Compile Include="CalendarIntervalTriggerWrapper.cs" />
+    <Compile Include="CronTriggerWrapper.cs" />
+    <Compile Include="DailyTimeIntervalTriggerWrapper.cs" />
+    <Compile Include="BAFJobDetailImpl.cs" />
+    <Compile Include="Entities\SchedulerLog.cs" />
+    <Compile Include="Extensions\DailyCalendarExtensions.cs" />
+    <Compile Include="Extensions\IntervalUnitExtensions.cs" />
+    <Compile Include="Extensions\ScheduleBuilderExtensions.cs" />
+    <Compile Include="Extensions\IJobDetailExtensions.cs" />
+    <Compile Include="Extensions\TimeOfDayExtensions.cs" />
+    <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Extensions\TriggerExtensions.cs" />
+    <Compile Include="Factories\SchedulerFactory.cs" />
+    <Compile Include="Filters\JobFilter.cs" />
+    <Compile Include="Filters\JobLogFilter.cs" />
+    <Compile Include="Filters\TriggerFilter.cs" />
+    <Compile Include="Filters\TriggerGroupFilter.cs" />
+    <Compile Include="Mappings\CalendarMapping.cs" />
+    <Compile Include="Mappings\SchedulerLogMapping.cs" />
+    <Compile Include="Mappings\TriggerMapping.cs" />
+    <Compile Include="SchedulerDbLogger.cs" />
+    <Compile Include="SchedulerLoggerBase.cs" />
+    <Compile Include="SchedulerMemoryLogger.cs" />
+    <Compile Include="SimpleTriggerWrapper.cs" />
+    <Compile Include="Factories\JobFactory.cs" />
+    <Compile Include="Mappings\JobDetailMapping.cs" />
+    <Compile Include="Mappings\SchedulerInfoMapping.cs" />
+    <Compile Include="NinjectRegistration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\SchedulerProvider.cs" />
+    <Compile Include="Specifications\IBAFJobStore.cs" />
+    <Compile Include="Specifications\IAuditTrigger.cs" />
+    <Compile Include="Specifications\IBAFDriverDelegate.cs" />
+    <Compile Include="Specifications\IBAFScheduler.cs" />
+    <Compile Include="Specifications\ILogRepository.cs" />
+    <Compile Include="Specifications\ISchedulerLogger.cs" />
+    <Compile Include="Specifications\ISchedulerFacade.cs" />
+    <Compile Include="SchedulerFacade.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="job_scheduling_data_2_0.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="JobListeners\" />
+    <Folder Include="Jobs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BAF.Common\BAF.Common.csproj">
+      <Project>{b5bbcc23-238f-479c-9185-920f86fde0d2}</Project>
+      <Name>BAF.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BAF.DataAccess\BAF.DataAccess.csproj">
+      <Project>{edc983ab-2cdf-42ec-ad0b-ec3101a6d940}</Project>
+      <Name>BAF.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BAF.Domain\BAF.Domain.csproj">
+      <Project>{7be609c2-febe-4428-8b2d-b1fd72b5f0e7}</Project>
+      <Name>BAF.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BAF.Validation\BAF.Validation.csproj">
+      <Project>{9370c544-6a85-41dc-b461-2bd12c43ecfe}</Project>
+      <Name>BAF.Validation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

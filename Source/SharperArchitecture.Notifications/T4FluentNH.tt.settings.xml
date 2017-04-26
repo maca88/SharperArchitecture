@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <BaseEntityType>SharperArchitecture.Domain.IEntity</BaseEntityType>
+  <EntityTypes>
+    <EntityType>
+      <DerivedFromType>SharperArchitecture.CodeList.CodeList</DerivedFromType>
+      <IdentifierPropertyType>System.String</IdentifierPropertyType>
+      <IdentifierLength>20</IdentifierLength>
+      <CustomIdentifierLengths>
+        <CustomIdentifierLength>
+          <Type>Bar.Domain.CodeLists.Container</Type>
+          <Length>12</Length>
+        </CustomIdentifierLength>
+      </CustomIdentifierLengths>
+      <KeyColumn>
+        <Prefix></Prefix>
+        <Postfix>Code</Postfix>
+      </KeyColumn>
+    </EntityType>
+    <EntityType>
+      <DerivedFromType>SharperArchitecture.Domain.IEntity</DerivedFromType>
+      <IdentifierPropertyType>System.Int64</IdentifierPropertyType>
+      <KeyColumn>
+        <Prefix></Prefix>
+        <Postfix>Id</Postfix>
+      </KeyColumn>
+    </EntityType>
+  </EntityTypes>
+  <Strict>False</Strict>
+  <SyntheticProperties>
+    <Generate>True</Generate>
+    <Comment></Comment>
+    <AddNotNullAttribute>False</AddNotNullAttribute>
+    <AddLengthAttribute>False</AddLengthAttribute>
+    <CustomAttributes>
+      <CustomAttribute>ReadOnly(true)</CustomAttribute>
+    </CustomAttributes>
+  </SyntheticProperties>
+
+  <ExternalTypes>
+    <ExternalType>
+      <FullName>SharperArchitecture.Common.Specifications.IUser</FullName>
+      <DerivedFromType>SharperArchitecture.Domain.IEntity</DerivedFromType>
+    </ExternalType>
+  </ExternalTypes>
+
+  <NotNullAttribute>SharperArchitecture.Validation.Attributes.NotNullAttribute</NotNullAttribute>
+  <LengthAttribute>SharperArchitecture.Validation.Attributes.LengthAttribute</LengthAttribute>
+  <DefaultCollectionMapType>Set</DefaultCollectionMapType>
+  <IgnoreTypes>
+    <!--<IgnoreType></IgnoreType>-->
+  </IgnoreTypes>
+</Settings>
