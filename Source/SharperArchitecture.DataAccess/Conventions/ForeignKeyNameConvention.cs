@@ -4,7 +4,7 @@ using FluentNHibernate.Conventions.Instances;
 
 namespace SharperArchitecture.DataAccess.Conventions
 {
-    public class ForeignKeyNameConvenction : IReferenceConvention, IHasOneConvention, IHasManyToManyConvention
+    public class ForeignKeyNameConvention : IReferenceConvention, IHasOneConvention, IHasManyToManyConvention
     {
         public void Apply(IManyToOneInstance instance)
         {

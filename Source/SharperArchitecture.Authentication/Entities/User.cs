@@ -108,7 +108,7 @@ namespace SharperArchitecture.Authentication.Entities
             get { return AppConfiguration.GetSetting<string>(AuthenticationConfigurationKeys.SystemUserName) == Name; }
         }
 
-        [Formula("UserName")]
+        [Formula("`UserName`")]
         public virtual string Name { get { return UserName; } set {} }
 
         #region LastModifiedBy

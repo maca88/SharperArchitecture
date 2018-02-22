@@ -52,6 +52,8 @@ namespace SharperArchitecture.Tests.Common
 
         protected virtual void Configure()
         {
+            I18N.Initialize();
+
             AppConfiguration.SetGetDomainAssembliesFunction(() => TestAssemblies);
             Container = CreateContainer();
             ConfigureContainer(Container);

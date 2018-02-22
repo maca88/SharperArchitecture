@@ -24,7 +24,7 @@ namespace SharperArchitecture.CodeList
             protected set { _names = value; }
         }
 
-        [Formula("Id")]
+        [Formula("`Id`")]
         public virtual string Code { get { return Id; } set { Id = value; } }
 
         public virtual bool Active { get; set; } = true;

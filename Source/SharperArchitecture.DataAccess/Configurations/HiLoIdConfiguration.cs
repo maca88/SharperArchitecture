@@ -19,7 +19,7 @@ namespace SharperArchitecture.DataAccess.Configurations
         {
             Enabled = AppConfiguration.GetSetting<bool>(DatabaseConfigurationKeys.ConventionsHiLoIdEnabled);
             TableName = AppConfiguration.GetSetting<string>(DatabaseConfigurationKeys.ConventionsHiLoIdTableName);
-            MaxLo = AppConfiguration.GetSetting<int?>(DatabaseConfigurationKeys.ConventionsHiLoIdMaxLo).GetValueOrDefault();
+            MaxLo = AppConfiguration.GetSetting<int?>(DatabaseConfigurationKeys.ConventionsHiLoIdMaxLo).GetValueOrDefault(100);
         }
     }
 }

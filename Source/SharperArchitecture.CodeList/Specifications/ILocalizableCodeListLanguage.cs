@@ -15,7 +15,7 @@ namespace SharperArchitecture.CodeList.Specifications
         where TCodeList : ICodeList
         where TCodeListNames : ILocalizableCodeListLanguage<TCodeList, TCodeListNames>
     {
-        TCodeList CodeList { get; set; }
+        TCodeList CodeList { get; set; } // TODO: remove setter after T4FluentHN is fixed
 
         void SetCodeList(TCodeList codeList);
 

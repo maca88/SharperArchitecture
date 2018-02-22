@@ -7,6 +7,8 @@ using FluentNHibernate.MappingModel;
 using FluentNHibernate.MappingModel.ClassBased;
 using FluentNHibernate.MappingModel.Collections;
 using FluentNHibernate.MappingModel.Identity;
+using NHibernate.Cfg;
+using NHibernate.Dialect;
 using SharperArchitecture.CodeList.Attributes;
 using SharperArchitecture.CodeList.Specifications;
 using SharperArchitecture.Common.Events;
@@ -20,8 +22,12 @@ namespace SharperArchitecture.CodeList.EventHandlers
     {
         // TODO: configurable...COALESCE works everywhere but is slower than ISNULL which is available only for sql server
         private static readonly string _localizeFormula =
-            "(SELECT COALESCE((SELECT curr.{0} FROM {1} curr WHERE curr.CodeListCode = Code AND curr.LanguageCode = :{3}.{4})," +
-            "(SELECT def.{0} FROM {1} def WHERE def.CodeListCode = Code AND def.LanguageCode = :{3}.{2})))";
+            "(SELECT COALESCE((SELECT curr.{0} FROM {1} curr WHERE curr.{5} = {7} AND curr.{6} = :{3}.{4})," +
+            "(SELECT def.{0} FROM {1} def WHERE def.{5} = {7} AND def.{6} = :{3}.{2})))";
+
+        public INamingStrategy NamingStrategy { get; private set; }
+
+        public Dialect Dialect { get; private set; }
 
         public void Apply(ClassMappingBase classMapBase, Lazy<Dictionary<Type, ClassMapping>> lazyTypeMap)
         {
@@ -93,7 +99,7 @@ namespace SharperArchitecture.CodeList.EventHandlers
                 idCol.Set(o => o.Length, Layer.UserSupplied, codeListAttr.CodeLength);
                 //We need to update the formula for the Code property
                 var codeProp = classMap.Properties.First(o => o.Name == "Code");
-                codeProp.Set(o => o.Formula, Layer.UserSupplied, "(Code)");
+                codeProp.Set(o => o.Formula, Layer.UserSupplied, $"({GetColumnName("Code")})");
             }
 
             foreach (var propMap in classMap.Properties)
@@ -112,10 +118,19 @@ namespace SharperArchitecture.CodeList.EventHandlers
                     {
                         throw new SharperArchitectureException($"Mapping for codelist {names.ChildType} was not found, failed to apply the formula for the FilterCurrentLanguage attribute");
                     }
-                    var childTableName = GetTableName(lazyTypeMap.Value[names.ChildType]);
+                    // Here the table name is already altered
+                    var childMapping = lazyTypeMap.Value[names.ChildType];
+                    var childTableName = childMapping.TableName;
                     propMap.Set(o => o.Formula, Layer.UserSupplied,
-                        string.Format(_localizeFormula, attr.ColumnName ?? propMap.Name, childTableName,
-                            attr.FallbackLanguageParameterName, attr.FilterName, attr.CurrentLanguageParameterName));
+                        string.Format(_localizeFormula, 
+                            attr.ColumnName ?? ConvertQuotes(GetColumnName(propMap.Name)), 
+                            childTableName,
+                            attr.FallbackLanguageParameterName, 
+                            attr.FilterName, 
+                            attr.CurrentLanguageParameterName, 
+                            GetColumnName(codeListAttr.ManipulateIdentifier || id == null ? "CodeListCode" : $"CodeList{id.Name}"),
+                            ConvertQuotes(GetColumnName("LanguageCode")),
+                            ConvertQuotes(GetColumnName(codeListAttr.ManipulateIdentifier || id == null ? "Code" : id.Name))));
                 }
             }
 
@@ -176,6 +191,20 @@ namespace SharperArchitecture.CodeList.EventHandlers
             return col;
         }
 
+        private string GetColumnName(string name)
+        {
+            return NamingStrategy.ColumnName(name);
+        }
+
+        private string ConvertQuotes(string name)
+        {
+            if (name.StartsWith("`") || name.EndsWith("`"))
+            {
+                return $"{Dialect.OpenQuote}{name.Trim('`')}{Dialect.CloseQuote}"; 
+            }
+            return name;
+        }
+
         protected string GetKeyName(Member property, Type type)
         {
             return (property != null ? property.Name : type.Name) + "Code";
@@ -183,6 +212,8 @@ namespace SharperArchitecture.CodeList.EventHandlers
 
         public void Handle(HibernateMappingsBuiltEvent e)
         {
+            NamingStrategy = e.Configuration.NamingStrategy;
+            Dialect = Dialect.GetDialect(e.Configuration.Properties);
             var lazyTypeMap = new Lazy<Dictionary<Type, ClassMapping>>(() =>
             {
                 return e.Mappings.SelectMany(o => o.Classes).ToDictionary(o => o.Type);
@@ -204,10 +235,10 @@ namespace SharperArchitecture.CodeList.EventHandlers
         private string GetTableName(ClassMapping classMap, CodeListConfigurationAttribute attr = null)
         {
             attr = attr ?? classMap.Type.GetCustomAttribute<CodeListConfigurationAttribute>(false) ?? new CodeListConfigurationAttribute();
-            var tableName = classMap.TableName.Trim('`');
+            var tableName = classMap.TableName.Trim('`').TrimStart(Dialect.OpenQuote).TrimEnd(Dialect.CloseQuote);
             if (!attr.CodeListPrefix)
             {
-                return tableName;
+                return ConvertQuotes(NamingStrategy.TableName(tableName));
             }
             if (tableName.EndsWith("CodeList"))
             {
@@ -218,7 +249,7 @@ namespace SharperArchitecture.CodeList.EventHandlers
             {
                 tableName = "CodeList" + tableName;
             }
-            return tableName;
+            return ConvertQuotes(NamingStrategy.TableName(tableName));
         }
     }
 }

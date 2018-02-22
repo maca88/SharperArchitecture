@@ -25,7 +25,7 @@ namespace SharperArchitecture.WebApi.Internal
     /// Responsable for managing a transaction inside a WebApi request.
     /// </summary>
     [Priority(short.MaxValue)]
-    internal class TransactionManager : IEventHandler<SessionCreatedEvent>, IActionFilter
+    internal class TransactionManager : DelegatingHandler, IEventHandler<SessionCreatedEvent>
     {
         private readonly IRequestMessageProvider _requestMessageProvider;
         private readonly Container _container;
@@ -76,7 +76,7 @@ namespace SharperArchitecture.WebApi.Internal
             }
 
             var actionDescriptor = currentMessage.GetActionDescriptor();
-            var attr = actionDescriptor.GetCustomAttributes<IsolationLevelAttribute>().SingleOrDefault();
+            var attr = actionDescriptor?.GetCustomAttributes<IsolationLevelAttribute>().SingleOrDefault();
             if (attr != null)
             {
                 @event.Session.BeginTransaction(attr.Level);
@@ -90,13 +90,13 @@ namespace SharperArchitecture.WebApi.Internal
 
         public bool AllowMultiple => false;
 
-        public async Task<HttpResponseMessage> ExecuteActionFilterAsync(HttpActionContext actionContext, CancellationToken cancellationToken, 
-            Func<Task<HttpResponseMessage>> continuation)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             WebApiRequestInfo info = null;
             try
             {
-                var result = await continuation();
+                var result = await base.SendAsync(request, cancellationToken);
+                result.EnsureSuccessStatusCode();
                 info = GetWebApiRequestInfo();
                 if (info == null)
                 {

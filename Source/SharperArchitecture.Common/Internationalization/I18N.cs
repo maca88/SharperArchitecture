@@ -14,9 +14,13 @@ namespace SharperArchitecture.Common.Internationalization
 
         static I18N()
         {
+        }
+
+        public static void Initialize()
+        {
             Translator.Default.FormatCallback = TranslatorFormatter.Custom;
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            
+
             //Using GetFullPath so we can combine absolute and relative paths
             var translDirectory = Path.GetFullPath(Path.Combine(baseDir, AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsPath)));
             var translPattern = AppConfiguration.GetSetting<string>(CommonConfigurationKeys.TranslationsByCulturePattern);
@@ -27,7 +31,7 @@ namespace SharperArchitecture.Common.Internationalization
                 throw new FileNotFoundException($"Default translation file not found. Path: {defaultTranslPath}");
             Translator.Default.RegisterTranslation(defaultTranslPath);
 
-            foreach(var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
+            foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
                 if (!File.Exists(Path.Combine(translDirectory, string.Format(translPattern, culture.Name))))
                     continue;

@@ -19,7 +19,7 @@ namespace SharperArchitecture.DataAccess.Conventions
             if(tableAttr == null) return;
 
             if (!string.IsNullOrEmpty(tableAttr.Prefix))
-                instance.Table(tableAttr.Prefix + instance.TableName.Trim('`'));
+                instance.Table($"`{tableAttr.Prefix + instance.TableName.Trim('`')}`");
 
             if(!string.IsNullOrEmpty(tableAttr.Name))
                 instance.Table(tableAttr.Name);

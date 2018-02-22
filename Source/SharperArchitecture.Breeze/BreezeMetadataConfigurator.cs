@@ -35,6 +35,7 @@ namespace SharperArchitecture.Breeze
         private readonly IValidatorFactory _validatorFactory;
         private static readonly HashSet<string> NullableProperties = new HashSet<string>();
         private static bool _configured;
+        private static Type _clientModelType;
 
         static BreezeMetadataConfigurator() { }
 
@@ -55,6 +56,11 @@ namespace SharperArchitecture.Breeze
             {
                 NullableProperties.Add(propName);
             }
+        }
+
+        public static void SetClientModelBaseType<T>() where T : class
+        {
+            _clientModelType = typeof(T);
         }
 
         private List<string> ConvertToFluentValidators(DataProperty dataProp, StructuralType structuralType)
@@ -108,13 +114,25 @@ namespace SharperArchitecture.Breeze
             return convertedVals;
         }
 
+        private bool IsClientModel(Type type)
+        {
+            return _clientModelType != null &&
+                   _clientModelType.IsAssignableFrom(type);
+            //type.GetCustomAttribute(_clientModelType) !=  null;
+        }
+
         private void Configure(MetadataSchema metadataSchema, ISessionFactory sessionFactory)
         {
             _configured = true;
-            var clientModelTypes = typeof(IClientModel).Assembly.GetDependentAssemblies()
-                .SelectMany(a => a.GetTypes()
-                    .Where(t => typeof(IClientModel).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass && !t.IsGenericType))
-                .ToList();
+            var clientModelTypes = new List<Type>();
+            if (_clientModelType != null)
+            {
+                clientModelTypes = _clientModelType.Assembly.GetDependentAssemblies()
+                    .SelectMany(a => a.GetTypes())
+                    .Union(_clientModelType.Assembly.GetTypes())
+                    .Where(t => !t.IsAbstract && t.IsClass && !t.IsGenericType && IsClientModel(t))
+                    .ToList();
+            }
             var serverModelTypes = typeof(IEntity).Assembly.GetDependentAssemblies()
                 .SelectMany(a => a.GetTypes()
                     .Where(t => typeof(IEntity).IsAssignableFrom(t) || t.GetCustomAttribute<IncludeAttribute>() != null))
@@ -158,7 +176,7 @@ namespace SharperArchitecture.Breeze
                 foreach (var prop in clientModelType.GetProperties())
                 {
                     var isEntityType = typeof(IEntity).IsAssignableFrom(prop.PropertyType);
-                    var isClientType = typeof(IClientModel).IsAssignableFrom(prop.PropertyType);
+                    var isClientType = IsClientModel(prop.PropertyType);
 
                     //add a nav property
                     if (isEntityType || isClientType)
@@ -224,7 +242,7 @@ namespace SharperArchitecture.Breeze
                     {
                         var invEntityType = prop.PropertyType.GetGenericArguments()[0];
                         if (!typeof(IEntity).IsAssignableFrom(invEntityType) &&
-                            !typeof(IClientModel).IsAssignableFrom(invEntityType))
+                            !IsClientModel(invEntityType))
                             continue;
 
                         //We need to find the related property on the otherside of the relation
@@ -298,6 +316,19 @@ namespace SharperArchitecture.Breeze
                         }
                         structType.DataProperties.Add(dataProp);
                     }
+                }
+                if (!structType.DataProperties.Any(o => o.IsPartOfKey))
+                {
+                    var idProp = new DataProperty
+                    {
+                        DataType = NHMetadataBuilder.GetDataType(typeof(int)),
+                        NameOnServer = "Id",
+                        IsNullable = false,
+                        IsPartOfKey = true
+                    };
+                    var typeVal = NHMetadataBuilder.GetTypeValidator(typeof(int));
+                    idProp.Validators.Add(typeVal);
+                    structType.DataProperties.Add(idProp);
                 }
                 structType["isUnmapped"] = true;
             }

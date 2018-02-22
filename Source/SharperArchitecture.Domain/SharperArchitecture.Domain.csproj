@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Attributes\FetchModeAttribute.cs" />
     <Compile Include="Attributes\FormulaAttribute.cs" />
+    <Compile Include="Attributes\HiLoAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="Attributes\IncludeAttribute.cs" />
     <Compile Include="Attributes\IndexAttribute.cs" />
@@ -69,7 +70,6 @@
     <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

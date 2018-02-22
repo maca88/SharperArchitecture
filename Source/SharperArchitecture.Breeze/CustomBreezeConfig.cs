@@ -20,7 +20,7 @@ namespace SharperArchitecture.Breeze
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 TypeNameHandling = TypeNameHandling.Objects,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
             };
 
             // Default is DateTimeZoneHandling.RoundtripKind - you can change that here.

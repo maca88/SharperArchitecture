@@ -245,7 +245,7 @@ namespace SharperArchitecture.Validation
             var createRuleMethod = typeof(PropertyRule)
                 .GetMethods(BindingFlags.Static | BindingFlags.Public)
                 .Select(o => o.MakeGenericMethod(type, propInfo.PropertyType))
-                .First(o => o.Name == "Create" && o.GetParameters().Count() == 1);
+                .First(o => o.Name == "Create" && o.GetParameters().Length == 1);
             return (PropertyRule)createRuleMethod.Invoke(null, new object[] { expr });
         }
     }

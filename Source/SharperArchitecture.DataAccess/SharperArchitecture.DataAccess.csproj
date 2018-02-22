@@ -161,8 +161,9 @@
     <Compile Include="Configurations\FluentDatabaseConfiguration.cs" />
     <Compile Include="Configurations\FluentHiLoIdConfiguration.cs" />
     <Compile Include="Configurations\HiLoIdConfiguration.cs" />
+    <Compile Include="Conventions\BaseHiLoIdConvention.cs" />
     <Compile Include="Conventions\ForeignKeyColumnNameConvention.cs" />
-    <Compile Include="Conventions\ForeignKeyNameConvenction.cs" />
+    <Compile Include="Conventions\ForeignKeyNameConvention.cs" />
     <Compile Include="Conventions\FormulaAttributeConvention.cs" />
     <Compile Include="Conventions\IndexAttributeConvention.cs" />
     <Compile Include="Conventions\FetchModeAttributeConvention.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="Conventions\NotEmptyAttributeConvention.cs" />
     <Compile Include="Conventions\NotNullAttributeConvention.cs" />
     <Compile Include="Conventions\NotNullConvention.cs" />
+    <Compile Include="Conventions\Postgre\PostgreHiLoIdConvention.cs" />
     <Compile Include="Conventions\PropertyConvention.cs" />
     <Compile Include="Conventions\ReadOnlyAttributeConvention.cs" />
     <Compile Include="Conventions\TableAttributeConvention.cs" />
@@ -188,6 +190,7 @@
     <Compile Include="Conventions\VersionedEntityConvention.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="EntityValidationException.cs" />
+    <Compile Include="Internal\CustomAuxiliaryDatabaseObject.cs" />
     <Compile Include="Internal\DbStore.cs" />
     <Compile Include="EventListeners\EntityPreUpdateInsertEventListener.cs" />
     <Compile Include="EventListeners\NhConfigurationEventHandler.cs" />

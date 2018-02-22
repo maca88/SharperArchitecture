@@ -125,11 +125,8 @@
     <Compile Include="Attributes\InversePropertyName.cs" />
     <Compile Include="Configuration\BreezeConfiguration.cs" />
     <Compile Include="Configuration\BreezeConfigurationKeys.cs" />
-    <Compile Include="CustomBreezeConfig.cs" />
     <Compile Include="BreezeMetadataConfigurator.cs" />
     <Compile Include="BreezeContext.cs" />
-    <Compile Include="ClientModel.cs" />
-    <Compile Include="EntityModelConfiguratorTask.cs" />
     <Compile Include="Events\BreezeAfterFlushAsyncEvent.cs" />
     <Compile Include="Events\BreezeBeforeFlushAsyncEvent.cs" />
     <Compile Include="Events\BreezeAfterFlushEvent.cs" />

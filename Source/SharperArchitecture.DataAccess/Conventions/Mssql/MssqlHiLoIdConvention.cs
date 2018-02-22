@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using SharperArchitecture.DataAccess.Configurations;
 using SharperArchitecture.DataAccess.Specifications;
@@ -11,83 +12,38 @@ using FluentNHibernate.Conventions.Instances;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Mapping;
+using SharperArchitecture.Domain.Attributes;
 
 namespace SharperArchitecture.DataAccess.Conventions.Mssql
 {
-    public class MssqlHiLoIdConvention : IIdConvention, ICreateSchemaConvention
+    public class MssqlHiLoIdConvention : BaseHiLoIdConvention
     {
-        private const string NextHiValueColumnName = "NextHiValue";
-        private const string TableColumnName = "Entity";
-        private readonly string _hiLoIdentityTableName;
-        private readonly string _maxLo;
-        private readonly ConventionsConfiguration _configuration;
-        private readonly Type[] _validTypes = new [] { typeof(int), typeof(long), typeof(uint), typeof(ulong) };
-        private readonly HashSet<string> _validDialects = new HashSet<string>
-            {
-                typeof (MsSql2000Dialect).FullName,
-                typeof (MsSql2005Dialect).FullName,
-                typeof (MsSql2008Dialect).FullName
-            };
-
-        public MssqlHiLoIdConvention(ConventionsConfiguration conventionsConfiguration)
+        public MssqlHiLoIdConvention(ConventionsConfiguration conventionsConfiguration) : base(conventionsConfiguration)
         {
-            _configuration = conventionsConfiguration;
-            _hiLoIdentityTableName = conventionsConfiguration.HiLoId.TableName;
-            _maxLo = conventionsConfiguration.HiLoId.MaxLo.ToString(CultureInfo.InvariantCulture);
         }
 
-        public void Apply(IIdentityInstance instance)
+        protected override Type GetBaseDialect()
         {
-            if(instance.Property == null || !_validTypes.Contains(instance.Property.PropertyType)) return;
-            instance.GeneratedBy.HiLo(_hiLoIdentityTableName, NextHiValueColumnName, _maxLo, builder =>
-                builder.AddParam("where", string.Format("{0} = '[{1}]'", TableColumnName, instance.EntityType.Name)));
+            return typeof(MsSql2000Dialect);
         }
 
-        public bool CanApply(Dialect dialect)
+        public override string CreateScript(IEnumerable<string> entityNames)
         {
-            return _configuration.HiLoId.Enabled && _validDialects.Contains(dialect.GetType().FullName);
-        }
-
-        public void Setup(Configuration config)
-        {
-            var entityNames = config.ClassMappings.Select(m => m.MappedClass?.Name ?? m.Table.Name).Distinct().ToList();
-            if (!entityNames.Any())
-            {
-                return;
-            }
-
             var createScript = new StringBuilder();
-            createScript.AppendFormat("DELETE FROM {0};", _hiLoIdentityTableName);
+            createScript.AppendFormat("DELETE FROM {0};", HiLoIdentityTableName);
             createScript.AppendLine();
-            createScript.AppendFormat("ALTER TABLE {0} ADD {1} VARCHAR(128) NOT NULL;", _hiLoIdentityTableName, TableColumnName);
+            createScript.AppendFormat("ALTER TABLE {0} ADD {1} VARCHAR(128) NOT NULL;", HiLoIdentityTableName, TableColumnName);
             createScript.AppendLine();
-            createScript.AppendFormat("CREATE NONCLUSTERED INDEX IX_{0}_{1} ON {0} ({1} DESC);", _hiLoIdentityTableName, TableColumnName);
+            createScript.AppendFormat("CREATE NONCLUSTERED INDEX {2}IX_{0}_{1}{3} ON {2}{0}{3} ({2}{1}{3} DESC);", WithoutQuotes(HiLoIdentityTableName), WithoutQuotes(TableColumnName), Dialect.OpenQuote, Dialect.CloseQuote);
             createScript.AppendLine();
             createScript.AppendLine("GO");
             createScript.AppendLine();
             foreach (var entityName in entityNames)
             {
-                createScript.AppendFormat("INSERT INTO [{0}] ({1}, {2}) VALUES ('[{3}]', 0);", _hiLoIdentityTableName, TableColumnName, 
-                    NextHiValueColumnName, entityName);
+                createScript.AppendFormat("INSERT INTO {0} ({1}, {2}) VALUES ('[{3}]', 0);", HiLoIdentityTableName, TableColumnName, NextHiValueColumnName, entityName);
                 createScript.AppendLine();
             }
-            config.AddAuxiliaryDatabaseObject(new SimpleAuxiliaryDatabaseObject(createScript.ToString(), null, _validDialects));
-        }
-
-        public void ApplyBeforeSchemaCreate(Configuration config, IDbConnection connection)
-        {
-        }
-
-        public void ApplyBeforeExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
-        {
-        }
-
-        public void ApplyAfterExecutingQuery(Configuration config, IDbConnection connection, IDbCommand dbCommand)
-        {
-        }
-
-        public void ApplyAfterSchemaCreate(Configuration config, IDbConnection connection)
-        {
+            return createScript.ToString();
         }
     }
 }

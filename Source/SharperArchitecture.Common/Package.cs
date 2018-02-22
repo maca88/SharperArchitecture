@@ -41,6 +41,11 @@ namespace SharperArchitecture.Common
             container.RegisterSingleton<ICommonConfiguration>(new CommonConfiguration());
 
             container.RegisterSingleton<IQueryProcessor, DefaultQueryProcessor>();
+            var depAssemblies = Assembly.GetExecutingAssembly()
+                .GetDependentAssemblies()
+                .ToList();
+            container.Register(typeof(IQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
+            container.Register(typeof(IAsyncQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
 
             container.RegisterConditional(typeof(ILogger),
                 c => typeof(Log4NetAdapter<>).MakeGenericType(c.Consumer.ImplementationType),

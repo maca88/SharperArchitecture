@@ -1,4 +1,5 @@
-﻿using SharperArchitecture.Breeze.Specification;
+﻿using System;
+using SharperArchitecture.Breeze.Specification;
 using SharperArchitecture.Common.Configuration;
 
 namespace SharperArchitecture.Breeze.Configuration
@@ -9,5 +10,7 @@ namespace SharperArchitecture.Breeze.Configuration
         {
             get { return AppConfiguration.GetSetting<string>(BreezeConfigurationKeys.DataServiceNamesBaseUri); }
         }
+
+        public virtual Type ClientModelAttribute { get; private set; }
     }
 }

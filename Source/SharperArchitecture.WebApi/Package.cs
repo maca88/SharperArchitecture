@@ -30,7 +30,7 @@ namespace SharperArchitecture.WebApi
             var registration = Lifestyle.Singleton.CreateRegistration<TransactionManager>(container);
             container.AddRegistration(typeof(TransactionManager), registration);
             container.AppendToCollection(typeof(IEventHandler<SessionCreatedEvent>), registration);
-            container.RegisterHttpFilter(FilterScope.Action, registration);
+            //container.RegisterHttpFilter(FilterScope.Action, registration);
         }
     }
 }

@@ -81,9 +81,8 @@ namespace SharperArchitecture.DataAccess
             {
                 var fluentConfig = Fluently.Configure(cfg);
                 dbConfiguration.FluentConfigurationAction?.Invoke(fluentConfig);
-                var dialect = NHibernate.Dialect.Dialect.GetDialect(cfg.Properties);
                 var autoPestModel = CreateAutomappings(automappingConfiguration, entityAssemblies,
-                    dbConfiguration.Conventions, conventionAssemblies, dialect, eventPublisher);
+                    dbConfiguration.Conventions, conventionAssemblies, cfg, eventPublisher);
                 fluentConfig
                     .Mappings(m =>
                     {
@@ -250,8 +249,9 @@ namespace SharperArchitecture.DataAccess
 
         private static AutoPersistenceModel CreateAutomappings(IAutomappingConfiguration automappingConfiguration, ICollection<Assembly> assemblies, 
             ConventionsConfiguration conventionsConfiguration, IEnumerable<Assembly> conventionAssemblies,
-            NHibernate.Dialect.Dialect dialect, IEventPublisher eventPublisher)
+            Configuration configuration, IEventPublisher eventPublisher)
         {
+            var dialect = NHibernate.Dialect.Dialect.GetDialect(configuration.Properties);
             var conventions = new List<IConvention>();
             foreach (var convType in conventionAssemblies
                 .Select(a => new
@@ -299,11 +299,18 @@ namespace SharperArchitecture.DataAccess
                 }
                     
                 var dbConv = conv as ISchemaConvention;
-                if (dbConv != null && !dbConv.CanApply(dialect)) continue;
+                if (dbConv != null)
+                {
+                    if (!dbConv.CanApply(dialect))
+                    {
+                        continue;
+                    }
+                    dbConv.Setup(configuration);
+                }
                 conventions.Add(conv);
             }
 
-            return GetAutoPersistenceModel(eventPublisher, automappingConfiguration, assemblies)
+            return GetAutoPersistenceModel(configuration, eventPublisher, automappingConfiguration, assemblies)
                 .UseOverridesFromAssemblies(assemblies)
                 .AddConventions(conventions)
                 .AddFilters(GetFilterDefinitions(assemblies))
@@ -318,9 +325,9 @@ namespace SharperArchitecture.DataAccess
             return assemblies.SelectMany(o => o.GetTypes()).Where(o => typeof (FilterDefinition).IsAssignableFrom(o));
         }
 
-        private static CustomAutoPersistenceModel GetAutoPersistenceModel(IEventPublisher eventPublisher, IAutomappingConfiguration cfg, IEnumerable<Assembly> assemblies)
+        private static CustomAutoPersistenceModel GetAutoPersistenceModel(Configuration configuration, IEventPublisher eventPublisher, IAutomappingConfiguration cfg, IEnumerable<Assembly> assemblies)
         {
-            var model = new CustomAutoPersistenceModel(eventPublisher, cfg);
+            var model = new CustomAutoPersistenceModel(configuration, eventPublisher, cfg);
             model.AddTypeSource(new CombinedAssemblyTypeSource(assemblies.Select(o => new AssemblyTypeSource(o))));
             return model;
         }
@@ -378,10 +385,10 @@ namespace SharperArchitecture.DataAccess
                 (dbConnection, conventions) =>
                 {
                     //Setup schema conventions (this will happen only one time)
-                    foreach (var conv in conventions)
-                    {
-                        conv.Setup(config);
-                    }
+                    //foreach (var conv in conventions)
+                    //{
+                    //    conv.Setup(config);
+                    //}
 
                     if (dbConfiguration.RecreateAtStartup)
                         RecreateSchema(config, dbConnection, conventions);

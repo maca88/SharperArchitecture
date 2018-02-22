@@ -64,12 +64,6 @@ namespace SharperArchitecture.DataAccess
 
             container.Register<IDbStore, DbStore>(Lifestyle.Scoped);
 
-            var depAssemblies = Assembly.GetExecutingAssembly()
-                .GetDependentAssemblies()
-                .ToList();
-            container.Register(typeof(IQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
-            container.Register(typeof(IAsyncQueryHandler<,>), depAssemblies, Lifestyle.Scoped);
-
             // Registration for the default database session
             registration = Lifestyle.Scoped.CreateRegistration(() =>
             {

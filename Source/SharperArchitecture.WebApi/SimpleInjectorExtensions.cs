@@ -8,6 +8,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using SharperArchitecture.Common.Exceptions;
+using SharperArchitecture.WebApi;
 using SharperArchitecture.WebApi.Internal;
 using SimpleInjector.Advanced;
 
@@ -24,6 +25,8 @@ namespace SimpleInjector
         {
             container.RegisterWebApiControllers(configuration);
             container.EnableHttpRequestMessageTracking(configuration);
+
+            configuration.MessageHandlers.Insert(0, new DelegatingHandlerProxy<TransactionManager>(container));
 
             var defaultprovider = configuration.Services.GetFilterProviders().First(p => p is ActionDescriptorFilterProvider);
             configuration.Services.Remove(typeof(IFilterProvider), defaultprovider);
