@@ -103,6 +103,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="DatabaseStatistics.cs" />
+    <Compile Include="HttpResponseError.cs" />
     <Compile Include="WebApiTest.cs" />
     <Compile Include="SingleDatabaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

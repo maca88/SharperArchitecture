@@ -38,10 +38,13 @@ namespace SharperArchitecture.Tests.WebApi
         {
             await ClearDatabaseStatistics();
 
-            Assert.ThrowsAsync<HttpRequestException>(async () =>
-            {
-                await CallMethod<TestController, int>(o => o.GetBrokenQueryCount());
-            });
+            var response = await CallMethod<TestController>(o => o.GetBrokenQueryCount());
+            Assert.IsFalse(response.IsSuccessStatusCode);
+
+            var responseObject = await response.Content.ReadAsAsync<HttpResponseError>();
+            Assert.AreEqual("Fake exception", responseObject.ExceptionMessage);
+            Assert.AreEqual(typeof(InvalidOperationException), responseObject.ExceptionType);
+
             var stats = await GetDatabaseStatistics();
 
             Assert.AreEqual(1, stats.SessionOpenCount);

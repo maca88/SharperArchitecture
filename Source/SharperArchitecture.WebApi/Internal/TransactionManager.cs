@@ -96,10 +96,14 @@ namespace SharperArchitecture.WebApi.Internal
             try
             {
                 var result = await base.SendAsync(request, cancellationToken);
-                result.EnsureSuccessStatusCode();
                 info = GetWebApiRequestInfo();
                 if (info == null)
                 {
+                    return result;
+                }
+                if (!result.IsSuccessStatusCode)
+                {
+                    Rollback(info);
                     return result;
                 }
                 foreach (var session in info.Sessions.Values)
@@ -113,20 +117,9 @@ namespace SharperArchitecture.WebApi.Internal
             catch
             {
                 info = GetWebApiRequestInfo();
-                if (info == null)
+                if (info != null)
                 {
-                    throw;
-                }
-                if (info.Transaction != null)
-                {
-                    info.Transaction.Dispose();
-                }
-                else
-                {
-                    foreach (var session in info.Sessions.Values)
-                    {
-                        session.RollbackTransaction();
-                    }
+                    Rollback(info);
                 }
                 throw;
             }
@@ -136,6 +129,21 @@ namespace SharperArchitecture.WebApi.Internal
                 if (info != null)
                 {
                     scope.SetItem(ScopeKey, null);
+                }
+            }
+        }
+
+        private void Rollback(WebApiRequestInfo info)
+        {
+            if (info.Transaction != null)
+            {
+                info.Transaction.Dispose();
+            }
+            else
+            {
+                foreach (var session in info.Sessions.Values)
+                {
+                    session.RollbackTransaction();
                 }
             }
         }

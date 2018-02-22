@@ -65,6 +65,13 @@ namespace SharperArchitecture.Tests.WebApi
             return CallMethod<TResult>(methodCallExpression);
         }
 
+        protected Task<HttpResponseMessage> CallMethod<T>(Expression<Func<T, object>> methodExpr) where T : ApiController
+        {
+            var expression = StripConvert(methodExpr);
+            var methodCallExpression = (MethodCallExpression)expression.Body;
+            return CallMethod(methodCallExpression);
+        }
+
         private static int FreeTcpPort()
         {
             var l = new TcpListener(IPAddress.Loopback, 0);
@@ -75,6 +82,20 @@ namespace SharperArchitecture.Tests.WebApi
         }
 
         private async Task<TResult> CallMethod<TResult>(MethodCallExpression methodCallExpression)
+        {
+            var response = await CallMethod(methodCallExpression);
+            response.EnsureSuccessStatusCode();
+
+            var returnType = methodCallExpression.Method.ReturnType;
+            if (returnType == typeof(void))
+            {
+                return default(TResult);
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<TResult>(result);
+        }
+
+        private Task<HttpResponseMessage> CallMethod(MethodCallExpression methodCallExpression)
         {
             var action = methodCallExpression.Method.Name;
             var controller = methodCallExpression.Method.DeclaringType.Name.Replace("Controller", "");
@@ -112,25 +133,9 @@ namespace SharperArchitecture.Tests.WebApi
 
             var url = $"/{controller}/{action}";
 
-            HttpResponseMessage response;
-            if (method == HttpMethod.Get)
-            {
-                response = await HttpClient.GetAsync(url + GetQueryString(paramDict));
-                response.EnsureSuccessStatusCode();
-            }
-            else
-            {
-                response = await HttpClient.PostAsync(url, new FormUrlEncodedContent(paramDict));
-                response.EnsureSuccessStatusCode();
-            }
-
-            var returnType = methodCallExpression.Method.ReturnType;
-            if (returnType == typeof(void))
-            {
-                return default(TResult);
-            }
-            var result = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<TResult>(result);
+            return method == HttpMethod.Get
+                ? HttpClient.GetAsync(url + GetQueryString(paramDict))
+                : HttpClient.PostAsync(url, new FormUrlEncodedContent(paramDict));
         }
 
         private static string GetQueryString(Dictionary<string, string> nvc)
