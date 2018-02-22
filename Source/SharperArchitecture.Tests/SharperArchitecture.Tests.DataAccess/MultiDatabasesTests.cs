@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Transactions;
 using NHibernate;
+using NHibernate.Exceptions;
 using NHibernate.Linq;
 using NUnit.Framework;
 using SharperArchitecture.DataAccess;
@@ -107,7 +108,7 @@ namespace SharperArchitecture.Tests.DataAccess
         [Test]
         public void UnitOfWorkShouldRevertAllDataIfAnySessionFails()
         {
-            Assert.Throws<TransactionAbortedException>(() =>
+            Assert.Throws<GenericADOException>(() =>
             {
                 using (var unitOfWork = Container.GetInstance<IUnitOfWorkFactory>().Create().GetUnitOfWorkImplementation())
                 {
@@ -118,7 +119,7 @@ namespace SharperArchitecture.Tests.DataAccess
                         var barSession = Container.GetInstance<ISessionProvider>().Get("bar");
 
                         var model1 = new AttrIndexAttribute { Index1 = "Test", SharedIndex1 = DateTime.Now };
-                        var model2 = new AttrIndexAttribute { Index1 = "Test2" };
+                        var model2 = new AttrIndexAttribute { Index1 = "Test2Loong" };
                         session.Save(model1);
                         barSession.Save(model2);
 

@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using FluentValidation;
 using SharperArchitecture.Common.Internationalization;
 using SharperArchitecture.Validation;
 using FluentValidation.Results;
@@ -10,7 +11,10 @@ namespace SharperArchitecture.Authentication.Validators
     {
         public PermissionPatternValidator()
         {
-            RuleSet(ValidationRuleSet.InsertUpdate, () => Custom(AssertValidRegex));
+            RuleSet(ValidationRuleSet.InsertUpdate, () =>
+            {
+                RuleFor(o => o).Custom((pattern, context) => AssertValidRegex(pattern));
+            });
         }
 
         private ValidationFailure AssertValidRegex(IPermissionPattern permission)

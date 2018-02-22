@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Helpers;
@@ -41,8 +42,9 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         /// http://ayende.com/blog/3987/nhibernate-ipreupdateeventlistener-ipreinserteventlistener
         /// </summary>
         /// <param name="event"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override async Task<object> EntityIsTransientAsync(SaveOrUpdateEvent @event) //override this for fixing not-null transient property
+        protected override async Task<object> EntityIsTransientAsync(SaveOrUpdateEvent @event, CancellationToken cancellationToken) //override this for fixing not-null transient property
         {
             //If entry is set then entity will be deleted otherwise will be inserted
             if (@event.Entry == null)
@@ -57,9 +59,9 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
                     SetCurrentUser(@event.Entity, await GetCurrentUserAsync(@event.Session, userType), reqLastModifiedProp,
                         @event.Session.GetEntityPersister(@event.EntityName, @event.Entity));
                 }
-                await EventPublisher.PublishAsync(new EntitySavingAsyncEvent(@event));
+                await EventPublisher.PublishAsync(new EntitySavingAsyncEvent(@event), cancellationToken);
             }
-            return await base.EntityIsTransientAsync(@event);
+            return await base.EntityIsTransientAsync(@event, cancellationToken);
         }
 
         protected override object EntityIsTransient(SaveOrUpdateEvent @event)

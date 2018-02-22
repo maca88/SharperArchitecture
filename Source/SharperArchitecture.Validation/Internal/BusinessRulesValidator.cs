@@ -48,15 +48,16 @@ namespace SharperArchitecture.Validation.Internal
             return Task.FromResult<IEnumerable<ValidationFailure>>(list);
         }
 
-        public void ApplyCondition(Func<object, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        public void ApplyCondition(Func<ValidationContext, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
         {
             throw new NotSupportedException();
         }
 
-        public void ApplyAsyncCondition(Func<object, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        public void ApplyAsyncCondition(Func<ValidationContext, CancellationToken, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
         {
             throw new NotSupportedException();
         }
+
 
         public IEnumerable<IPropertyValidator> Validators { get { yield break; } }
 

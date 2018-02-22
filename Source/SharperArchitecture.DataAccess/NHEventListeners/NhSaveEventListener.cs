@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
@@ -37,7 +38,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             }
         }
 
-        protected override async Task<object> PerformSaveOrUpdateAsync(SaveOrUpdateEvent @event)
+        protected override async Task<object> PerformSaveOrUpdateAsync(SaveOrUpdateEvent @event, CancellationToken cancellationToken)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
@@ -48,7 +49,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             }
             else
             {
-                return await EntityIsTransientAsync(@event);
+                return await EntityIsTransientAsync(@event, cancellationToken);
             }
         }
 

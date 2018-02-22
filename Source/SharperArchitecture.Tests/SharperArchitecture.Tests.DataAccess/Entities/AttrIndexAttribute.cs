@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SharperArchitecture.Domain;
 using SharperArchitecture.Domain.Attributes;
 using FluentNHibernate.Automapping;
+using SharperArchitecture.Validation.Attributes;
 
 namespace SharperArchitecture.Tests.DataAccess.Entities
 {
@@ -21,6 +22,7 @@ namespace SharperArchitecture.Tests.DataAccess.Entities
         public virtual int SharedIndex3 { get; set; }
 
         [Index]
+        [Length(5)]
         public virtual string Index1 { get; set; }
 
         [Index]

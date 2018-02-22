@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using NHibernate;
 using NHibernate.AdoNet;
@@ -58,14 +60,19 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         internal bool IsDisposed { get; private set; }
 
+        public Task<IQuery> CreateFilterAsync(object collection, IQueryExpression queryExpression, CancellationToken cancellationToken)
+        {
+            return Session.CreateFilterAsync(collection, queryExpression, cancellationToken);
+        }
+
         public void Initialize()
         {
             Session.Initialize();
         }
 
-        public Task InitializeCollectionAsync(IPersistentCollection collection, bool writing)
+        public Task InitializeCollectionAsync(IPersistentCollection collection, bool writing, CancellationToken cancellationToken)
         {
-            return Session.InitializeCollectionAsync(collection, writing);
+            return Session.InitializeCollectionAsync(collection, writing, cancellationToken);
         }
 
         public void InitializeCollection(IPersistentCollection collection, bool writing)
@@ -78,9 +85,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.InternalLoad(entityName, id, eager, isNullable);
         }
 
-        public Task<object> InternalLoadAsync(string entityName, object id, bool eager, bool isNullable)
+        public Task<object> InternalLoadAsync(string entityName, object id, bool eager, bool isNullable, CancellationToken cancellationToken)
         {
-            return Session.InternalLoadAsync(entityName, id, eager, isNullable);
+            return Session.InternalLoadAsync(entityName, id, eager, isNullable, cancellationToken);
         }
 
         public object ImmediateLoad(string entityName, object id)
@@ -88,19 +95,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.ImmediateLoad(entityName, id);
         }
 
-        public Task<object> ImmediateLoadAsync(string entityName, object id)
+        public Task<object> ImmediateLoadAsync(string entityName, object id, CancellationToken cancellationToken)
         {
-            return Session.ImmediateLoadAsync(entityName, id);
-        }
-
-        public Task<IList> ListAsync(string query, QueryParameters parameters)
-        {
-            return Session.ListAsync(query, parameters);
-        }
-
-        public IList List(string query, QueryParameters parameters)
-        {
-            return Session.List(query, parameters);
+            return Session.ImmediateLoadAsync(entityName, id, cancellationToken);
         }
 
         public IList List(IQueryExpression queryExpression, QueryParameters parameters)
@@ -108,14 +105,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List(queryExpression, parameters);
         }
 
-        public Task<IList> ListAsync(IQueryExpression queryExpression, QueryParameters parameters)
+        public Task<IList> ListAsync(IQueryExpression queryExpression, QueryParameters parameters, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(queryExpression, parameters);
-        }
-
-        public Task ListAsync(string query, QueryParameters parameters, IList results)
-        {
-            return Session.ListAsync(query, parameters, results);
+            return Session.ListAsync(queryExpression, parameters, cancellationToken);
         }
 
         public IQuery CreateQuery(IQueryExpression queryExpression)
@@ -123,29 +115,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.CreateQuery(queryExpression);
         }
 
-        public void List(string query, QueryParameters parameters, IList results)
-        {
-            Session.List(query, parameters, results);
-        }
-
         public void List(IQueryExpression queryExpression, QueryParameters queryParameters, IList results)
         {
             Session.List(queryExpression, queryParameters, results);
         }
 
-        public Task ListAsync(IQueryExpression queryExpression, QueryParameters queryParameters, IList results)
+        public Task ListAsync(IQueryExpression queryExpression, QueryParameters queryParameters, IList results, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(queryExpression, queryParameters, results);
-        }
-
-        public Task<IList<T>> ListAsync<T>(string query, QueryParameters queryParameters)
-        {
-            return Session.ListAsync<T>(query, queryParameters);
-        }
-
-        public IList<T> List<T>(string query, QueryParameters queryParameters)
-        {
-            return Session.List<T>(query, queryParameters);
+            return Session.ListAsync(queryExpression, queryParameters, results, cancellationToken);
         }
 
         public IList<T> List<T>(IQueryExpression queryExpression, QueryParameters queryParameters)
@@ -153,9 +130,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List<T>(queryExpression, queryParameters);
         }
 
-        public Task<IList<T>> ListAsync<T>(IQueryExpression queryExpression, QueryParameters queryParameters)
+        public Task<IList<T>> ListAsync<T>(IQueryExpression queryExpression, QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.ListAsync<T>(queryExpression, queryParameters);
+            return Session.ListAsync<T>(queryExpression, queryParameters, cancellationToken);
         }
 
         public IList<T> List<T>(CriteriaImpl criteria)
@@ -163,9 +140,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List<T>(criteria);
         }
 
-        public Task<IList<T>> ListAsync<T>(CriteriaImpl criteria)
+        public Task<IList<T>> ListAsync<T>(CriteriaImpl criteria, CancellationToken cancellationToken)
         {
-            return Session.ListAsync<T>(criteria);
+            return Session.ListAsync<T>(criteria, cancellationToken);
         }
 
         public void List(CriteriaImpl criteria, IList results)
@@ -173,9 +150,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.List(criteria, results);
         }
 
-        public Task ListAsync(CriteriaImpl criteria, IList results)
+        public Task ListAsync(CriteriaImpl criteria, IList results, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(criteria, results);
+            return Session.ListAsync(criteria, results, cancellationToken);
         }
 
         public IList List(CriteriaImpl criteria)
@@ -183,19 +160,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List(criteria);
         }
 
-        public Task<IList> ListAsync(CriteriaImpl criteria)
+        public Task<IList> ListAsync(CriteriaImpl criteria, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(criteria);
-        }
-
-        public Task<IEnumerable> EnumerableAsync(string query, QueryParameters parameters)
-        {
-            return Session.EnumerableAsync(query, parameters);
-        }
-
-        public IEnumerable Enumerable(string query, QueryParameters parameters)
-        {
-            return Session.Enumerable(query, parameters);
+            return Session.ListAsync(criteria, cancellationToken);
         }
 
         public IEnumerable Enumerable(IQueryExpression query, QueryParameters parameters)
@@ -203,19 +170,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Enumerable(query, parameters);
         }
 
-        public Task<IEnumerable> EnumerableAsync(IQueryExpression query, QueryParameters parameters)
+        public Task<IEnumerable> EnumerableAsync(IQueryExpression query, QueryParameters parameters, CancellationToken cancellationToken)
         {
-            return Session.EnumerableAsync(query, parameters);
-        }
-
-        public Task<IEnumerable<T>> EnumerableAsync<T>(string query, QueryParameters queryParameters)
-        {
-            return Session.EnumerableAsync<T>(query, queryParameters);
-        }
-
-        public IEnumerable<T> Enumerable<T>(string query, QueryParameters queryParameters)
-        {
-            return Session.Enumerable<T>(query, queryParameters);
+            return Session.EnumerableAsync(query, parameters, cancellationToken);
         }
 
         public IEnumerable<T> Enumerable<T>(IQueryExpression query, QueryParameters queryParameters)
@@ -223,9 +180,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Enumerable<T>(query, queryParameters);
         }
 
-        public Task<IEnumerable<T>> EnumerableAsync<T>(IQueryExpression query, QueryParameters queryParameters)
+        public Task<IEnumerable<T>> EnumerableAsync<T>(IQueryExpression query, QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.EnumerableAsync<T>(query, queryParameters);
+            return Session.EnumerableAsync<T>(query, queryParameters, cancellationToken);
         }
 
         public IList ListFilter(object collection, string filter, QueryParameters parameters)
@@ -233,9 +190,20 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.ListFilter(collection, filter, parameters);
         }
 
-        public Task<IList> ListFilterAsync(object collection, string filter, QueryParameters parameters)
+        public IList ListFilter(object collection, IQueryExpression queryExpression, QueryParameters parameters)
         {
-            return Session.ListFilterAsync(collection, filter, parameters);
+            return Session.ListFilter(collection, queryExpression, parameters);
+        }
+
+        public Task<IList> ListFilterAsync(object collection, string filter, QueryParameters parameters, CancellationToken cancellationToken)
+        {
+            return Session.ListFilterAsync(collection, filter, parameters, cancellationToken);
+        }
+
+        public Task<IList> ListFilterAsync(object collection, IQueryExpression queryExpression, QueryParameters parameters,
+            CancellationToken cancellationToken)
+        {
+            return Session.ListFilterAsync(collection, queryExpression, parameters, cancellationToken);
         }
 
         public IList<T> ListFilter<T>(object collection, string filter, QueryParameters parameters)
@@ -243,9 +211,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.ListFilter<T>(collection, filter, parameters);
         }
 
-        public Task<IList<T>> ListFilterAsync<T>(object collection, string filter, QueryParameters parameters)
+        public Task<IList<T>> ListFilterAsync<T>(object collection, string filter, QueryParameters parameters, CancellationToken cancellationToken)
         {
-            return Session.ListFilterAsync<T>(collection, filter, parameters);
+            return Session.ListFilterAsync<T>(collection, filter, parameters, cancellationToken);
         }
 
         public IEnumerable EnumerableFilter(object collection, string filter, QueryParameters parameters)
@@ -253,9 +221,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.EnumerableFilter(collection, filter, parameters);
         }
 
-        public Task<IEnumerable> EnumerableFilterAsync(object collection, string filter, QueryParameters parameters)
+        public Task<IEnumerable> EnumerableFilterAsync(object collection, string filter, QueryParameters parameters, CancellationToken cancellationToken)
         {
-            return Session.EnumerableFilterAsync(collection, filter, parameters);
+            return Session.EnumerableFilterAsync(collection, filter, parameters, cancellationToken);
         }
 
         public IEnumerable<T> EnumerableFilter<T>(object collection, string filter, QueryParameters parameters)
@@ -264,9 +232,24 @@ namespace SharperArchitecture.DataAccess.Decorators
         }
 
         public Task<IEnumerable<T>> EnumerableFilterAsync<T>(object collection, string filter,
-            QueryParameters parameters)
+            QueryParameters parameters, CancellationToken cancellationToken)
         {
-            return Session.EnumerableFilterAsync<T>(collection, filter, parameters);
+            return Session.EnumerableFilterAsync<T>(collection, filter, parameters, cancellationToken);
+        }
+
+        public Task BeforeTransactionCompletionAsync(ITransaction tx, CancellationToken cancellationToken)
+        {
+            return Session.BeforeTransactionCompletionAsync(tx, cancellationToken);
+        }
+
+        public Task FlushBeforeTransactionCompletionAsync(CancellationToken cancellationToken)
+        {
+            return Session.FlushBeforeTransactionCompletionAsync(cancellationToken);
+        }
+
+        public Task AfterTransactionCompletionAsync(bool successful, ITransaction tx, CancellationToken cancellationToken)
+        {
+            return Session.AfterTransactionCompletionAsync(successful, tx, cancellationToken);
         }
 
         public IEntityPersister GetEntityPersister(string entityName, object obj)
@@ -282,6 +265,11 @@ namespace SharperArchitecture.DataAccess.Decorators
         public void BeforeTransactionCompletion(ITransaction tx)
         {
             Session.BeforeTransactionCompletion(tx);
+        }
+
+        public void FlushBeforeTransactionCompletion()
+        {
+            Session.FlushBeforeTransactionCompletion();
         }
 
         public void AfterTransactionCompletion(bool successful, ITransaction tx)
@@ -304,9 +292,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List(spec, queryParameters);
         }
 
-        public Task<IList> ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
+        public Task<IList> ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(spec, queryParameters);
+            return Session.ListAsync(spec, queryParameters, cancellationToken);
         }
 
         public void List(NativeSQLQuerySpecification spec, QueryParameters queryParameters, IList results)
@@ -314,9 +302,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.List(spec, queryParameters, results);
         }
 
-        public Task ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters, IList results)
+        public Task ListAsync(NativeSQLQuerySpecification spec, QueryParameters queryParameters, IList results, CancellationToken cancellationToken)
         {
-            return Session.ListAsync(spec, queryParameters, results);
+            return Session.ListAsync(spec, queryParameters, results, cancellationToken);
         }
 
         public IList<T> List<T>(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
@@ -324,9 +312,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.List<T>(spec, queryParameters);
         }
 
-        public Task<IList<T>> ListAsync<T>(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
+        public Task<IList<T>> ListAsync<T>(NativeSQLQuerySpecification spec, QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.ListAsync<T>(spec, queryParameters);
+            return Session.ListAsync<T>(spec, queryParameters, cancellationToken);
         }
 
         public void ListCustomQuery(ICustomQuery customQuery, QueryParameters queryParameters, IList results)
@@ -334,9 +322,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.ListCustomQuery(customQuery, queryParameters, results);
         }
 
-        public Task ListCustomQueryAsync(ICustomQuery customQuery, QueryParameters queryParameters, IList results)
+        public Task ListCustomQueryAsync(ICustomQuery customQuery, QueryParameters queryParameters, IList results, CancellationToken cancellationToken)
         {
-            return Session.ListCustomQueryAsync(customQuery, queryParameters, results);
+            return Session.ListCustomQueryAsync(customQuery, queryParameters, results, cancellationToken);
         }
 
         public IList<T> ListCustomQuery<T>(ICustomQuery customQuery, QueryParameters queryParameters)
@@ -344,14 +332,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.ListCustomQuery<T>(customQuery, queryParameters);
         }
 
-        public Task<IList<T>> ListCustomQueryAsync<T>(ICustomQuery customQuery, QueryParameters queryParameters)
+        public Task<IList<T>> ListCustomQueryAsync<T>(ICustomQuery customQuery, QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.ListCustomQueryAsync<T>(customQuery, queryParameters);
+            return Session.ListCustomQueryAsync<T>(customQuery, queryParameters, cancellationToken);
         }
 
-        public Task<IQueryTranslator[]> GetQueriesAsync(string query, bool scalar)
+        public Task<IQueryTranslator[]> GetQueriesAsync(IQueryExpression query, bool scalar, CancellationToken cancellationToken)
         {
-            return Session.GetQueriesAsync(query, scalar);
+            return Session.GetQueriesAsync(query, scalar, cancellationToken);
         }
 
         public object GetFilterParameterValue(string filterParameterName)
@@ -369,24 +357,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.GetNamedSQLQuery(name);
         }
 
-        public IQueryTranslator[] GetQueries(string query, bool scalar)
-        {
-            return Session.GetQueries(query, scalar);
-        }
-
         public IQueryTranslator[] GetQueries(IQueryExpression query, bool scalar)
         {
             return Session.GetQueries(query, scalar);
         }
 
-        public Task<IQueryTranslator[]> GetQueriesAsync(IQueryExpression query, bool scalar)
+        public Task<object> GetEntityUsingInterceptorAsync(EntityKey key, CancellationToken cancellationToken)
         {
-            return Session.GetQueriesAsync(query, scalar);
-        }
-
-        public Task<object> GetEntityUsingInterceptorAsync(EntityKey key)
-        {
-            return Session.GetEntityUsingInterceptorAsync(key);
+            return Session.GetEntityUsingInterceptorAsync(key, cancellationToken);
         }
 
         public object GetEntityUsingInterceptor(EntityKey key)
@@ -399,19 +377,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.BestGuessEntityName(entity);
         }
 
-        public Task<string> BestGuessEntityNameAsync(object entity)
-        {
-            return Session.BestGuessEntityNameAsync(entity);
-        }
-
         public string GuessEntityName(object entity)
         {
             return Session.GuessEntityName(entity);
         }
 
-        public Task<IQuery> CreateFilterAsync(object collection, string queryString)
+        public Task<IQuery> CreateFilterAsync(object collection, string queryString, CancellationToken cancellationToken)
         {
-            return Session.CreateFilterAsync(collection, queryString);
+            return Session.CreateFilterAsync(collection, queryString, cancellationToken);
         }
 
         IQuery ISession.GetNamedQuery(string queryName)
@@ -434,9 +407,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Get(clazz, id);
         }
 
-        public Task<object> GetAsync(Type clazz, object id)
+        public Task<object> GetAsync(Type clazz, object id, CancellationToken cancellationToken)
         {
-            return Session.GetAsync(clazz, id);
+            return Session.GetAsync(clazz, id, cancellationToken);
         }
 
         public object Get(Type clazz, object id, LockMode lockMode)
@@ -444,9 +417,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Get(clazz, id, lockMode);
         }
 
-        public Task<object> GetAsync(Type clazz, object id, LockMode lockMode)
+        public Task<object> GetAsync(Type clazz, object id, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.GetAsync(clazz, id, lockMode);
+            return Session.GetAsync(clazz, id, lockMode, cancellationToken);
         }
 
         public object Get(string entityName, object id)
@@ -454,9 +427,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Get(entityName, id);
         }
 
-        public Task<object> GetAsync(string entityName, object id)
+        public Task<object> GetAsync(string entityName, object id, CancellationToken cancellationToken)
         {
-            return Session.GetAsync(entityName, id);
+            return Session.GetAsync(entityName, id, cancellationToken);
         }
 
         public T Get<T>(object id)
@@ -464,9 +437,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Get<T>(id);
         }
 
-        public Task<T> GetAsync<T>(object id)
+        public Task<T> GetAsync<T>(object id, CancellationToken cancellationToken)
         {
-            return Session.GetAsync<T>(id);
+            return Session.GetAsync<T>(id, cancellationToken);
         }
 
         public T Get<T>(object id, LockMode lockMode)
@@ -474,9 +447,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Get<T>(id, lockMode);
         }
 
-        public Task<T> GetAsync<T>(object id, LockMode lockMode)
+        public Task<T> GetAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.GetAsync<T>(id, lockMode);
+            return Session.GetAsync<T>(id, lockMode, cancellationToken);
         }
 
         public string GetEntityName(object obj)
@@ -484,9 +457,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.GetEntityName(obj);
         }
 
-        public Task<string> GetEntityNameAsync(object obj)
+        public Task<string> GetEntityNameAsync(object obj, CancellationToken cancellationToken)
         {
-            return Session.GetEntityNameAsync(obj);
+            return Session.GetEntityNameAsync(obj, cancellationToken);
+        }
+
+        public ISharedSessionBuilder SessionWithOptions()
+        {
+            return Session.SessionWithOptions();
         }
 
         public IFilter EnableFilter(string filterName)
@@ -526,21 +504,31 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         public ISession GetSession(EntityMode entityMode)
         {
+#pragma warning disable 618
             return Session.GetSession(entityMode);
+#pragma warning restore 618
         }
 
-        public EntityMode ActiveEntityMode => Session.ActiveEntityMode;
+        public IQueryable<T> Query<T>()
+        {
+            return Session.Query<T>();
+        }
+
+        public IQueryable<T> Query<T>(string entityName)
+        {
+            return Session.Query<T>(entityName);
+        }
 
         FlushMode ISession.FlushMode
         {
-            get { return ((ISession) Session).FlushMode; }
-            set { ((ISession) Session).FlushMode = value; }
+            get => ((ISession) Session).FlushMode;
+            set => ((ISession) Session).FlushMode = value;
         }
 
         CacheMode ISession.CacheMode
         {
-            get { return ((ISession) Session).CacheMode; }
-            set { ((ISession) Session).CacheMode = value; }
+            get => ((ISession) Session).CacheMode;
+            set => ((ISession) Session).CacheMode = value;
         }
 
         IQuery ISessionImplementor.GetNamedQuery(string queryName)
@@ -555,11 +543,11 @@ namespace SharperArchitecture.DataAccess.Decorators
             _eventPublisher.Publish(new SessionFlushedEvent(Session));
         }
 
-        async Task ISession.FlushAsync()
+        async Task ISession.FlushAsync(CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
-            await ((ISession) Session).FlushAsync();
-            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session), cancellationToken);
+            await ((ISession) Session).FlushAsync(cancellationToken);
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session), cancellationToken);
         }
 
         public DbConnection Disconnect()
@@ -592,14 +580,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.IsDirty();
         }
 
-        public Task<bool> IsDirtyAsync()
+        public Task<bool> IsDirtyAsync(CancellationToken cancellationToken)
         {
-            return Session.IsDirtyAsync();
-        }
-
-        public Task SetReadOnlyAsync(object entityOrProxy, bool readOnly)
-        {
-            return Session.SetReadOnlyAsync(entityOrProxy, readOnly);
+            return Session.IsDirtyAsync(cancellationToken);
         }
 
         public bool IsReadOnly(object entityOrProxy)
@@ -622,19 +605,14 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Contains(obj);
         }
 
-        public Task<bool> ContainsAsync(object obj)
-        {
-            return Session.ContainsAsync(obj);
-        }
-
         public void Evict(object obj)
         {
             Session.Evict(obj);
         }
 
-        public Task EvictAsync(object obj)
+        public Task EvictAsync(object obj, CancellationToken cancellationToken)
         {
-            return Session.EvictAsync(obj);
+            return Session.EvictAsync(obj, cancellationToken);
         }
 
         public object Load(Type theType, object id, LockMode lockMode)
@@ -642,9 +620,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load(theType, id, lockMode);
         }
 
-        public Task<object> LoadAsync(Type theType, object id, LockMode lockMode)
+        public Task<object> LoadAsync(Type theType, object id, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync(theType, id, lockMode);
+            return Session.LoadAsync(theType, id, lockMode, cancellationToken);
         }
 
         public object Load(string entityName, object id, LockMode lockMode)
@@ -652,9 +630,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load(entityName, id, lockMode);
         }
 
-        public Task<object> LoadAsync(string entityName, object id, LockMode lockMode)
+        public Task<object> LoadAsync(string entityName, object id, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync(entityName, id, lockMode);
+            return Session.LoadAsync(entityName, id, lockMode, cancellationToken);
         }
 
         public object Load(Type theType, object id)
@@ -662,9 +640,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load(theType, id);
         }
 
-        public Task<object> LoadAsync(Type theType, object id)
+        public Task<object> LoadAsync(Type theType, object id, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync(theType, id);
+            return Session.LoadAsync(theType, id, cancellationToken);
         }
 
         public T Load<T>(object id, LockMode lockMode)
@@ -672,9 +650,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load<T>(id, lockMode);
         }
 
-        public Task<T> LoadAsync<T>(object id, LockMode lockMode)
+        public Task<T> LoadAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync<T>(id, lockMode);
+            return Session.LoadAsync<T>(id, lockMode, cancellationToken);
         }
 
         public T Load<T>(object id)
@@ -682,9 +660,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load<T>(id);
         }
 
-        public Task<T> LoadAsync<T>(object id)
+        public Task<T> LoadAsync<T>(object id, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync<T>(id);
+            return Session.LoadAsync<T>(id, cancellationToken);
         }
 
         public object Load(string entityName, object id)
@@ -692,9 +670,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Load(entityName, id);
         }
 
-        public Task<object> LoadAsync(string entityName, object id)
+        public Task<object> LoadAsync(string entityName, object id, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync(entityName, id);
+            return Session.LoadAsync(entityName, id, cancellationToken);
         }
 
         public void Load(object obj, object id)
@@ -702,9 +680,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Load(obj, id);
         }
 
-        public Task LoadAsync(object obj, object id)
+        public Task LoadAsync(object obj, object id, CancellationToken cancellationToken)
         {
-            return Session.LoadAsync(obj, id);
+            return Session.LoadAsync(obj, id, cancellationToken);
         }
 
         public void Replicate(object obj, ReplicationMode replicationMode)
@@ -712,9 +690,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Replicate(obj, replicationMode);
         }
 
-        public Task ReplicateAsync(object obj, ReplicationMode replicationMode)
+        public Task ReplicateAsync(object obj, ReplicationMode replicationMode, CancellationToken cancellationToken)
         {
-            return Session.ReplicateAsync(obj, replicationMode);
+            return Session.ReplicateAsync(obj, replicationMode, cancellationToken);
         }
 
         public void Replicate(string entityName, object obj, ReplicationMode replicationMode)
@@ -722,9 +700,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Replicate(entityName, obj, replicationMode);
         }
 
-        public Task ReplicateAsync(string entityName, object obj, ReplicationMode replicationMode)
+        public Task ReplicateAsync(string entityName, object obj, ReplicationMode replicationMode, CancellationToken cancellationToken)
         {
-            return Session.ReplicateAsync(entityName, obj, replicationMode);
+            return Session.ReplicateAsync(entityName, obj, replicationMode, cancellationToken);
         }
 
         public object Save(object obj)
@@ -733,10 +711,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Save(obj);
         }
 
-        public async Task<object> SaveAsync(object obj)
+        public async Task<object> SaveAsync(object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            return await Session.SaveAsync(obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            return await Session.SaveAsync(obj, cancellationToken);
         }
 
         public void Save(object obj, object id)
@@ -745,10 +723,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Save(obj, id);
         }
 
-        public async Task SaveAsync(object obj, object id)
+        public async Task SaveAsync(object obj, object id, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.SaveAsync(obj, id);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.SaveAsync(obj, id, cancellationToken);
         }
 
         public object Save(string entityName, object obj)
@@ -757,10 +735,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Save(entityName, obj);
         }
 
-        public async Task<object> SaveAsync(string entityName, object obj)
+        public async Task<object> SaveAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            return await Session.SaveAsync(entityName, obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            return await Session.SaveAsync(entityName, obj, cancellationToken);
         }
 
         public void Save(string entityName, object obj, object id)
@@ -769,10 +747,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Save(entityName, obj, id);
         }
 
-        public async Task SaveAsync(string entityName, object obj, object id)
+        public async Task SaveAsync(string entityName, object obj, object id, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.SaveAsync(entityName, obj, id);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.SaveAsync(entityName, obj, id, cancellationToken);
         }
 
         public void SaveOrUpdate(object obj)
@@ -781,10 +759,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.SaveOrUpdate(obj);
         }
 
-        public async Task SaveOrUpdateAsync(object obj)
+        public async Task SaveOrUpdateAsync(object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.SaveOrUpdateAsync(obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.SaveOrUpdateAsync(obj, cancellationToken);
         }
 
         public void SaveOrUpdate(string entityName, object obj)
@@ -793,10 +771,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.SaveOrUpdate(entityName, obj);
         }
 
-        public async Task SaveOrUpdateAsync(string entityName, object obj)
+        public async Task SaveOrUpdateAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.SaveOrUpdateAsync(entityName, obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.SaveOrUpdateAsync(entityName, obj, cancellationToken);
         }
 
         public void SaveOrUpdate(string entityName, object obj, object id)
@@ -805,10 +783,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.SaveOrUpdate(entityName, obj, id);
         }
 
-        public async Task SaveOrUpdateAsync(string entityName, object obj, object id)
+        public async Task SaveOrUpdateAsync(string entityName, object obj, object id, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.SaveOrUpdateAsync(entityName, obj, id);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.SaveOrUpdateAsync(entityName, obj, id, cancellationToken);
         }
 
         public void Update(object obj)
@@ -817,10 +795,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Update(obj);
         }
 
-        public async Task UpdateAsync(object obj)
+        public async Task UpdateAsync(object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.UpdateAsync(obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.UpdateAsync(obj, cancellationToken);
         }
 
         public void Update(object obj, object id)
@@ -829,10 +807,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Update(obj, id);
         }
 
-        public async Task UpdateAsync(object obj, object id)
+        public async Task UpdateAsync(object obj, object id, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.UpdateAsync(obj, id);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.UpdateAsync(obj, id, cancellationToken);
         }
 
         public void Update(string entityName, object obj)
@@ -841,10 +819,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Update(entityName, obj);
         }
 
-        public async Task UpdateAsync(string entityName, object obj)
+        public async Task UpdateAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.UpdateAsync(entityName, obj);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.UpdateAsync(entityName, obj, cancellationToken);
         }
 
         public void Update(string entityName, object obj, object id)
@@ -853,10 +831,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Update(entityName, obj, id);
         }
 
-        public async Task UpdateAsync(string entityName, object obj, object id)
+        public async Task UpdateAsync(string entityName, object obj, object id, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session));
-            await Session.UpdateAsync(entityName, obj, id);
+            await _eventPublisher.PublishAsync(new EntitySavingOrUpdatingAsyncEvent(Session), cancellationToken);
+            await Session.UpdateAsync(entityName, obj, id, cancellationToken);
         }
 
         public object Merge(object obj)
@@ -864,9 +842,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Merge(obj);
         }
 
-        public Task<object> MergeAsync(object obj)
+        public Task<object> MergeAsync(object obj, CancellationToken cancellationToken)
         {
-            return Session.MergeAsync(obj);
+            return Session.MergeAsync(obj, cancellationToken);
         }
 
         public object Merge(string entityName, object obj)
@@ -874,9 +852,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Merge(entityName, obj);
         }
 
-        public Task<object> MergeAsync(string entityName, object obj)
+        public Task<object> MergeAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            return Session.MergeAsync(entityName, obj);
+            return Session.MergeAsync(entityName, obj, cancellationToken);
         }
 
         public T Merge<T>(T entity) where T : class
@@ -884,9 +862,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Merge(entity);
         }
 
-        public Task<T> MergeAsync<T>(T entity) where T : class
+        public Task<T> MergeAsync<T>(T entity, CancellationToken cancellationToken) where T : class
         {
-            return Session.MergeAsync(entity);
+            return Session.MergeAsync(entity, cancellationToken);
         }
 
         public T Merge<T>(string entityName, T entity) where T : class
@@ -894,9 +872,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Merge(entityName, entity);
         }
 
-        public Task<T> MergeAsync<T>(string entityName, T entity) where T : class
+        public Task<T> MergeAsync<T>(string entityName, T entity, CancellationToken cancellationToken) where T : class
         {
-            return Session.MergeAsync(entityName, entity);
+            return Session.MergeAsync(entityName, entity, cancellationToken);
         }
 
         public void Persist(object obj)
@@ -904,9 +882,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Persist(obj);
         }
 
-        public Task PersistAsync(object obj)
+        public Task PersistAsync(object obj, CancellationToken cancellationToken)
         {
-            return Session.PersistAsync(obj);
+            return Session.PersistAsync(obj, cancellationToken);
         }
 
         public void Persist(string entityName, object obj)
@@ -914,9 +892,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Persist(entityName, obj);
         }
 
-        public Task PersistAsync(string entityName, object obj)
+        public Task PersistAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            return Session.PersistAsync(entityName, obj);
+            return Session.PersistAsync(entityName, obj, cancellationToken);
         }
 
         public void Delete(object obj)
@@ -925,10 +903,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Delete(obj);
         }
 
-        public async Task DeleteAsync(object obj)
+        public async Task DeleteAsync(object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            await Session.DeleteAsync(obj);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            await Session.DeleteAsync(obj, cancellationToken);
         }
 
         public void Delete(string entityName, object obj)
@@ -937,10 +915,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Delete(entityName, obj);
         }
 
-        public async Task DeleteAsync(string entityName, object obj)
+        public async Task DeleteAsync(string entityName, object obj, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            await Session.DeleteAsync(entityName, obj);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            await Session.DeleteAsync(entityName, obj, cancellationToken);
         }
 
         public int Delete(string query)
@@ -949,10 +927,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Delete(query);
         }
 
-        public async Task<int> DeleteAsync(string query)
+        public async Task<int> DeleteAsync(string query, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            return await Session.DeleteAsync(query);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            return await Session.DeleteAsync(query, cancellationToken);
         }
 
         public int Delete(string query, object value, IType type)
@@ -961,10 +939,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Delete(query, value, type);
         }
 
-        public async Task<int> DeleteAsync(string query, object value, IType type)
+        public async Task<int> DeleteAsync(string query, object value, IType type, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            return await Session.DeleteAsync(query, value, type);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            return await Session.DeleteAsync(query, value, type, cancellationToken);
         }
 
         public int Delete(string query, object[] values, IType[] types)
@@ -973,10 +951,10 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.Delete(query, values, types);
         }
 
-        public async Task<int> DeleteAsync(string query, object[] values, IType[] types)
+        public async Task<int> DeleteAsync(string query, object[] values, IType[] types, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            return await Session.DeleteAsync(query, values, types);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            return await Session.DeleteAsync(query, values, types, cancellationToken);
         }
 
         public void Lock(object obj, LockMode lockMode)
@@ -984,9 +962,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Lock(obj, lockMode);
         }
 
-        public Task LockAsync(object obj, LockMode lockMode)
+        public Task LockAsync(object obj, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.LockAsync(obj, lockMode);
+            return Session.LockAsync(obj, lockMode, cancellationToken);
         }
 
         public void Lock(string entityName, object obj, LockMode lockMode)
@@ -994,9 +972,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Lock(entityName, obj, lockMode);
         }
 
-        public Task LockAsync(string entityName, object obj, LockMode lockMode)
+        public Task LockAsync(string entityName, object obj, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.LockAsync(entityName, obj, lockMode);
+            return Session.LockAsync(entityName, obj, lockMode, cancellationToken);
         }
 
         public void Refresh(object obj)
@@ -1004,9 +982,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Refresh(obj);
         }
 
-        public Task RefreshAsync(object obj)
+        public Task RefreshAsync(object obj, CancellationToken cancellationToken)
         {
-            return Session.RefreshAsync(obj);
+            return Session.RefreshAsync(obj, cancellationToken);
         }
 
         public void Refresh(object obj, LockMode lockMode)
@@ -1014,9 +992,9 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Refresh(obj, lockMode);
         }
 
-        public Task RefreshAsync(object obj, LockMode lockMode)
+        public Task RefreshAsync(object obj, LockMode lockMode, CancellationToken cancellationToken)
         {
-            return Session.RefreshAsync(obj, lockMode);
+            return Session.RefreshAsync(obj, lockMode, cancellationToken);
         }
 
         public LockMode GetCurrentLockMode(object obj)
@@ -1032,6 +1010,11 @@ namespace SharperArchitecture.DataAccess.Decorators
         public ITransaction BeginTransaction(IsolationLevel isolationLevel)
         {
             return Session.BeginTransaction(isolationLevel);
+        }
+
+        void ISession.JoinTransaction()
+        {
+            ((ISession) Session).JoinTransaction();
         }
 
         public ICriteria CreateCriteria<T>() where T : class
@@ -1101,11 +1084,11 @@ namespace SharperArchitecture.DataAccess.Decorators
             _eventPublisher.Publish(new SessionFlushedEvent(Session));
         }
 
-        async Task ISessionImplementor.FlushAsync()
+        async Task ISessionImplementor.FlushAsync(CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
-            await ((ISessionImplementor) Session).FlushAsync();
-            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session), cancellationToken);
+            await ((ISessionImplementor) Session).FlushAsync(cancellationToken);
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session), cancellationToken);
         }
 
         public int ExecuteNativeUpdate(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
@@ -1114,19 +1097,9 @@ namespace SharperArchitecture.DataAccess.Decorators
         }
 
         public Task<int> ExecuteNativeUpdateAsync(NativeSQLQuerySpecification specification,
-            QueryParameters queryParameters)
+            QueryParameters queryParameters, CancellationToken cancellationToken)
         {
-            return Session.ExecuteNativeUpdateAsync(specification, queryParameters);
-        }
-
-        public Task<int> ExecuteUpdateAsync(string query, QueryParameters queryParameters)
-        {
-            return Session.ExecuteUpdateAsync(query, queryParameters);
-        }
-
-        public int ExecuteUpdate(string query, QueryParameters queryParameters)
-        {
-            return Session.ExecuteUpdate(query, queryParameters);
+            return Session.ExecuteNativeUpdateAsync(specification, queryParameters, cancellationToken);
         }
 
         public int ExecuteUpdate(IQueryExpression query, QueryParameters queryParameters)
@@ -1134,14 +1107,24 @@ namespace SharperArchitecture.DataAccess.Decorators
             return Session.ExecuteUpdate(query, queryParameters);
         }
 
-        public Task<int> ExecuteUpdateAsync(IQueryExpression query, QueryParameters queryParameters)
+        void ISessionImplementor.JoinTransaction()
         {
-            return Session.ExecuteUpdateAsync(query, queryParameters);
+            ((ISessionImplementor) Session).JoinTransaction();
         }
 
-        public void CloseSessionFromDistributedTransaction()
+        public void CloseSessionFromSystemTransaction()
         {
-            Session.CloseSessionFromDistributedTransaction();
+            Session.CloseSessionFromSystemTransaction();
+        }
+
+        public IQuery CreateFilter(object collection, IQueryExpression queryExpression)
+        {
+            return Session.CreateFilter(collection, queryExpression);
+        }
+
+        public Task<int> ExecuteUpdateAsync(IQueryExpression query, QueryParameters queryParameters, CancellationToken cancellationToken)
+        {
+            return Session.ExecuteUpdateAsync(query, queryParameters, cancellationToken);
         }
 
         public EntityKey GenerateEntityKey(object id, IEntityPersister persister)
@@ -1166,8 +1149,6 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         public NHibernate.Event.EventListeners Listeners => Session.Listeners;
 
-        public int DontFlushFromFind => Session.DontFlushFromFind;
-
         public ConnectionManager ConnectionManager => Session.ConnectionManager;
 
         public bool IsEventSource => Session.IsEventSource;
@@ -1176,8 +1157,8 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         CacheMode ISessionImplementor.CacheMode
         {
-            get { return ((ISessionImplementor) Session).CacheMode; }
-            set { ((ISessionImplementor) Session).CacheMode = value; }
+            get => ((ISessionImplementor) Session).CacheMode;
+            set => ((ISessionImplementor) Session).CacheMode = value;
         }
 
         DbConnection ISession.Connection => ((ISession) Session).Connection;
@@ -1188,8 +1169,8 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         public bool DefaultReadOnly
         {
-            get { return Session.DefaultReadOnly; }
-            set { Session.DefaultReadOnly = value; }
+            get => Session.DefaultReadOnly;
+            set => Session.DefaultReadOnly = value;
         }
 
         public ITransaction Transaction => Session.Transaction;
@@ -1202,14 +1183,14 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         FlushMode ISessionImplementor.FlushMode
         {
-            get { return ((ISessionImplementor) Session).FlushMode; }
-            set { ((ISessionImplementor) Session).FlushMode = value; }
+            get => ((ISessionImplementor) Session).FlushMode;
+            set => ((ISessionImplementor) Session).FlushMode = value;
         }
 
         public string FetchProfile
         {
-            get { return Session.FetchProfile; }
-            set { Session.FetchProfile = value; }
+            get => Session.FetchProfile;
+            set => Session.FetchProfile = value;
         }
 
         public ISessionFactory SessionFactory => Session.SessionFactory;
@@ -1220,8 +1201,6 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         public bool TransactionInProgress => Session.TransactionInProgress;
 
-        public EntityMode EntityMode => Session.EntityMode;
-
         public FutureCriteriaBatch FutureCriteriaBatch => Session.FutureCriteriaBatch;
 
         public FutureQueryBatch FutureQueryBatch => Session.FutureQueryBatch;
@@ -1230,11 +1209,9 @@ namespace SharperArchitecture.DataAccess.Decorators
 
         public ITransactionContext TransactionContext
         {
-            get { return Session.TransactionContext; }
-            set { Session.TransactionContext = value; }
+            get => Session.TransactionContext;
+            set => Session.TransactionContext = value;
         }
-
-        public object UserData => Session.UserData;
 
         public void Dispose()
         {
@@ -1282,41 +1259,47 @@ namespace SharperArchitecture.DataAccess.Decorators
             Session.Delete(entityName, child, isCascadeDeleteEnabled, transientEntities);
         }
 
-        public async Task ForceFlushAsync(EntityEntry e)
+        public IDisposable SuspendAutoFlush()
         {
-            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session));
-            await Session.ForceFlushAsync(e);
-            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session));
+            return Session.SuspendAutoFlush();
         }
 
-        public Task MergeAsync(string entityName, object obj, IDictionary copiedAlready)
+        public async Task ForceFlushAsync(EntityEntry e, CancellationToken cancellationToken)
         {
-            return Session.MergeAsync(entityName, obj, copiedAlready);
+            await _eventPublisher.PublishAsync(new SessionFlushingAsyncEvent(Session), cancellationToken);
+            await Session.ForceFlushAsync(e, cancellationToken);
+            await _eventPublisher.PublishAsync(new SessionFlushedAsyncEvent(Session), cancellationToken);
         }
 
-        public Task PersistAsync(string entityName, object obj, IDictionary createdAlready)
+        public Task MergeAsync(string entityName, object obj, IDictionary copiedAlready, CancellationToken cancellationToken)
         {
-            return Session.PersistAsync(entityName, obj, createdAlready);
+            return Session.MergeAsync(entityName, obj, copiedAlready, cancellationToken);
         }
 
-        public Task PersistOnFlushAsync(string entityName, object obj, IDictionary copiedAlready)
+        public Task PersistAsync(string entityName, object obj, IDictionary createdAlready, CancellationToken cancellationToken)
         {
-            return Session.PersistOnFlushAsync(entityName, obj, copiedAlready);
+            return Session.PersistAsync(entityName, obj, createdAlready, cancellationToken);
         }
 
-        public Task RefreshAsync(object obj, IDictionary refreshedAlready)
+        public Task PersistOnFlushAsync(string entityName, object obj, IDictionary copiedAlready, CancellationToken cancellationToken)
         {
-            return Session.RefreshAsync(obj, refreshedAlready);
+            return Session.PersistOnFlushAsync(entityName, obj, copiedAlready, cancellationToken);
+        }
+
+        public Task RefreshAsync(object obj, IDictionary refreshedAlready, CancellationToken cancellationToken)
+        {
+            return Session.RefreshAsync(obj, refreshedAlready, cancellationToken);
         }
 
         public async Task DeleteAsync(string entityName, object child, bool isCascadeDeleteEnabled,
-            ISet<object> transientEntities)
+            ISet<object> transientEntities, CancellationToken cancellationToken)
         {
-            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session));
-            await Session.DeleteAsync(entityName, child, isCascadeDeleteEnabled, transientEntities);
+            await _eventPublisher.PublishAsync(new EntityDeletingAsyncEvent(Session), cancellationToken);
+            await Session.DeleteAsync(entityName, child, isCascadeDeleteEnabled, transientEntities, cancellationToken);
         }
 
         public ActionQueue ActionQueue => Session.ActionQueue;
+        public bool AutoFlushSuspended => Session.AutoFlushSuspended;
 
 
         public override int GetHashCode()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NHibernate.Event;
 using NHibernate.Persister.Entity;
@@ -23,7 +24,7 @@ namespace SharperArchitecture.Authentication.EventHandlers
             state[index] = value;
         }
 
-        public Task<bool> OnPreInsertAsync(PreInsertEvent @event)
+        public Task<bool> OnPreInsertAsync(PreInsertEvent @event, CancellationToken cancellationToken)
         {
             return Task.FromResult(OnPreInsert(@event));
         }
@@ -36,7 +37,7 @@ namespace SharperArchitecture.Authentication.EventHandlers
             return false;
         }
 
-        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event, CancellationToken cancellationToken)
         {
             return Task.FromResult(OnPreUpdate(@event));
         }

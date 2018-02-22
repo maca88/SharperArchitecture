@@ -41,12 +41,12 @@ namespace SharperArchitecture.Validation.Internal
             throw new NotSupportedException();
         }
 
-        void IValidationRule.ApplyCondition(Func<object, bool> predicate, ApplyConditionTo applyConditionTo)
+        public void ApplyCondition(Func<ValidationContext, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
         {
             throw new NotSupportedException();
         }
 
-        void IValidationRule.ApplyAsyncCondition(Func<object, Task<bool>> predicate, ApplyConditionTo applyConditionTo)
+        public void ApplyAsyncCondition(Func<ValidationContext, CancellationToken, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
         {
             throw new NotSupportedException();
         }

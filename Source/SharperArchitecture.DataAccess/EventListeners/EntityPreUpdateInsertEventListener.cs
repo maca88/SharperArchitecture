@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NHibernate.Event;
 using SharperArchitecture.Common.Events;
@@ -32,7 +33,7 @@ namespace SharperArchitecture.DataAccess.EventListeners
             entity.SetMemberValue(o => o.Id, entity.Id.TrimEnd(' '));
         }
 
-        public Task<bool> OnPreInsertAsync(PreInsertEvent @event)
+        public Task<bool> OnPreInsertAsync(PreInsertEvent @event, CancellationToken cancellationToken)
         {
             return Task.FromResult(OnPreInsert(@event));
         }
@@ -43,7 +44,7 @@ namespace SharperArchitecture.DataAccess.EventListeners
             return false;
         }
 
-        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        public Task<bool> OnPreUpdateAsync(PreUpdateEvent @event, CancellationToken cancellationToken)
         {
             return Task.FromResult(OnPreUpdate(@event));
         }

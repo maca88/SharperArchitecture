@@ -28,7 +28,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             _auditUserProvider = auditUserProvider;
         }
 
-        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event, CancellationToken cancellationToken)
         {
             var userType = UpdateAuditProperties(@event.Entity, @event.Persister, @event.State);
             if (userType != null)

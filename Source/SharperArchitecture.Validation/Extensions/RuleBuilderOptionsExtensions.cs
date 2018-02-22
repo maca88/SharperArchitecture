@@ -30,9 +30,11 @@ namespace SharperArchitecture.Validation.Extensions
             return rule.Configure(config =>
             {
                 config.CurrentValidator.ErrorMessageSource = new StaticStringSource(I18N.Translate(messageId));
+                /*
                 funcs
                     .Select(func => new Func<object, object, object>((instance, value) => func((T)instance, (TProperty)value)))
-                    .ForEach(config.CurrentValidator.CustomMessageFormatArguments.Add);
+                    .ForEach(config.CurrentValidator.ErrorMessageSource. CustomMessageFormatArguments.Add)
+                    ;*/
             });
         } 
     }

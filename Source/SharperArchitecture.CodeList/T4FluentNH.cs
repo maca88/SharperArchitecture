@@ -50,14 +50,6 @@ namespace FluentNHibernate.Automapping
                     "Expression '{0}' refers to a field, not a property.",
                     propertyLambda.ToString()));
 
-            if (type != propInfo.ReflectedType &&
-                !propInfo.ReflectedType.IsAssignableFrom(type) &&
-                !type.IsSubclassOf(propInfo.ReflectedType))
-                throw new ArgumentException(string.Format(
-                    "Expresion '{0}' refers to a property that is not from type {1}.",
-                    propertyLambda.ToString(),
-                    type));
-
             return propInfo;
         }
 

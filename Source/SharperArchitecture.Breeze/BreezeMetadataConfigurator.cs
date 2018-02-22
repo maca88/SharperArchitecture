@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 using Breeze.ContextProvider.NH;
+using Breeze.ContextProvider.NH.Filters;
 using Breeze.ContextProvider.NH.Metadata;
 using FluentValidation;
 using FluentValidation.Validators;
@@ -425,7 +426,7 @@ namespace SharperArchitecture.Breeze
                 typeof(ApiController).IsAssignableFrom(t) &&
                 !t.IsAbstract &&
                 !t.IsGenericType &&
-                t.GetCustomAttribute<BreezeNHControllerAttribute>() != null));
+                t.GetCustomAttribute<BreezeQueryFilterAttribute>() != null));
 
             foreach (var breezeCtrl in breezeCtrls)
             {

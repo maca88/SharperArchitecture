@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SharperArchitecture.Common.Events;
 using SharperArchitecture.Common.Specifications;
@@ -23,7 +24,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         {
         }
 
-        protected override async Task<object> PerformSaveOrUpdateAsync(SaveOrUpdateEvent @event)
+        protected override async Task<object> PerformSaveOrUpdateAsync(SaveOrUpdateEvent @event, CancellationToken cancellationToken)
         {
             // this implementation is supposed to tolerate incorrect unsaved-value
             // mappings, for the purpose of backward-compatibility
@@ -41,7 +42,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             }
             else
             {
-                await EntityIsDetachedAsync(@event);
+                await EntityIsDetachedAsync(@event, cancellationToken);
                 return null;
             }
         }
@@ -69,9 +70,9 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             }
         }
 
-        protected override Task<object> SaveWithGeneratedOrRequestedIdAsync(SaveOrUpdateEvent @event)
+        protected override Task<object> SaveWithGeneratedOrRequestedIdAsync(SaveOrUpdateEvent @event, CancellationToken cancellationToken)
         {
-            return SaveWithGeneratedIdAsync(@event.Entity, @event.EntityName, null, @event.Session, true);
+            return SaveWithGeneratedIdAsync(@event.Entity, @event.EntityName, null, @event.Session, true, cancellationToken);
         }
 
         protected override object SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent @event)
@@ -83,15 +84,15 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         /// If the user specified an id, assign it to the instance and use that, 
         /// otherwise use the id already assigned to the instance
         /// </summary>
-        protected override object GetUpdateId(object entity, IEntityPersister persister, object requestedId, EntityMode entityMode)
+        protected override object GetUpdateId(object entity, IEntityPersister persister, object requestedId)
         {
             if (requestedId == null)
             {
-                return base.GetUpdateId(entity, persister, requestedId, entityMode);
+                return base.GetUpdateId(entity, persister, requestedId);
             }
             else
             {
-                persister.SetIdentifier(entity, requestedId, entityMode);
+                persister.SetIdentifier(entity, requestedId);
                 return requestedId;
             }
         }

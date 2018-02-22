@@ -204,8 +204,6 @@ foreach (var pair in GlobalContainer.Overrides.ToList()) // clone as the collect
         if(prop == null) throw new Exception("prop null");
         if(!GlobalContainer.Components.ContainsKey(overrideType))
             GlobalContainer.Components.Add(overrideType, new Dictionary<string, CodeProperty>());
-        if (GlobalContainer.Components[overrideType].ContainsKey(propName))
-            throw new Exception("Duplicated property " + propName + " for type " + overrideType);
         GlobalContainer.Components[overrideType].Add(propName, prop);
     }
 
@@ -3037,6 +3035,7 @@ public class VisualStudioHelper : AutomationHelper
 	public string GetValidNHibernteEnumerableInterface(CodeProperty prop, string listImplType, bool strict, string newItemType = null) 
 	{
 		var typeName = GetPropertyType(prop);
+        strict = false;
 	    //if (typeName.Contains("IEnumerable"))
 	     //   typeName = typeName.Replace("IEnumerable", listImplType);
 	    if (!string.IsNullOrEmpty(newItemType))
@@ -3357,12 +3356,17 @@ public class VisualStudioHelper : AutomationHelper
 	public void SetAsVirtual(CodeProperty2 prop)
 	{
 	    if (prop.OverrideKind == vsCMOverrideKind.vsCMOverrideKindVirtual || prop.Access == vsCMAccess.vsCMAccessPrivate) return;
-	    var getterText = GetCodeFunctionText(prop.Getter);
+	    var getterText = prop.Getter != null ? GetCodeFunctionText(prop.Getter) : null;
 	    var setterText = prop.Setter != null ? GetCodeFunctionText(prop.Setter) : null;
 	    prop.OverrideKind = vsCMOverrideKind.vsCMOverrideKindVirtual; //bug with auto-properties
-	    SetCodeFunctionText(prop.Getter, getterText);
-	    if(setterText == null) return;
-	    SetCodeFunctionText(prop.Setter, setterText);
+	    if (getterText != null)
+	    {
+	        SetCodeFunctionText(prop.Getter, getterText);
+	    }
+	    if (setterText != null)
+	    {
+	        SetCodeFunctionText(prop.Setter, setterText);
+	    }
 	}
 
 	public string GetPropertyType(CodeProperty prop)

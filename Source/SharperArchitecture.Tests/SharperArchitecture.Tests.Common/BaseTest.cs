@@ -52,22 +52,11 @@ namespace SharperArchitecture.Tests.Common
 
         protected virtual void Configure()
         {
-            I18N.Initialize();
-
             AppConfiguration.SetGetDomainAssembliesFunction(() => TestAssemblies);
             Container = CreateContainer();
             ConfigureContainer(Container);
             Container.RegisterPackages(TestAssemblies);
             Container.Verify();
-            /*
-            Bootstrap.Bootstrapper
-                .With
-                .Ninject()
-                .WithContainer(Kernel).And
-                //.Extension(new ActionBootstrapperExtension(BeforeStartupTasks)).And
-                .StartupTasks()
-                .IncludingOnly.AssemblyRange(TestAssemblies)
-                .Start();*/
         }
     }
 }

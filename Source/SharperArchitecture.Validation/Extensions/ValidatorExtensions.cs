@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation.Internal;
 using FluentValidation.Results;
@@ -56,7 +57,7 @@ namespace FluentValidation
         }
 
         public static Task<ValidationResult> ValidateAsync(IValidator validator, object instance, string[] ruleSets,
-            Dictionary<string, object> extraData = null)
+            Dictionary<string, object> extraData = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IValidatorSelector selector = new DefaultValidatorSelector();
             if (ruleSets != null)
@@ -71,7 +72,7 @@ namespace FluentValidation
                     context.RootContextData[pair.Key] = pair.Value;
                 }
             }
-            return validator.ValidateAsync(context);
+            return validator.ValidateAsync(context, cancellationToken);
         }
     }
 }

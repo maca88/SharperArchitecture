@@ -11,6 +11,7 @@ namespace SharperArchitecture.Common.Internationalization
     {
         //Used by L10N
         internal static readonly Dictionary<string, Translator> Translators = new Dictionary<string, Translator>();
+        private static bool _initialized;
 
         static I18N()
         {
@@ -18,6 +19,10 @@ namespace SharperArchitecture.Common.Internationalization
 
         public static void Initialize()
         {
+            if (_initialized)
+            {
+                return;
+            }
             Translator.Default.FormatCallback = TranslatorFormatter.Custom;
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -43,6 +48,7 @@ namespace SharperArchitecture.Common.Internationalization
                 Translators.Add(culture.Name, translator);
                 translator.RegisterTranslationsByCulture(translPattern, culture, translDirectory);
             }
+            _initialized = true;
         }
 
         #region Register

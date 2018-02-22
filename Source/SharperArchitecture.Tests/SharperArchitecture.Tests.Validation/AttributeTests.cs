@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
 using NUnit.Framework;
+using SharperArchitecture.Common.Internationalization;
 using SharperArchitecture.Tests.Common;
 using SharperArchitecture.Tests.Validation.Models;
 using SharperArchitecture.Tests.Validation.Models.Attributes;
@@ -17,6 +18,7 @@ namespace SharperArchitecture.Tests.Validation
     {
         public AttributeTests()
         {
+            I18N.Initialize();
             TestAssemblies.Add(typeof(Validator<>).Assembly);
         }
 

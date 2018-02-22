@@ -99,10 +99,10 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             }
         }
 
-        private async Task ValidateAsync(object entity, ISession session, EntityMode mode, string[] ruleSet)
+        private async Task ValidateAsync(object entity, ISession session, string[] ruleSet, CancellationToken cancellationToken)
         {
             session = session.Unwrap();
-            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
+            var valInfo = GetValidationInfo(entity, session, ruleSet);
             if (valInfo == null)
             {
                 return;
@@ -114,7 +114,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
                                 $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
                 // We need set flush mode to never in order to prevert a stackoverflow in certain scenario when a flush is occured
                 var origFlushMode = session.FlushMode;
-                session.FlushMode = FlushMode.Never;
+                session.FlushMode = FlushMode.Manual;
                 try
                 {
                     var validationResult = await ValidatorExtensions.ValidateAsync(valInfo.Validator, valInfo.Model,
@@ -122,7 +122,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
                         {
                             {ValidationContextExtensions.RootAutoValidationKey, valInfo.Root},
                             {ValidationContextExtensions.AutoValidationKey, true}
-                        });
+                        }, cancellationToken);
 
                     if (!validationResult.IsValid)
                     {
@@ -141,10 +141,10 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             } while (valInfo != null);
         }
 
-        private void Validate(object entity, ISession session, EntityMode mode, string[] ruleSet)
+        private void Validate(object entity, ISession session, string[] ruleSet)
         {
             session = session.Unwrap();
-            var valInfo = GetValidationInfo(entity, session, mode, ruleSet);
+            var valInfo = GetValidationInfo(entity, session, ruleSet);
             if (valInfo == null)
             {
                 return;
@@ -156,7 +156,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
                                 $"Id:'{valInfo.Model.GetId()}', RuleSets:'{string.Join(",", valInfo.RuleSets)}'");
                 // We need set flush mode to never in order to prevert a stackoverflow in certain scenario when a flush is occured
                 var origFlushMode = session.FlushMode;
-                session.FlushMode = FlushMode.Never;
+                session.FlushMode = FlushMode.Manual;
                 try
                 {
                     var validationResult = ValidatorExtensions.Validate(valInfo.Validator, valInfo.Model,
@@ -182,15 +182,11 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             } while (valInfo != null);
         }
 
-        private ValidationInfo GetValidationInfo(object item, ISession session, EntityMode mode, string[] ruleSets)
+        private ValidationInfo GetValidationInfo(object item, ISession session, string[] ruleSets)
         {
             if (!session.IsManaged())
             {
                 _logger.Warn("Automatic entity validation is not supported for unmanaged sessions");
-                return null;
-            }
-            if (item == null || mode != EntityMode.Poco)
-            {
                 return null;
             }
             var entity = item as IEntity;
@@ -355,21 +351,21 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         public void Handle(EntitySavingEvent e)
         {
             var @event = e.Event;
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
+            Validate(@event.Entity, @event.Session, ValidationRuleSet.AttributeInsert);
         }
 
         public Task HandleAsync(EntitySavingAsyncEvent e, CancellationToken cancellationToken)
         {
             var @event = e.Event;
-            return ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeInsert);
+            return ValidateAsync(@event.Entity, @event.Session, ValidationRuleSet.AttributeInsert, cancellationToken);
         }
 
-        public async Task OnPreUpdateCollectionAsync(PreCollectionUpdateEvent @event)
+        public async Task OnPreUpdateCollectionAsync(PreCollectionUpdateEvent @event, CancellationToken cancellationToken)
         {
             var owner = @event.AffectedOwnerOrNull;
             if (!ReferenceEquals(null, owner))
             {
-                await ValidateAsync(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+                await ValidateAsync(owner, @event.Session, ValidationRuleSet.AttributeUpdate, cancellationToken);
             }
         }
 
@@ -378,31 +374,31 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
             var owner = @event.AffectedOwnerOrNull;
             if (!ReferenceEquals(null, owner))
             {
-                Validate(owner, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+                Validate(owner, @event.Session, ValidationRuleSet.AttributeUpdate);
             }
         }
 
-        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event)
+        public async Task<bool> OnPreUpdateAsync(PreUpdateEvent @event, CancellationToken cancellationToken)
         {
-            await ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+            await ValidateAsync(@event.Entity, @event.Session, ValidationRuleSet.AttributeUpdate, cancellationToken);
             return false;
         }
 
         public bool OnPreUpdate(PreUpdateEvent @event)
         {
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, ValidationRuleSet.AttributeUpdate);
+            Validate(@event.Entity, @event.Session, ValidationRuleSet.AttributeUpdate);
             return false;
         }
 
-        public async Task<bool> OnPreDeleteAsync(PreDeleteEvent @event)
+        public async Task<bool> OnPreDeleteAsync(PreDeleteEvent @event, CancellationToken cancellationToken)
         {
-            await ValidateAsync(@event.Entity, @event.Session, @event.Session.EntityMode, new [] {ValidationRuleSet.Delete});
+            await ValidateAsync(@event.Entity, @event.Session, new [] {ValidationRuleSet.Delete}, cancellationToken);
             return false;
         }
 
         public bool OnPreDelete(PreDeleteEvent @event)
         {
-            Validate(@event.Entity, @event.Session, @event.Session.EntityMode, new[] { ValidationRuleSet.Delete });
+            Validate(@event.Entity, @event.Session, new[] { ValidationRuleSet.Delete });
             return false;
         }
 
@@ -441,7 +437,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         public Task HandleAsync(EntityDeletingAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
-            return TaskHelper.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Handle(EntitySavingOrUpdatingEvent e)
@@ -452,7 +448,7 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         public Task HandleAsync(EntitySavingOrUpdatingAsyncEvent e, CancellationToken cancellationToken)
         {
             Clear(e.Session);
-            return TaskHelper.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private void Clear(ISession session)

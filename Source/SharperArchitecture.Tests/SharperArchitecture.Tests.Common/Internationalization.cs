@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace SharperArchitecture.Tests.Common
 {
     [TestFixture]
-    public class Internacionalization
+    public class Internationalization
     {
         [Test]
         public void TestFormatter()
