@@ -18,6 +18,7 @@ using SharperArchitecture.WebApi.Specifications;
 using SimpleInjector;
 using System.Transactions;
 using SharperArchitecture.Common.Events;
+using SharperArchitecture.WebApi.Attributes;
 
 namespace SharperArchitecture.WebApi.Internal
 {
@@ -76,14 +77,17 @@ namespace SharperArchitecture.WebApi.Internal
             }
 
             var actionDescriptor = currentMessage.GetActionDescriptor();
-            var attr = actionDescriptor?.GetCustomAttributes<IsolationLevelAttribute>().SingleOrDefault();
-            if (attr != null)
+            var attr = actionDescriptor?.GetCustomAttributes<TransactionAttribute>().SingleOrDefault() ?? new TransactionAttribute();
+            if (!attr.Disabled)
             {
-                @event.Session.BeginTransaction(attr.Level);
-            }
-            else
-            {
-                @event.Session.BeginTransaction();
+                if (attr.Level.HasValue)
+                {
+                    @event.Session.BeginTransaction(attr.Level.Value);
+                }
+                else
+                {
+                    @event.Session.BeginTransaction();
+                }
             }
             info.Sessions.Add(@event.DatabaseConfigurationName, @event.Session);
         }

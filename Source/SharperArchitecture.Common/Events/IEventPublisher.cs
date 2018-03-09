@@ -7,8 +7,6 @@ namespace SharperArchitecture.Common.Events
     {
         void Publish(IEvent @event);
 
-        Task PublishAsync(IAsyncEvent @event);
-
-        Task PublishAsync(IAsyncEvent @event, CancellationToken cancellationToken);
+        Task PublishAsync(IAsyncEvent @event, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

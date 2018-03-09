@@ -1,31 +1,25 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SharperArchitecture.Common.Attributes;
-using SharperArchitecture.Common.Specifications;
+using SharperArchitecture.Common.Internal;
 using SimpleInjector;
 using SimpleInjector.Extensions;
 
-namespace SharperArchitecture.Common.Events
+namespace SharperArchitecture.Common.Events.Internal
 {
     public delegate void EventHandler<in TEvent>(TEvent @event) where TEvent : IEvent;
     public delegate Task AsyncEventHandler<in TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IAsyncEvent;
 
-    public class EventAggregator : IEventPublisher, IEventSubscriber
+    internal class EventAggregator : HandlerInvoker, IEventPublisher, IEventSubscriber
     {
         private delegate void InvokeHandle(object obj, IEvent @event);
         private delegate Task InvokeHandleAsync(object obj, IAsyncEvent @event, CancellationToken token);
 
         private readonly Container _container;
-        private readonly ConcurrentDictionary<Type, object> _eventHandlerInvokers = new ConcurrentDictionary<Type, object>();
         private readonly ConcurrentDictionary<object, DelegateEventHandler> _delegateEventHandlers = 
             new ConcurrentDictionary<object, DelegateEventHandler>();
 
@@ -36,33 +30,33 @@ namespace SharperArchitecture.Common.Events
 
         public virtual void Publish(IEvent e)
         {
-            var eventType = e.GetType();
-            var handlerType = typeof(IEventHandler<>).MakeGenericType(e.GetType());
-            var handle = (InvokeHandle)_eventHandlerInvokers.GetOrAdd(handlerType, t =>
-                CreateHandlerInvoker<InvokeHandle>(
-                    eventType, handlerType, "Handle"));
-            foreach (var obj in GetInstances(handlerType))
+            var handlerInfo = CachedHandlers.GetOrAdd(e.GetType(),
+                t => new HandlerInfo(
+                    typeof(IEventHandler<>).MakeGenericType(t),
+                    ht => CreateHandlerInvoker<InvokeHandle>(t, ht, "Handle")
+                )
+            );
+            var invoker = (InvokeHandle)handlerInfo.HandleInvoker;
+            foreach (var obj in GetInstances(handlerInfo.Type))
             {
-                handle(obj, e);
+                invoker(obj, e);
             }
         }
 
-        public virtual Task PublishAsync(IAsyncEvent e)
-        {
-            return PublishAsync(e, CancellationToken.None);
-        }
-
-        public virtual async Task PublishAsync(IAsyncEvent e, CancellationToken cancellationToken)
+        public virtual async Task PublishAsync(IAsyncEvent e, CancellationToken cancellationToken = default(CancellationToken))
         {
             var eventType = e.GetType();
-            var handlerType = typeof(IAsyncEventHandler<>).MakeGenericType(e.GetType());
-            var handleAsync = (InvokeHandleAsync)_eventHandlerInvokers.GetOrAdd(handlerType, t =>
-                CreateHandlerInvoker<InvokeHandleAsync>(
-                    eventType, handlerType, "HandleAsync",
-                    Expression.Parameter(typeof(CancellationToken), "token")));
-            foreach (var obj in GetInstances(handlerType))
+            var handlerInfo = CachedAsyncHandlers.GetOrAdd(eventType,
+                t => new HandlerInfo(
+                    typeof(IAsyncEventHandler<>).MakeGenericType(t),
+                    ht => CreateHandlerInvoker<InvokeHandleAsync>(t, ht, "HandleAsync",
+                        Expression.Parameter(typeof(CancellationToken), "token"))
+                )
+            );
+            var invoker = (InvokeHandleAsync)handlerInfo.HandleInvoker;
+            foreach (var obj in GetInstances(handlerInfo.Type))
             {
-                await handleAsync(obj, e, cancellationToken);
+                await invoker(obj, e, cancellationToken);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;
@@ -78,8 +72,7 @@ namespace SharperArchitecture.Common.Events
 
         public bool Unsubscribe<TEvent>(EventHandler<TEvent> handlerDelegate) where TEvent : IEvent
         {
-            DelegateEventHandler handler;
-            return _delegateEventHandlers.TryRemove(handlerDelegate, out handler);
+            return _delegateEventHandlers.TryRemove(handlerDelegate, out _);
         }
 
         public void Subscribe<TEvent>(AsyncEventHandler<TEvent> handlerDelegate, short priority = default(short)) where TEvent : IAsyncEvent
@@ -90,8 +83,7 @@ namespace SharperArchitecture.Common.Events
 
         public bool Unsubscribe<TEvent>(AsyncEventHandler<TEvent> handlerDelegate) where TEvent : IAsyncEvent
         {
-            DelegateEventHandler handler;
-            return _delegateEventHandlers.TryRemove(handlerDelegate, out handler);
+            return _delegateEventHandlers.TryRemove(handlerDelegate, out _);
         }
 
         private IEnumerable<object> GetInstances(Type t)
@@ -114,25 +106,6 @@ namespace SharperArchitecture.Common.Events
                 )
                 .OrderByDescending(o => o.Priority)
                 .Select(o => o.Instance);
-        }
-
-        private static TResult CreateHandlerInvoker<TResult>(Type eventType, Type handlerType, string methodName, params ParameterExpression[] parameters)
-        {
-            var param1 = Expression.Parameter(typeof(object), "handler");
-            var param2 = Expression.Parameter(typeof(object), "obj");
-            var convertHandler = Expression.Convert(param1, handlerType);
-            var convertCommand = Expression.Convert(param2, eventType);
-            var callParams = new List<Expression>
-            {
-                convertCommand
-            }.Concat(parameters);
-            var lambdaParams = new List<ParameterExpression>
-            {
-                param1,
-                param2
-            }.Concat(parameters);
-            var callMethod = Expression.Call(convertHandler, handlerType.GetMethod(methodName), callParams);
-            return Expression.Lambda<TResult>(callMethod, lambdaParams).Compile();
         }
     }
 }

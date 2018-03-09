@@ -13,7 +13,6 @@ using NHibernate.Util;
 using SharperArchitecture.Breeze.Events;
 using SharperArchitecture.Breeze.Specification;
 using SharperArchitecture.Common.Events;
-using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.DataAccess;
 using SharperArchitecture.DataAccess.Extensions;
 using SharperArchitecture.Domain;
@@ -28,8 +27,6 @@ namespace SharperArchitecture.Breeze
         private SaveInterceptorSettings _saveInterceptorSettings;
         private AsyncSaveInterceptorSettings _asyncSaveInterceptorSettings;
 
-        private static readonly object MetadataLock = new object();
-
         public BreezeContext(ISession session,  IEventPublisher eventPublisher, IBreezeConfigurator breezeConfigurator) 
             : base(session, breezeConfigurator)
         {
@@ -40,21 +37,9 @@ namespace SharperArchitecture.Breeze
         {
         }
 
-        protected override string BuildJsonMetadata()
+        protected override void OnMetadataBuilt(MetadataSchema metadata)
         {
-            MetadataSchema meta;
-            bool isBuilt;
-            lock (MetadataLock)
-            {
-                isBuilt = IsMetadataBuilt();
-                meta = GetMetadata();
-            }
-            if (!isBuilt)
-            {
-                _eventPublisher.Publish(new BreezeMetadataBuiltEvent(meta, Session.SessionFactory));
-            }
-            var json = JsonConvert.SerializeObject(meta, Formatting.Indented);
-            return json;
+            _eventPublisher.Publish(new BreezeMetadataBuiltEvent(metadata, Session.SessionFactory));
         }
 
         public override void Dispose()
@@ -190,8 +175,7 @@ namespace SharperArchitecture.Breeze
 
         protected override bool HandleSaveException(Exception e, SaveWorkState saveWorkState)
         {
-            var ve = e as EntityValidationException;
-            if (ve == null)
+            if (!(e is EntityValidationException ve))
                 return false;
             // We need to manually rollback the transaction as we wont throw an exception
             Session.RollbackTransaction();

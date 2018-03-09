@@ -134,13 +134,14 @@
     <Compile Include="Attributes\PriorityAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
-    <Compile Include="Commands\CommandDispatcher.cs" />
+    <Compile Include="Commands\Internal\CommandDispatcher.cs" />
     <Compile Include="Configuration\AppConfiguration.cs" />
     <Compile Include="Configuration\CommonConfiguration.cs" />
     <Compile Include="Configuration\CommonConfigurationKeys.cs" />
     <Compile Include="Enums\Lifetime.cs" />
     <Compile Include="Events\AsyncDelegateEventHandler.cs" />
     <Compile Include="Events\DelegateEventHandler.cs" />
+    <Compile Include="Internal\HandlerInvoker.cs" />
     <Compile Include="Queries\Internal\DefaultQueryProcessor.cs" />
     <Compile Include="Queries\IAsyncQuery.cs" />
     <Compile Include="Queries\IAsyncQueryHandler.cs" />
@@ -162,7 +163,7 @@
     <Compile Include="Commands\ICommandDispatcher.cs" />
     <Compile Include="Commands\ICommandHandler.cs" />
     <Compile Include="Events\IEvent.cs" />
-    <Compile Include="Events\EventAggregator.cs" />
+    <Compile Include="Events\Internal\EventAggregator.cs" />
     <Compile Include="Exceptions\SharperArchitectureException.cs" />
     <Compile Include="Expressions\ExpressionInfo.cs" />
     <Compile Include="Expressions\SubExpressionInfo.cs" />

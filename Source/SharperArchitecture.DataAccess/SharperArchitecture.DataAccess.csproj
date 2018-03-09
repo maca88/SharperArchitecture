@@ -150,7 +150,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\IsolationLevelAttribute.cs" />
     <Compile Include="Attributes\NhEventListenerTypeAttribute.cs" />
     <Compile Include="Comparers\EntityEqualComparer.cs" />
     <Compile Include="Comparers\TypeInheritanceComparer.cs" />

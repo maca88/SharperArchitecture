@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NHibernate.Linq;
 using SharperArchitecture.Common.Queries;
@@ -23,9 +24,9 @@ namespace SharperArchitecture.Tests.DataAccess.Queries
             _dbStore = dbStore;
         }
 
-        public Task<List<User>> HandleAsync(GetAllUsersAsyncQuery query)
+        public Task<List<User>> HandleAsync(GetAllUsersAsyncQuery query, CancellationToken cancellationToken)
         {
-            return _dbStore.Query<User>().ToListAsync();
+            return _dbStore.Query<User>().ToListAsync(cancellationToken);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace SharperArchitecture.Common.Events
+﻿using SharperArchitecture.Common.Events.Internal;
+
+namespace SharperArchitecture.Common.Events
 {
     public interface IEventSubscriber
     {

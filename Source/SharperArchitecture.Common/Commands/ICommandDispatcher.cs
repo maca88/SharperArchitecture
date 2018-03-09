@@ -9,12 +9,8 @@ namespace SharperArchitecture.Common.Commands
 
         TResult Dispatch<TResult>(ICommand<TResult> command);
 
-        Task DispatchAsync(IAsyncCommand command);
+        Task DispatchAsync(IAsyncCommand command, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<TResult> DispatchAsync<TResult>(IAsyncCommand<TResult> command);
-
-        Task DispatchAsync(IAsyncCommand command, CancellationToken cancellationToken);
-
-        Task<TResult> DispatchAsync<TResult>(IAsyncCommand<TResult> command, CancellationToken cancellationToken);
+        Task<TResult> DispatchAsync<TResult>(IAsyncCommand<TResult> command, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

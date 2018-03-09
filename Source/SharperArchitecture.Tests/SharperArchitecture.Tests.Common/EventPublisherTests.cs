@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SharperArchitecture.Common.Events;
+using SharperArchitecture.Common.Events.Internal;
 using SharperArchitecture.Common.Specifications;
 using SharperArchitecture.Tests.Common.Events;
 
@@ -108,7 +109,7 @@ namespace SharperArchitecture.Tests.Common
             var eventPublisher = Container.GetInstance<IEventPublisher>();
             var called = false;
 
-            SharperArchitecture.Common.Events.EventHandler<TestEvent> handler = e => { called = true; };
+            SharperArchitecture.Common.Events.Internal.EventHandler<TestEvent> handler = e => { called = true; };
             eventSubscriber.Subscribe(handler);
 
             eventPublisher.Publish(new TestEvent("test"));

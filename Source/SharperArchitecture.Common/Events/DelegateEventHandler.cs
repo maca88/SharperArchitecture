@@ -1,4 +1,5 @@
-﻿using SharperArchitecture.Common.Specifications;
+﻿using SharperArchitecture.Common.Events.Internal;
+using SharperArchitecture.Common.Specifications;
 
 namespace SharperArchitecture.Common.Events
 {
