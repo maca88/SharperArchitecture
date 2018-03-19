@@ -6,13 +6,13 @@ namespace SharperArchitecture.WebApi.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class TransactionAttribute : Attribute
     {
-        public TransactionAttribute(bool disabled = false)
+        public TransactionAttribute(bool enabled = true)
         {
-            Disabled = disabled;
+            Enabled = enabled;
         }
 
         public IsolationLevel? Level { get; set; }
 
-        public bool Disabled { get; }
+        public bool Enabled { get; }
     }
 }
