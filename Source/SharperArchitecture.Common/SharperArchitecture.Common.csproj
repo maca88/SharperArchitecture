@@ -132,6 +132,7 @@
     <Compile Include="Attributes\EnumStringAttribute.cs" />
     <Compile Include="Attributes\LifetimeAttribute.cs" />
     <Compile Include="Attributes\PriorityAttribute.cs" />
+    <Compile Include="Attributes\TransactionAttribute.cs" />
     <Compile Include="Collections\CircularLinkedList.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
     <Compile Include="Commands\Internal\CommandDispatcher.cs" />

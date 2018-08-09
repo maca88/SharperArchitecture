@@ -23,9 +23,16 @@ namespace SimpleInjector
 
         public static void RegisterHttpConfiguration(this Container container, HttpConfiguration configuration)
         {
+            RegisterHttpConfiguration<TransactionAttributeProvider>(container, configuration);
+        }
+
+        public static void RegisterHttpConfiguration<TTransactionProvider>(this Container container, HttpConfiguration configuration)
+            where TTransactionProvider : class, ITransactionAttributeProvider
+        {
             container.RegisterWebApiControllers(configuration);
             container.EnableHttpRequestMessageTracking(configuration);
 
+            container.RegisterSingleton<ITransactionAttributeProvider, TTransactionProvider>();
             configuration.MessageHandlers.Insert(0, new DelegatingHandlerProxy<TransactionManager>(container));
 
             var defaultprovider = configuration.Services.GetFilterProviders().First(p => p is ActionDescriptorFilterProvider);

@@ -28,7 +28,7 @@ namespace SharperArchitecture.DataAccess.Conventions
 
         private static string GetIndexName(string tableName, string name)
         {
-            return $"IX_{name}";
+            return $"IX_{tableName}_{name}";
         }
     }
 }

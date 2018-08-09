@@ -186,11 +186,10 @@ namespace SharperArchitecture.DataAccess.NHEventListeners
         {
             if (!session.IsManaged())
             {
-                _logger.Warn("Automatic entity validation is not supported for unmanaged sessions");
+                _logger.Debug("Automatic entity validation is not supported for unmanaged sessions");
                 return null;
             }
-            var entity = item as IEntity;
-            if (entity == null)
+            if (!(item is IEntity entity))
             {
                 // Will happen when an entity is mapped as a dictionary
                 _logger.Debug("Skip validation for type '{0}' as is not castable to IEntity", item.GetType());

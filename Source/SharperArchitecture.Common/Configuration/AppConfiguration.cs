@@ -58,7 +58,7 @@ namespace SharperArchitecture.Common.Configuration
             }
             catch (Exception e)
             {
-                Logger.Error($"Error occurred while getting setting with name '{name}'. Details: {e}");
+                Logger.Debug($"Error occurred while getting setting with name '{name}'. Details: {e}");
                 return default(T);
             }
         }

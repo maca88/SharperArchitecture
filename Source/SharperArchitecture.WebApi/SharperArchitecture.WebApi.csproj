@@ -92,7 +92,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\TransactionAttribute.cs" />
     <Compile Include="DelegatingHandlerProxy.cs" />
     <Compile Include="Internal\HttpFilterInfo.cs" />
     <Compile Include="Internal\OrderedFilterProvider.cs" />
