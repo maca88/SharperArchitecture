@@ -52,5 +52,21 @@ namespace SharperArchitecture.Tests.WebApi
             Assert.AreEqual(1, stats.TransactionCount);
             Assert.AreEqual(0, stats.SuccessfulTransactionCount);
         }
+
+        [Test]
+        public async Task StaleExceptionRetryTest()
+        {
+            await ClearDatabaseStatistics();
+
+            var response = await CallMethod<TestController>(o => o.SaveData());
+            Assert.IsTrue(response.IsSuccessStatusCode);
+
+            var stats = await GetDatabaseStatistics();
+
+            Assert.AreEqual(2, stats.SessionOpenCount);
+            Assert.AreEqual(2, stats.SessionCloseCount);
+            Assert.AreEqual(2, stats.TransactionCount);
+            Assert.AreEqual(1, stats.SuccessfulTransactionCount);
+        }
     }
 }

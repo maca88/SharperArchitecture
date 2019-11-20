@@ -15,6 +15,8 @@ namespace SharperArchitecture.Common.Attributes
 
         public bool Enabled { get; }
 
+        public bool Distributed { get; set; }
+
 
         ///// <summary>
         ///// The number of times to retry when a <see cref="NHibernate.StaleStateException" /> occurs.

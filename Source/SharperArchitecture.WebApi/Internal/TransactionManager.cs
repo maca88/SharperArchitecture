@@ -216,7 +216,7 @@ namespace SharperArchitecture.WebApi.Internal
 
         private WebApiRequestInfo CreateRequestInfo(TransactionAttribute transaction)
         {
-            var transactionScope = Database.MultipleDatabases
+            var transactionScope = transaction.Distributed
                 ? new TransactionScope(TransactionScopeAsyncFlowOption.Enabled)
                 : null;
             return new WebApiRequestInfo(transaction, transactionScope);

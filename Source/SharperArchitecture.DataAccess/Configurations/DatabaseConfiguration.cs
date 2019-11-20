@@ -15,7 +15,7 @@ namespace SharperArchitecture.DataAccess.Configurations
     {
         public const string DefaultName = "default";
 
-        internal DatabaseConfiguration(Configuration configuration, string name = null)
+        internal DatabaseConfiguration(Configuration configuration, string name, bool fillFromConfig)
         {
             Name = name ?? DefaultName;
             Conventions = new ConventionsConfiguration();
@@ -23,7 +23,11 @@ namespace SharperArchitecture.DataAccess.Configurations
             EntityAssemblies = new List<Assembly>();
             ConventionAssemblies = new List<Assembly>();
             NHibernateConfiguration = configuration;
-            FillFromConfig();
+
+            if (fillFromConfig)
+            {
+                FillFromConfig();
+            }
         }
 
         public string Name { get; }

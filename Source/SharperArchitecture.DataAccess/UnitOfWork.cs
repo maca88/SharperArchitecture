@@ -29,7 +29,7 @@ namespace SharperArchitecture.DataAccess
         private readonly ConcurrentDictionary<string, ISession> _sessions = new ConcurrentDictionary<string, ISession>();
         private readonly string _guid = Guid.NewGuid().ToString();
 
-        public UnitOfWork(Container container, IEventSubscriber eventSubscriber, IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+        public UnitOfWork(Container container, IEventSubscriber eventSubscriber, IsolationLevel isolationLevel = IsolationLevel.Unspecified, bool distributed = false)
         {
             _container = container;
             IsolationLevel = isolationLevel;
@@ -37,7 +37,7 @@ namespace SharperArchitecture.DataAccess
             _scope.SetItem(ScopeKey, _guid);
             _eventSubscriber = eventSubscriber;
             _eventSubscriber.Subscribe<SessionCreatedEvent>(OnSessionCreated);
-            if (Database.MultipleDatabases)
+            if (distributed)
             {
                 _transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             }

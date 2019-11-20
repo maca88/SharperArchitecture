@@ -20,14 +20,19 @@ namespace SharperArchitecture.DataAccess.Configurations
 
         public string Name => _configuration.Name;
 
-        public static IFluentDatabaseConfiguration Create(Configuration configuration, string name = null)
+        public static IFluentDatabaseConfiguration Create(Configuration configuration)
         {
-            return new FluentDatabaseConfiguration(configuration, name);
+            return new FluentDatabaseConfiguration(configuration);
         }
 
-        internal FluentDatabaseConfiguration(Configuration configuration, string name = null)
+        public static IFluentDatabaseConfiguration Create(Configuration configuration, string name, bool fillFromConfig = true)
         {
-            _configuration = new DatabaseConfiguration(configuration, name);
+            return new FluentDatabaseConfiguration(configuration, name, fillFromConfig);
+        }
+
+        internal FluentDatabaseConfiguration(Configuration configuration, string name = null, bool fillFromConfig = true)
+        {
+            _configuration = new DatabaseConfiguration(configuration, name, fillFromConfig);
         }
 
         public IFluentDatabaseConfiguration ValidateSchema(bool value = true)

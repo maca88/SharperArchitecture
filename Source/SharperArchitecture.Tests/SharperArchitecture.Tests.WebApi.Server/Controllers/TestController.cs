@@ -6,6 +6,7 @@ using System.Web.Http;
 using NHibernate;
 using NHibernate.Linq;
 using SharperArchitecture.Tests.WebApi.Server.Entities;
+using SharperArchitecture.Common.Attributes;
 using SimpleInjector;
 
 namespace SharperArchitecture.Tests.WebApi.Server.Controllers
@@ -28,6 +29,18 @@ namespace SharperArchitecture.Tests.WebApi.Server.Controllers
         {
             var result = _session.Query<TestEntity>().Count();
             throw new InvalidOperationException("Fake exception");
+        }
+
+        [Transaction()]
+        public int SaveData()
+        {
+            var result = _session.Query<TestEntity>().Count();
+            if (_session.SessionFactory.Statistics.TransactionCount != 1)
+            {
+                throw new StaleStateException("TEST");
+            }
+
+            return 1;
         }
     }
 }

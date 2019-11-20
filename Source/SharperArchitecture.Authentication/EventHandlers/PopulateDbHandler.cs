@@ -29,6 +29,10 @@ namespace SharperArchitecture.Authentication.EventHandlers
         {
             var userType = Package.UserType;
             var session = e.Session;
+            if (session.SessionFactory.GetClassMetadata(userType) == null)
+            {
+                return;
+            }
             var systemUser = (IEntity)Activator.CreateInstance(userType);
 
             userType.GetProperty("TimeZoneId").SetValue(systemUser, TimeZoneInfo.Utc.Id);
