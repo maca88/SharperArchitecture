@@ -23,6 +23,11 @@ namespace SharperArchitecture.Validation
             _rulesetsToExecute = new HashSet<string>(rulesetsToExecute);
         }
 
+        public CustomRulesetValidatorSelector()
+        {
+            _rulesetsToExecute = new HashSet<string>();
+        }
+
         /// <summary>
         /// Determines whether or not a rule should execute.
         /// </summary>
@@ -32,17 +37,17 @@ namespace SharperArchitecture.Validation
         /// <returns>Whether or not the validator can execute.</returns>
         public bool CanExecute(IValidationRule rule, string propertyPath, ValidationContext context)
         {
-            if (string.IsNullOrEmpty(rule.RuleSet) && _rulesetsToExecute.Count == 0)
+            if (HasNoRuleSets(rule) && _rulesetsToExecute.Count == 0)
             {
                 return true;
             }
-            if (string.IsNullOrEmpty(rule.RuleSet) && _rulesetsToExecute.Count > 0 &&
+            if (HasNoRuleSets(rule) && _rulesetsToExecute.Count > 0 &&
                 _rulesetsToExecute.Contains("default", StringComparer.OrdinalIgnoreCase))
             {
                 return true;
             }
-            if (!string.IsNullOrEmpty(rule.RuleSet) && _rulesetsToExecute.Count > 0 &&
-                _rulesetsToExecute.Contains(rule.RuleSet))
+            if (!HasNoRuleSets(rule) && _rulesetsToExecute.Count > 0 &&
+                _rulesetsToExecute.Any(r => rule.RuleSets.Contains(r)))
             {
                 return true;
             }
@@ -51,6 +56,11 @@ namespace SharperArchitecture.Validation
                 return true;
             }
             return false;
+        }
+
+        private bool HasNoRuleSets(IValidationRule rule)
+        {
+            return rule.RuleSets.Length == 0;
         }
     }
 }

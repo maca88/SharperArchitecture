@@ -34,7 +34,7 @@ namespace SharperArchitecture.Tests.Validation
                 Name = "Test",
                 Name2 = "Test"
             };
-            var result = validator.Validate(model, ruleSets: new [] { ValidationRuleSet.Attribute });
+            var result = validator.Validate(model, ruleSet: ValidationRuleSet.Attribute);
             Assert.IsFalse(result.IsValid);
             Assert.AreEqual(2, result.Errors.Count);
             Assert.AreEqual("Nickname", result.Errors[0].PropertyName);
@@ -64,7 +64,7 @@ namespace SharperArchitecture.Tests.Validation
             var validator = Container.GetInstance<IValidator<NotNullModel>>();
 
             var model = new NotNullModel();
-            var result = validator.Validate(model, ruleSets: new[] { ValidationRuleSet.Attribute });
+            var result = validator.Validate(model, ruleSet: ValidationRuleSet.Attribute);
             Assert.IsFalse(result.IsValid);
             Assert.AreEqual(2, result.Errors.Count);
             Assert.AreEqual("Name", result.Errors[0].PropertyName);
@@ -303,7 +303,7 @@ namespace SharperArchitecture.Tests.Validation
             var validator = Container.GetInstance<IValidator<IgnoreValidationAttributesModel>>();
 
             var model = new IgnoreValidationAttributesModel();
-            var result = validator.Validate(model, ruleSets: new[] { ValidationRuleSet.Attribute });
+            var result = validator.Validate(model, ruleSet: ValidationRuleSet.Attribute);
             Assert.IsTrue(result.IsValid);
         }
     }

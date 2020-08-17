@@ -40,11 +40,12 @@ namespace SharperArchitecture.Validation
             container.RegisterDecorator(typeof(IValidator<>), typeof(ValidatorDecorator<>), Lifestyle.Singleton);
 
             // Convention for business rules
-            Assembly.GetExecutingAssembly()
+            var dd = Assembly.GetExecutingAssembly()
                 .GetDependentAssemblies()
                 .SelectMany(o => o.GetTypes())
                 .Where(t => t.IsClass && !t.IsAbstract && typeof(IBusinessRule).IsAssignableFrom(t))
-                .Select(t => new { Implementation = t, Services = t.GetInterfaces().Where(o => o.IsAssignableToGenericType(typeof(IBusinessRule<,>))) })
+                .Select(t => new { Implementation = t, Services = t.GetInterfaces().Where(o => o.IsAssignableToGenericType(typeof(IBusinessRule<,>))) });
+            dd
                 .ForEach(o =>
                 {
                     if (o.Implementation.IsGenericType)
@@ -74,6 +75,7 @@ namespace SharperArchitecture.Validation
                 });
 
             ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory = strings => new CustomRulesetValidatorSelector(strings);
+            ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory = () => new CustomRulesetValidatorSelector();
         }
     }
 }

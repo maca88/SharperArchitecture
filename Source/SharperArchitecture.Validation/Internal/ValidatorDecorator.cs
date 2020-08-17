@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -44,7 +45,9 @@ namespace SharperArchitecture.Validation.Internal
             AddProducersForGenericRules();
 
             var absValidator = (AbstractValidator<TModel>)validator;
-            absValidator.AddRule(new BusinessRulesValidator(GetRulesToValidate));
+            var addRuleMethod = absValidator.GetType().GetMethod("AddRule", BindingFlags.Instance | BindingFlags.NonPublic);
+            addRuleMethod.Invoke(absValidator, new object[] { new BusinessRulesValidator(GetRulesToValidate) });
+            //absValidator.AddRule(new BusinessRulesValidator(GetRulesToValidate));
             eventPublisher.Publish(new ValidatorCreatedEvent(validator, typeof(TModel)));
         }
 
@@ -157,28 +160,22 @@ namespace SharperArchitecture.Validation.Internal
                 foreach (var propVal in valRule.Validators)
                 {
                     Type childValType = null;
-                    var collRule = propVal as ChildCollectionValidatorAdaptor;
-                    if (collRule != null)
+                    if (propVal is IChildValidatorAdaptor childRule)
                     {
-                        childValType = collRule.ChildValidatorType.GetGenericType(typeof(IValidator<>));
+                        childValType = childRule.ValidatorType.GetGenericType(typeof(IValidator<>));
                     }
-                    else
-                    {
-                        var childRule = propVal as ChildValidatorAdaptor;
-                        if (childRule != null)
-                        {
-                            childValType = childRule.ValidatorType.GetGenericType(typeof(IValidator<>));
-                        }
-                    }
+
                     if (childValType == null)
                     {
                         continue;
                     }
+
                     var childModel = childValType.GetGenericArguments()[0];
                     if (childModel == typeof(TModel))
                     {
                         continue;
                     }
+
                     childModels.Add(childModel);
                     valRules.AddRange(_container.GetInstance(childValType) as IEnumerable<IValidationRule> ??
                                       new List<IValidationRule>());
@@ -236,7 +233,7 @@ namespace SharperArchitecture.Validation.Internal
             Action<IBusinessRule, InstanceProducer> action = (businessRule, producer) =>
             {
                 var validRuleSets = businessRule.RuleSets ?? new string[] { };
-                if (!validRuleSets.Any() && !context.Selector.CanExecute(RuleSetValidationRule.GetRule(""), "", context))
+                if (!validRuleSets.Any() && !context.Selector.CanExecute(RuleSetValidationRule.GetRule(null), "", context))
                 {
                     return;
                 }

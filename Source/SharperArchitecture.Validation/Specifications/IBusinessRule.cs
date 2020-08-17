@@ -15,7 +15,7 @@ namespace SharperArchitecture.Validation.Specifications
         string[] RuleSets { get; }
     }
 
-    public interface IBusinessRule<TRoot> : IBusinessRule<TRoot, TRoot>
+    public interface IBusinessRule<TModel> : IBusinessRule<TModel, TModel>
     {
     }
 

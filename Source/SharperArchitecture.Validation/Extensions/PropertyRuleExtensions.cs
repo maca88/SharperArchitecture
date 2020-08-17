@@ -181,7 +181,7 @@ namespace SharperArchitecture.Validation.Extensions
                             : I18N.Translate(messageId, new { ComparisonValue = (object)I18N.Translate(val.MemberToCompare.Name) }));
             }
             #endregion
-            propVal.ErrorMessageSource = new StaticStringSource(errorMsg);
+            propVal.Options.ErrorMessageSource = new StaticStringSource(errorMsg);
         }
     }
 }

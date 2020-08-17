@@ -26,7 +26,7 @@ namespace SharperArchitecture.Validation
     {
         public Validator()
         {
-            AddAttributeValidation();
+            //AddAttributeValidation();
         }
 
         protected ValidationFailure Failure(Expression<Func<TModel, object>> propertyExp, string errorMsg)
@@ -226,7 +226,7 @@ namespace SharperArchitecture.Validation
         public void AddPropertyValidator(IPropertyValidator propValidator, PropertyInfo prop, string ruleSet, bool includePropertyName)
         {
             var rule = CreateRule(typeof(TModel), prop.Name);
-            rule.RuleSet = ruleSet;
+            rule.RuleSets = new[] { ruleSet };
             rule.AddValidator(propValidator);
             rule.SetL10NMessage(includePropertyName);
             AddRule(rule);

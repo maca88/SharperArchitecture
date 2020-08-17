@@ -42,7 +42,7 @@ namespace SharperArchitecture.Validation
                     propertyChain.AddIndexer(idx);
                     propertyChain.Add(propName);
                     
-                    var error = context.MessageFormatter.BuildMessage(ErrorMessageSource.GetString(val));
+                    var error = context.MessageFormatter.BuildMessage(Options.ErrorMessageSource.GetString(context));
                     result.Add(new ValidationFailure(propertyChain.ToString(), error));
                 }   
                 else

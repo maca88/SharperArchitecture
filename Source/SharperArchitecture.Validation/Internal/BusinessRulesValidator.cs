@@ -58,9 +58,19 @@ namespace SharperArchitecture.Validation.Internal
             throw new NotSupportedException();
         }
 
+        public void ApplyCondition(Func<PropertyValidatorContext, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ApplyAsyncCondition(Func<PropertyValidatorContext, CancellationToken, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        {
+            throw new NotImplementedException();
+        }
 
         public IEnumerable<IPropertyValidator> Validators { get { yield break; } }
 
         public string RuleSet { get; set; }
+        public string[] RuleSets { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

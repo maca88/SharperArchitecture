@@ -49,7 +49,7 @@ namespace SharperArchitecture.Tests.Validation
                 (v, m) => v.Validate(new ValidationContext(m)),
                 (v, m) => v.Validate(new ValidationContext<Parent>(m)),
                 (v, m) => v.Validate(m, ruleSet: ValidationRuleSet.Default),
-                (v, m) => v.Validate(m, ruleSets: new[] {ValidationRuleSet.Default})
+                //(v, m) => v.Validate(m, ruleSets: new[] {ValidationRuleSet.Default})
             };
 
             foreach (var valFun in valFuns)
@@ -187,7 +187,7 @@ namespace SharperArchitecture.Tests.Validation
                 (v, m) => v.ValidateAsync(new ValidationContext(m)),
                 (v, m) => v.ValidateAsync(new ValidationContext<Parent>(m)),
                 (v, m) => v.ValidateAsync(m, ruleSet: ValidationRuleSet.Default),
-                (v, m) => v.ValidateAsync(m, ruleSets: new[] {ValidationRuleSet.Default})
+                //(v, m) => v.ValidateAsync(m, ruleSets: new[] {ValidationRuleSet.Default})
             };
 
             foreach (var valFun in valFuns)

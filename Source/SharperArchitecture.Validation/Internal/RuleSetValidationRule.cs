@@ -15,11 +15,15 @@ namespace SharperArchitecture.Validation.Internal
     internal class RuleSetValidationRule : IValidationRule
     {
         private static readonly ConcurrentDictionary<string, RuleSetValidationRule> Instances =
-            new ConcurrentDictionary<string, RuleSetValidationRule>(); 
+            new ConcurrentDictionary<string, RuleSetValidationRule>();
+
+        private static readonly RuleSetValidationRule DefaultRuleSetValidationRule = new RuleSetValidationRule();
 
         public static IValidationRule GetRule(string ruleSet)
         {
-            return Instances.GetOrAdd(ruleSet, o => new RuleSetValidationRule(o));
+            return string.IsNullOrEmpty(ruleSet)
+                ? DefaultRuleSetValidationRule
+                : Instances.GetOrAdd(ruleSet, o => new RuleSetValidationRule(o));
         }
 
         static RuleSetValidationRule()
@@ -28,7 +32,12 @@ namespace SharperArchitecture.Validation.Internal
 
         private RuleSetValidationRule(string ruleSet)
         {
-            RuleSet = ruleSet;
+            RuleSets = new[] { ruleSet };
+        }
+
+        private RuleSetValidationRule()
+        {
+            RuleSets = new string[0];
         }
 
         IEnumerable<ValidationFailure> IValidationRule.Validate(ValidationContext context)
@@ -51,8 +60,18 @@ namespace SharperArchitecture.Validation.Internal
             throw new NotSupportedException();
         }
 
+        public void ApplyCondition(Func<PropertyValidatorContext, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ApplyAsyncCondition(Func<PropertyValidatorContext, CancellationToken, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators)
+        {
+            throw new NotImplementedException();
+        }
+
         IEnumerable<IPropertyValidator> IValidationRule.Validators { get { yield break; } }
 
-        public string RuleSet { get; set; }
+        public string[] RuleSets { get; set; }
     }
 }

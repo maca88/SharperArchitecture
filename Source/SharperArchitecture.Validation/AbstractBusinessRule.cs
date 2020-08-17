@@ -36,7 +36,10 @@ namespace SharperArchitecture.Validation
         protected virtual ValidationFailure Failure(Expression<Func<TChild, object>> propertyExp, string errorMsg, ValidationContext context)
         {
             var child = context.InstanceToValidate as TChild;
-            var attemptedValue = child != null ? propertyExp.Compile()(child) : null;
+            var attemptedValue = child != null
+                ? propertyExp.Compile()(child)
+                : null;
+
             return new ValidationFailure(propertyExp.GetFullPropertyName(), errorMsg, attemptedValue);
         }
 

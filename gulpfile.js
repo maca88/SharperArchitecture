@@ -29,11 +29,24 @@ var paFiles = [
     getPaPath('WebApi', 'pdb')
 ];
 
+var breezeFiles = [
+    'C:/Workspace/Git/maca88.breeze.server.net/AspNet/Breeze.ContextProvider.NH/bin/Debug/Breeze.ContextProvider.NH.dll',
+    'C:/Workspace/Git/maca88.breeze.server.net/AspNet/Breeze.ContextProvider.NH/bin/Debug/Breeze.ContextProvider.NH.pdb',
+];
+
 var outBasePath = './build/';
 
 gulp.task('copy', function() {
     return gulp.src(paFiles)
     .pipe(flatten())
     .pipe(gulp.dest(outBasePath))
-    .pipe(gulp.dest('C:/Workspace/Git/Bar/packages/SharperArchitecture/'));
+    .pipe(gulp.dest('C:/Workspace/Git/ACar/packages/SharperArchitecture/'));
+});
+
+gulp.task('breeze', function() {
+    return gulp.src(breezeFiles)
+    .pipe(flatten())
+    .pipe(gulp.dest('C:/Workspace/Git/ACar/ACar.WebApi/bin'))
+    .pipe(gulp.dest('C:/Workspace/Git/ACar/packages/Breeze.Server.ContextProvider.NH/'))
+    .pipe(gulp.dest('C:/Workspace/Git/SharperArhitecture/Source/packages/PointlessArhitecture.Breeze.ContextProvider.NH.1.6.5.46/lib/net461/'));
 });

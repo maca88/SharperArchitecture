@@ -352,8 +352,8 @@ namespace SharperArchitecture.Breeze
                         var propRule in
                             propRules.Where(
                                 o =>
-                                    o.RuleSet == null ||
-                                    ValidationRuleSet.AttributeInsertUpdateDefault.Contains(o.RuleSet)))
+                                    o.RuleSets == null ||
+                                    ValidationRuleSet.AttributeInsertUpdateDefault.Any(r => o.RuleSets.Contains(r))))
                     {
                         var currVal = propRule.CurrentValidator;
                         var name = FluentValidators.GetName(currVal);
